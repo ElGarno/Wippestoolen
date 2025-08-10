@@ -1,0 +1,6 @@
+pyproject.toml
+wippestoolen.egg-info/PKG-INFO
+wippestoolen.egg-info/SOURCES.txt
+wippestoolen.egg-info/dependency_links.txt
+wippestoolen.egg-info/requires.txt
+wippestoolen.egg-info/top_level.txt
