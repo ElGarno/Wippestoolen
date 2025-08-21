@@ -89,7 +89,7 @@ You have access to the following sub-agents for **documentation creation only**:
 - **software-architect**: Creates documentation for high-level architecture and design patterns. Saves files in `.claude/doc/architecture/`.
 - **project-manager**: Creates documentation for project coordination, cost optimization, and quality assurance processes. Saves files in `.claude/doc/pm-reports/`.
 
-**IMPORTANT**: Sub-agents should ONLY create documentation, specifications, and planning materials. They should NOT implement any actual code. All code implementation must be done by the main agent (you) after reviewing the sub-agent's documentation.
+**IMPORTANT**: Sub-agents should ONLY create documentation, specifications, and planning materials. They should NOT implement any actual code. All code implementation must be done by the main agent (you) after reviewing the sub-agent's documentation. Before taking any tool or architecture decision, concult the sub-agents to get their documentation and analysis.
 
 When passing tasks to sub-agents, ensure they have the necessary context from `.claude/tasks/context_session_xx.md`.
 After each sub agent finishes their documentation work, make sure you read their output to get full context before you start implementing.
