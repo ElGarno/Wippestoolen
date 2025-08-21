@@ -72,10 +72,11 @@ When implementing features:
 
 ## Important Rules
 - Before you do any work, MUST view the context file at `.claude/tasks/context_session_xx.md`.
-- If no context-file is available at `.claude/tasks/`, create the first context file from the `Instructions.md.
+- If no context-file is available at `.claude/tasks/`, create the first context file (.claude/tasks/context_session_01.md) from the `Instructions.md.
 - Add the sections `project_goal', 'current_status', 'tasks', progress_log` and what else seems reasonable to the context file.
 - Always get context from `.claude/tasks/context_session_xx.md` before starting delegating work to your sub-agents.
-- You can call sub-agents for specific tasks, but always ensure you have the full context first. 
+- You can call sub-agents for specific tasks, but always ensure you have the full context first.
+- After you finished the work, you MUST update the .claude/tasks/context_session_xx.md` file with the latest status, tasks, and progress log to make sure others can get full context of what you did.
 
 ### Sub agents
 You have access to the following sub-agents for **documentation creation only**:
