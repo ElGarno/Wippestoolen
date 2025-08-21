@@ -1,6 +1,7 @@
 # Tool-Sharing Platform — Engineering Outline 
 
 Goal: Build a neighborhood tool-sharing app where users can lend and borrow items. This outline is tech-agnostic so contributors can choose their preferred stack.
+The running costs should be minimal, ideally under $40/month for a small user base running most infrastructure on AWS.
 
 ⸻
 
@@ -64,10 +65,12 @@ Goal: Build a neighborhood tool-sharing app where users can lend and borrow item
 ## Non-Functional Requirements
 - Accessibility (WCAG-minded UX)
 - Mobile-friendly
+- Max 40$/month running costs
 - Privacy first (minimize PII; GDPR aware)
 - Auditability of bookings and status changes
 - Rate limiting for auth & forms
 - Logs/metrics for basic ops observability
 - The app should be easily be deployable on AWS and easy to scale and maintain.
+- For deployment use OpenTofu (IaC) and be as cost-efficient as you can. I estimate the number of people using the app to be around 10 - 40 at the beginning, but the app should be able to scale up to 10.000 users without any problems.
 - Use testing best practices (unit, integration, e2e) and develop tests alongside features.
 - Start small, keep it simple and iterate based on user feedback.
