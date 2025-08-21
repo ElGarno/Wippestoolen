@@ -1,0 +1,81 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sign Up - Wippestoolen{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">
+                        <i class="bi bi-person-plus"></i> Join Wippestoolen
+                    </h3>
+                    <p class="text-center text-muted mb-4">
+                        Start sharing tools with your neighbors today!
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" required>
+                            <small class="text-muted">This will be your display name</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                            <small class="text-muted">We'll use this for login and notifications</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                            <small class="text-muted">At least 8 characters</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" name="password_confirm" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Create Account
+                            </button>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p>
+                                Already have an account? 
+                                <a href="{% url 'login' %}" class="text-decoration-none">Login</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>Why Join Wippestoolen?</h5>
+                    <ul class="mb-0">
+                        <li>Save money by borrowing instead of buying</li>
+                        <li>Earn from tools you rarely use</li>
+                        <li>Connect with your neighbors</li>
+                        <li>Reduce waste and help the environment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

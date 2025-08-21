@@ -25,13 +25,13 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',  # For GeoDjango
+    # 'django.contrib.gis',  # For GeoDjango - disabled for now, needs GDAL
 ]
 
 THIRD_PARTY_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
-    'leaflet',
+    # 'leaflet',  # Requires GeoDjango/GDAL - will add later
 ]
 
 LOCAL_APPS = [
@@ -134,6 +134,9 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
 
 # Login/Logout URLs
 LOGIN_URL = '/accounts/login/'

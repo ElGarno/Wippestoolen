@@ -24,3 +24,6 @@ dev = [
     "pytest-django>=4.5.0",
     "coverage>=7.3.0",
 ]
+
+[tool.setuptools]
+packages = ["apps", "apps.accounts", "apps.tools", "apps.bookings", "apps.reviews", "apps.notifications", "apps.core", "wippestoolen"]
