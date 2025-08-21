@@ -18,18 +18,10 @@ This is a Python project (Python ≥3.13) configured with:
 Since this is an early-stage project without source code yet, standard Python development commands would be:
 - `python -m venv .venv` - Create virtual environment (already exists)
 - `source .venv/bin/activate` - Activate virtual environment
-- `pip install -e .` - Install project in development mode
+- `uv add --dev` - Add development dependencies (when implemented)
+- `uv sync` - Sync dependencies (when implemented)
 - `python -m pytest` - Run tests (when implemented)
 
-## Key Features to Implement
-
-Based on Instructions.md, the MVP includes:
-1. **Authentication & Profiles** - User registration, profiles with ratings
-2. **Tool Listings** - CRUD operations for tools with photos, location, availability
-3. **Booking Flow** - Request/confirm/active/returned states
-4. **Reviews System** - Mutual ratings after tool returns
-5. **Notifications** - In-app and email notifications
-6. **Admin Panel** - User/tool management
 
 ## MCP Servers Available
 
@@ -40,12 +32,3 @@ The project has several MCP servers configured:
 - `mcp-obsidian` - Note management
 - `context7` - Library documentation
 - `time` - Time utilities
-
-## Architecture Notes
-
-Future implementation should consider:
-- Mobile-friendly responsive design
-- Privacy-first approach (GDPR compliance)
-- Auditability for booking state changes
-- Rate limiting for authentication
-- Accessibility (WCAG compliance)
