@@ -68,3 +68,6 @@ Goal: Build a neighborhood tool-sharing app where users can lend and borrow item
 - Auditability of bookings and status changes
 - Rate limiting for auth & forms
 - Logs/metrics for basic ops observability
+- The app should be easily be deployable on AWS and easy to scale and maintain.
+- Use testing best practices (unit, integration, e2e) and develop tests alongside features.
+- Start small, keep it simple and iterate based on user feedback.
