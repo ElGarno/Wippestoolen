@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(python manage.py:*)",
+      "Bash(mkdir:*)",
+      "Bash(uv sync:*)",
+      "mcp__memory__create_entities",
+      "Bash(curl:*)",
+      "Bash(python test:*)",
+      "Bash(python:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "memory",
+    "sequential-thinking",
+    "git",
+    "mcp-obsidian",
+    "context7",
+    "time"
+  ]
+}
