@@ -8,7 +8,9 @@
       "mcp__memory__create_entities",
       "Bash(curl:*)",
       "Bash(python test:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(source:*)",
+      "Bash(pytest:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

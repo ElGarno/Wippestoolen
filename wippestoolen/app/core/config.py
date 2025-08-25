@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     # CORS and hosts
     ALLOWED_HOSTS: list[str] = Field(
-        default=["localhost", "127.0.0.1", "0.0.0.0"], description="Allowed hosts"
+        default=["localhost", "127.0.0.1", "0.0.0.0", "testserver"], description="Allowed hosts"
     )
     ALLOWED_ORIGINS: list[str] = Field(
         default=[
