@@ -15,12 +15,13 @@ terraform {
   }
   
   # Backend configuration for state management
-  # TODO: Set up S3 backend after initial deployment
-  # backend "s3" {
-  #   bucket = "wippestoolen-terraform-state"
-  #   key    = "production/terraform.tfstate"
-  #   region = "eu-central-1"
-  # }
+  backend "s3" {
+    bucket         = "wippestoolen-terraform-state-qy7taft8"
+    key            = "production/terraform.tfstate"
+    region         = "eu-central-1"
+    dynamodb_table = "wippestoolen-terraform-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
