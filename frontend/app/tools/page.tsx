@@ -6,7 +6,7 @@ import { Search, SlidersHorizontal, Grid3X3, List, Loader2 } from 'lucide-react'
 import useSWR from 'swr'
 
 import { apiClient } from '@/lib/api'
-import { Tool, PaginatedResponse } from '@/types'
+import { Tool, ToolCategory, PaginatedResponse } from '@/types'
 import { Layout } from '@/components/layout/layout'
 import { ToolCard } from '@/components/tools/tool-card'
 import { Button } from '@/components/ui/button'
@@ -20,11 +20,11 @@ import { Separator } from '@/components/ui/separator'
 
 const ITEMS_PER_PAGE = 12
 const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest First' },
-  { value: 'price_low', label: 'Price: Low to High' },
-  { value: 'price_high', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Highest Rated' },
-  { value: 'popular', label: 'Most Popular' },
+  { value: 'newest', label: 'Neueste zuerst' },
+  { value: 'price_low', label: 'Preis: Niedrig bis Hoch' },
+  { value: 'price_high', label: 'Preis: Hoch bis Niedrig' },
+  { value: 'rating', label: 'Beste Bewertung' },
+  { value: 'popular', label: 'Beliebteste' },
 ]
 
 export default function ToolsPage() {
@@ -69,7 +69,7 @@ export default function ToolsPage() {
   )
 
   // Fetch categories
-  const categoriesQuery = useSWR<string[]>('categories', () => apiClient.getToolCategories())
+  const categoriesQuery = useSWR<ToolCategory[]>('categories', () => apiClient.getToolCategories())
 
   const tools = toolsQuery.data?.items || []
   const totalPages = toolsQuery.data ? Math.ceil(toolsQuery.data.total / ITEMS_PER_PAGE) : 0
@@ -112,9 +112,9 @@ export default function ToolsPage() {
             <div className="flex flex-col space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold">Browse Tools</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold">Werkzeuge durchsuchen</h1>
                   <p className="text-gray-600 mt-1">
-                    Find the perfect tool for your project
+                    Finden Sie das perfekte Werkzeug für Ihr Projekt
                   </p>
                 </div>
                 
@@ -143,7 +143,7 @@ export default function ToolsPage() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
-                    placeholder="Search for tools..."
+                    placeholder="Nach Werkzeugen suchen..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -154,13 +154,13 @@ export default function ToolsPage() {
                 <div className="flex flex-wrap gap-2 lg:gap-4">
                   <Select value={selectedCategory} onValueChange={handleCategoryChange}>
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All Categories" />
+                      <SelectValue placeholder="Alle Kategorien" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="all">Alle Kategorien</SelectItem>
                       {categoriesQuery.data?.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.id} value={category.slug}>
+                          {category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -185,7 +185,7 @@ export default function ToolsPage() {
                     className="relative"
                   >
                     <SlidersHorizontal className="w-4 h-4 mr-2" />
-                    Filters
+                    Filter
                     {appliedFiltersCount > 0 && (
                       <Badge 
                         variant="secondary" 
@@ -203,16 +203,16 @@ export default function ToolsPage() {
                 <Card>
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Advanced Filters</CardTitle>
+                      <CardTitle className="text-lg">Erweiterte Filter</CardTitle>
                       <Button variant="ghost" size="sm" onClick={clearFilters}>
-                        Clear All
+                        Alle löschen
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Price Range */}
                     <div className="space-y-3">
-                      <Label>Daily Rate Range</Label>
+                      <Label>Tagespreis Bereich</Label>
                       <div className="px-3">
                         <Slider
                           value={priceRange}
@@ -235,10 +235,10 @@ export default function ToolsPage() {
               {/* Active Filters */}
               {appliedFiltersCount > 0 && (
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-sm text-gray-600">Active filters:</span>
+                  <span className="text-sm text-gray-600">Aktive Filter:</span>
                   {debouncedSearchTerm && (
                     <Badge variant="secondary" className="gap-2">
-                      Search: {debouncedSearchTerm}
+                      Suche: {debouncedSearchTerm}
                       <button
                         onClick={() => setSearchTerm('')}
                         className="text-gray-500 hover:text-gray-700"
@@ -281,11 +281,11 @@ export default function ToolsPage() {
           <div className="flex items-center justify-between mb-6">
             <div className="text-sm text-gray-600">
               {isLoading ? (
-                'Loading...'
+                'Lade...'
               ) : error ? (
-                'Error loading tools'
+                'Fehler beim Laden der Werkzeuge'
               ) : (
-                `Showing ${tools.length} of ${toolsQuery.data?.total || 0} tools`
+                `${tools.length} von ${toolsQuery.data?.total || 0} Werkzeugen angezeigt`
               )}
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function ToolsPage() {
           {error && (
             <Card className="p-8 text-center">
               <CardDescription>
-                Failed to load tools. Please try again later.
+                Werkzeuge konnten nicht geladen werden. Bitte versuchen Sie es später erneut.
               </CardDescription>
             </Card>
           )}
@@ -309,11 +309,11 @@ export default function ToolsPage() {
           {/* No Results */}
           {!isLoading && !error && tools.length === 0 && (
             <Card className="p-8 text-center">
-              <CardTitle className="mb-2">No tools found</CardTitle>
+              <CardTitle className="mb-2">Keine Werkzeuge gefunden</CardTitle>
               <CardDescription className="mb-4">
-                Try adjusting your search criteria or filters
+                Versuchen Sie, Ihre Suchkriterien oder Filter anzupassen
               </CardDescription>
-              <Button onClick={clearFilters}>Clear Filters</Button>
+              <Button onClick={clearFilters}>Filter löschen</Button>
             </Card>
           )}
 
@@ -338,7 +338,7 @@ export default function ToolsPage() {
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page <= 1}
                   >
-                    Previous
+                    Zurück
                   </Button>
                   
                   <div className="flex items-center space-x-1">
@@ -375,7 +375,7 @@ export default function ToolsPage() {
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page >= totalPages}
                   >
-                    Next
+                    Weiter
                   </Button>
                 </div>
               )}

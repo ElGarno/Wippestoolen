@@ -29,11 +29,12 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
     }
   }
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: string | number) => {
+    const numericPrice = typeof price === 'string' ? parseFloat(price) : price
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(price)
+    }).format(numericPrice)
   }
 
   return (
@@ -95,7 +96,7 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
         {/* Availability Badge */}
         <div className="absolute top-2 left-2">
           <Badge variant={tool.is_available ? 'default' : 'secondary'}>
-            {tool.is_available ? 'Available' : 'Unavailable'}
+            {tool.is_available ? 'Verfügbar' : 'Nicht verfügbar'}
           </Badge>
         </div>
 
@@ -140,22 +141,30 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
             </div>
 
             {/* Rating */}
-            {tool.total_ratings > 0 && tool.average_rating && (
+            {tool.total_ratings > 0 && tool.average_rating && parseFloat(String(tool.average_rating)) > 0 && (
               <div className="flex items-center space-x-1">
                 <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-4 h-4 ${
-                        star <= tool.average_rating!
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const rating = typeof tool.average_rating === 'string' 
+                      ? parseFloat(tool.average_rating) 
+                      : tool.average_rating!
+                    return (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${
+                          star <= rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    )
+                  })}
                 </div>
                 <span className="text-sm text-gray-600">
-                  {tool.average_rating.toFixed(1)} ({tool.total_ratings})
+                  {(typeof tool.average_rating === 'string' 
+                    ? parseFloat(tool.average_rating) 
+                    : tool.average_rating!
+                  ).toFixed(1)} ({tool.total_ratings})
                 </span>
               </div>
             )}
@@ -164,12 +173,12 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
             <div className="flex flex-wrap gap-2 text-xs text-gray-500">
               {tool.brand && (
                 <span className="flex items-center">
-                  <span className="font-medium">Brand:</span> {tool.brand}
+                  <span className="font-medium">Marke:</span> {tool.brand}
                 </span>
               )}
               {tool.condition && (
                 <span className="flex items-center">
-                  <span className="font-medium">Condition:</span> {tool.condition}
+                  <span className="font-medium">Zustand:</span> {tool.condition}
                 </span>
               )}
             </div>
@@ -185,18 +194,18 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
             <span className="font-semibold text-lg">
               {formatPrice(tool.daily_rate)}
             </span>
-            <span className="text-sm text-gray-500">/day</span>
+            <span className="text-sm text-gray-500">/Tag</span>
           </div>
           
-          {tool.deposit_amount && tool.deposit_amount > 0 && (
+          {tool.deposit_amount && (typeof tool.deposit_amount === 'string' ? parseFloat(tool.deposit_amount) : tool.deposit_amount) > 0 && (
             <div className="text-xs text-gray-500">
-              + {formatPrice(tool.deposit_amount)} deposit
+              + {formatPrice(tool.deposit_amount)} Kaution
             </div>
           )}
           
           {tool.delivery_available && tool.delivery_fee && (
             <div className="text-xs text-gray-500">
-              Delivery: {formatPrice(tool.delivery_fee)}
+              Lieferung: {formatPrice(tool.delivery_fee)}
             </div>
           )}
         </div>
@@ -210,14 +219,14 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
             className="min-w-[80px]"
           >
             <Link href={`/tools/${tool.id}`}>
-              {tool.is_available ? 'Book Now' : 'View'}
+              {tool.is_available ? 'Jetzt buchen' : 'Anzeigen'}
             </Link>
           </Button>
           
           {tool.delivery_available && (
             <div className="text-xs text-center text-green-600 flex items-center">
               <Calendar className="w-3 h-3 mr-1" />
-              Delivery
+              Lieferung
             </div>
           )}
         </div>

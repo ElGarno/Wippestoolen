@@ -182,6 +182,7 @@ class ToolListResponse(BaseModel):
     """Schema for tool list response (summary view)."""
     id: UUID
     title: str
+    description: str
     category: ToolCategoryResponse
     condition: str
     is_available: bool

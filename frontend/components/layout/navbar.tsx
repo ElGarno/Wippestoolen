@@ -10,11 +10,11 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { user, isAuthenticated, logout } = useAuth()
 
-  const handleLogout = async () => {
+  const handleAbmelden = async () => {
     try {
       await logout()
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error('Abmelden failed:', error)
     }
   }
 
@@ -33,18 +33,18 @@ export function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               <Link href="/tools" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
-                Browse Tools
+                Werkzeuge durchsuchen
               </Link>
               <Link href="/categories" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
-                Categories
+                Kategorien
               </Link>
               {isAuthenticated && (
                 <>
                   <Link href="/bookings" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
-                    My Bookings
+                    Meine Buchungen
                   </Link>
                   <Link href="/my-tools" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
-                    My Tools
+                    Meine Werkzeuge
                   </Link>
                 </>
               )}
@@ -58,7 +58,7 @@ export function Navbar() {
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/tools/new">
                     <Plus className="h-4 w-4 mr-2" />
-                    List Tool
+                    Werkzeug inserieren
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
@@ -74,17 +74,17 @@ export function Navbar() {
                     </Link>
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  Logout
+                <Button variant="ghost" size="sm" onClick={handleAbmelden}>
+                  Abmelden
                 </Button>
               </>
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href="/auth/login">Login</Link>
+                  <Link href="/auth/login">Anmelden</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/auth/register">Sign Up</Link>
+                  <Link href="/auth/register">Registrieren</Link>
                 </Button>
               </>
             )}
@@ -112,14 +112,14 @@ export function Navbar() {
               className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsOpen(false)}
             >
-              Browse Tools
+              Werkzeuge durchsuchen
             </Link>
             <Link
               href="/categories"
               className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsOpen(false)}
             >
-              Categories
+              Kategorien
             </Link>
             
             {isAuthenticated ? (
@@ -129,44 +129,44 @@ export function Navbar() {
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  My Bookings
+                  Meine Buchungen
                 </Link>
                 <Link
                   href="/my-tools"
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  My Tools
+                  Meine Werkzeuge
                 </Link>
                 <Link
                   href="/tools/new"
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  List Tool
+                  Werkzeug inserieren
                 </Link>
                 <Link
                   href="/notifications"
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  Notifications
+                  Benachrichtigungen
                 </Link>
                 <Link
                   href="/profile"
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  Profile
+                  Profil
                 </Link>
                 <button
                   onClick={() => {
-                    handleLogout()
+                    handleAbmelden()
                     setIsOpen(false)
                   }}
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium w-full text-left"
                 >
-                  Logout
+                  Abmelden
                 </button>
               </>
             ) : (
@@ -176,14 +176,14 @@ export function Navbar() {
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  Login
+                  Anmelden
                 </Link>
                 <Link
                   href="/auth/register"
                   className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsOpen(false)}
                 >
-                  Sign Up
+                  Registrieren
                 </Link>
               </>
             )}

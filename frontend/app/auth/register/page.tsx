@@ -17,23 +17,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 const registerSchema = z.object({
   display_name: z.string()
-    .min(2, 'Display name must be at least 2 characters')
-    .max(100, 'Display name must be less than 100 characters'),
-  email: z.string().email('Please enter a valid email address'),
+    .min(2, 'Anzeigename muss mindestens 2 Zeichen haben')
+    .max(100, 'Anzeigename muss weniger als 100 Zeichen haben'),
+  email: z.string().email('Bitte geben Sie eine gültige E-Mail-Adresse ein'),
   password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .min(8, 'Passwort muss mindestens 8 Zeichen haben')
+    .regex(/[A-Z]/, 'Passwort muss mindestens einen Großbuchstaben enthalten')
+    .regex(/[a-z]/, 'Passwort muss mindestens einen Kleinbuchstaben enthalten')
+    .regex(/[0-9]/, 'Passwort muss mindestens eine Zahl enthalten'),
   confirmPassword: z.string(),
-  first_name: z.string().max(50, 'First name must be less than 50 characters').optional().or(z.literal('')),
-  last_name: z.string().max(50, 'Last name must be less than 50 characters').optional().or(z.literal('')),
+  first_name: z.string().max(50, 'Vorname muss weniger als 50 Zeichen haben').optional().or(z.literal('')),
+  last_name: z.string().max(50, 'Nachname muss weniger als 50 Zeichen haben').optional().or(z.literal('')),
   phone_number: z.string()
-    .regex(/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number')
+    .regex(/^[\+]?[1-9][\d]{0,15}$/, 'Bitte geben Sie eine gültige Telefonnummer ein')
     .optional()
     .or(z.literal('')),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Passwörter stimmen nicht überein",
   path: ["confirmPassword"],
 })
 
@@ -41,10 +41,10 @@ type RegisterFormData = z.infer<typeof registerSchema>
 
 const PasswordStrengthIndicator = ({ password }: { password: string }) => {
   const requirements = [
-    { regex: /.{8,}/, text: 'At least 8 characters' },
-    { regex: /[A-Z]/, text: 'One uppercase letter' },
-    { regex: /[a-z]/, text: 'One lowercase letter' },
-    { regex: /[0-9]/, text: 'One number' },
+    { regex: /.{8,}/, text: 'Mindestens 8 Zeichen' },
+    { regex: /[A-Z]/, text: 'Ein Großbuchstabe' },
+    { regex: /[a-z]/, text: 'Ein Kleinbuchstabe' },
+    { regex: /[0-9]/, text: 'Eine Zahl' },
   ]
 
   return (
@@ -108,9 +108,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Konto erstellen</CardTitle>
           <CardDescription className="text-center">
-            Join Wippestoolen to start sharing tools with your neighbors
+            Treten Sie Wippestoolen bei und teilen Sie Werkzeuge mit Ihren Nachbarn in Attendorn
           </CardDescription>
         </CardHeader>
         
@@ -123,11 +123,11 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="display_name">Display Name</Label>
+              <Label htmlFor="display_name">Anzeigename</Label>
               <Input
                 id="display_name"
                 type="text"
-                placeholder="Enter your display name"
+                placeholder="Geben Sie Ihren Anzeigenamen ein"
                 {...register('display_name')}
                 className={errors.display_name ? 'border-red-500' : ''}
               />
@@ -138,11 +138,11 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
-                <Label htmlFor="first_name">First Name (Optional)</Label>
+                <Label htmlFor="first_name">Vorname (Optional)</Label>
                 <Input
                   id="first_name"
                   type="text"
-                  placeholder="First name"
+                  placeholder="Vorname"
                   {...register('first_name')}
                   className={errors.first_name ? 'border-red-500' : ''}
                 />
@@ -152,11 +152,11 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name (Optional)</Label>
+                <Label htmlFor="last_name">Nachname (Optional)</Label>
                 <Input
                   id="last_name"
                   type="text"
-                  placeholder="Last name"
+                  placeholder="Nachname"
                   {...register('last_name')}
                   className={errors.last_name ? 'border-red-500' : ''}
                 />
@@ -167,11 +167,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">E-Mail</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Geben Sie Ihre E-Mail-Adresse ein"
                 {...register('email')}
                 className={errors.email ? 'border-red-500' : ''}
               />
@@ -181,12 +181,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Passwort</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a strong password"
+                  placeholder="Erstellen Sie ein sicheres Passwort"
                   {...register('password')}
                   className={`pr-10 ${errors.password ? 'border-red-500' : ''}`}
                 />
@@ -209,12 +209,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
+                  placeholder="Bestätigen Sie Ihr Passwort"
                   {...register('confirmPassword')}
                   className={`pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 />
@@ -237,7 +237,7 @@ export default function RegisterPage() {
 
 
             <div className="space-y-2">
-              <Label htmlFor="phone_number">Phone Number (Optional)</Label>
+              <Label htmlFor="phone_number">Telefonnummer (Optional)</Label>
               <Input
                 id="phone_number"
                 type="tel"
@@ -252,16 +252,16 @@ export default function RegisterPage() {
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Account
+              Konto erstellen
             </Button>
           </form>
         </CardContent>
 
         <CardFooter>
           <div className="text-sm text-center text-gray-600 w-full">
-            Already have an account?{' '}
+            Haben Sie bereits ein Konto?{' '}
             <Link href="/auth/login" className="text-primary hover:underline font-medium">
-              Sign in
+              Anmelden
             </Link>
           </div>
         </CardFooter>

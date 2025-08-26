@@ -54,12 +54,12 @@ export interface Tool {
   category: ToolCategory
   condition: string
   is_available: boolean
-  daily_rate: number
-  deposit_amount?: number
+  daily_rate: string | number  // Backend returns as string, frontend may convert to number
+  deposit_amount?: string | number
   pickup_city?: string
   pickup_postal_code?: string
   delivery_available: boolean
-  average_rating?: number
+  average_rating?: string | number
   total_ratings: number
   primary_photo?: ToolPhoto
   photos?: ToolPhoto[]

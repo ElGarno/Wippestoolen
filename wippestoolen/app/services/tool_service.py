@@ -191,7 +191,7 @@ class ToolService:
         # Get tools with pagination
         result = await self.db.execute(
             text(f"""
-                SELECT t.id, t.title, t.condition, t.is_available, t.daily_rate, 
+                SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate, 
                        t.pickup_city, t.pickup_postal_code, t.delivery_available,
                        t.average_rating, t.total_ratings,
                        tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug, 
@@ -221,40 +221,41 @@ class ToolService:
             tool_data = {
                 "id": row[0],
                 "title": row[1],
+                "description": row[2],
                 "category": {
-                    "id": row[10],
-                    "name": row[11],
-                    "slug": row[12],
-                    "description": row[13],
-                    "icon_name": row[14]
+                    "id": row[11],
+                    "name": row[12],
+                    "slug": row[13],
+                    "description": row[14],
+                    "icon_name": row[15]
                 },
-                "condition": row[2],
-                "is_available": row[3],
-                "daily_rate": row[4],
-                "pickup_city": row[5],
-                "pickup_postal_code": row[6],
-                "delivery_available": row[7],
-                "average_rating": row[8],
-                "total_ratings": row[9],
+                "condition": row[3],
+                "is_available": row[4],
+                "daily_rate": row[5],
+                "pickup_city": row[6],
+                "pickup_postal_code": row[7],
+                "delivery_available": row[8],
+                "average_rating": row[9],
+                "total_ratings": row[10],
                 "owner": {
-                    "id": row[15],
-                    "display_name": row[16],
-                    "first_name": row[17],
-                    "last_name": row[18],
-                    "avatar_url": row[19],
-                    "average_rating": row[20],
-                    "total_ratings": row[21],
-                    "is_verified": row[22]
+                    "id": row[16],
+                    "display_name": row[17],
+                    "first_name": row[18],
+                    "last_name": row[19],
+                    "avatar_url": row[20],
+                    "average_rating": row[21],
+                    "total_ratings": row[22],
+                    "is_verified": row[23]
                 },
                 "primary_photo": {
-                    "id": row[23],
-                    "original_url": row[24],
-                    "thumbnail_url": row[25],
-                    "medium_url": row[26],
-                    "large_url": row[27],
-                    "display_order": row[28],
-                    "is_primary": row[29]
-                } if row[23] else None
+                    "id": row[24],
+                    "original_url": row[25],
+                    "thumbnail_url": row[26],
+                    "medium_url": row[27],
+                    "large_url": row[28],
+                    "display_order": row[29],
+                    "is_primary": row[30]
+                } if row[24] else None
             }
             tools.append(ToolListResponse(**tool_data))
         
