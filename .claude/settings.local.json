@@ -10,7 +10,8 @@
       "Bash(python test:*)",
       "Bash(python:*)",
       "Bash(source:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(npx shadcn@latest init:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
