@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 const loginSchema = z.object({
-  username: z.string().email('Please enter a valid email address'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 })
 
@@ -73,16 +73,16 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="username">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
+                id="email"
                 type="email"
                 placeholder="Enter your email"
-                {...register('username')}
-                className={errors.username ? 'border-red-500' : ''}
+                {...register('email')}
+                className={errors.email ? 'border-red-500' : ''}
               />
-              {errors.username && (
-                <p className="text-sm text-red-600">{errors.username.message}</p>
+              {errors.email && (
+                <p className="text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
 

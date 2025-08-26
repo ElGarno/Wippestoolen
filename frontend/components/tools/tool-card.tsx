@@ -16,13 +16,16 @@ interface ToolCardProps {
 export function ToolCard({ tool, className = '' }: ToolCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
+  // Get all available photos (for detailed view) or primary photo (for list view)
+  const availablePhotos = tool.photos || (tool.primary_photo ? [tool.primary_photo] : [])
+
   const handleImageNavigation = (direction: 'prev' | 'next') => {
-    if (tool.photos.length <= 1) return
+    if (availablePhotos.length <= 1) return
     
     if (direction === 'next') {
-      setCurrentImageIndex((prev) => (prev + 1) % tool.photos.length)
+      setCurrentImageIndex((prev) => (prev + 1) % availablePhotos.length)
     } else {
-      setCurrentImageIndex((prev) => (prev - 1 + tool.photos.length) % tool.photos.length)
+      setCurrentImageIndex((prev) => (prev - 1 + availablePhotos.length) % availablePhotos.length)
     }
   }
 
@@ -39,9 +42,9 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
         {/* Main Image */}
         <Link href={`/tools/${tool.id}`}>
           <div className="relative w-full h-full bg-gray-100">
-            {tool.photos.length > 0 ? (
+            {availablePhotos.length > 0 ? (
               <Image
-                src={tool.photos[currentImageIndex]}
+                src={availablePhotos[currentImageIndex].original_url}
                 alt={tool.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -56,7 +59,7 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
         </Link>
 
         {/* Image Navigation */}
-        {tool.photos.length > 1 && (
+        {availablePhotos.length > 1 && (
           <>
             <button
               onClick={() => handleImageNavigation('prev')}
@@ -75,7 +78,7 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
 
             {/* Image Indicators */}
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
-              {tool.photos.map((_, index) => (
+              {availablePhotos.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
@@ -99,7 +102,7 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
         {/* Category Badge */}
         <div className="absolute top-2 right-2">
           <Badge variant="outline" className="bg-white/90">
-            {tool.category}
+            {tool.category.name}
           </Badge>
         </div>
       </div>
@@ -122,29 +125,29 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
               <div className="flex items-center space-x-1">
                 <Avatar className="w-5 h-5">
                   <AvatarFallback className="text-xs">
-                    {tool.owner?.full_name?.charAt(0) || 'U'}
+                    {tool.owner?.display_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span>{tool.owner?.full_name || 'Anonymous'}</span>
+                <span>{tool.owner?.display_name || 'Anonymous'}</span>
               </div>
               
-              {tool.location && (
+              {tool.pickup_city && (
                 <div className="flex items-center space-x-1">
                   <MapPin className="w-4 h-4" />
-                  <span className="truncate">{tool.location}</span>
+                  <span className="truncate">{tool.pickup_city}</span>
                 </div>
               )}
             </div>
 
             {/* Rating */}
-            {tool.review_count > 0 && (
+            {tool.total_ratings > 0 && tool.average_rating && (
               <div className="flex items-center space-x-1">
                 <div className="flex items-center">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
                       className={`w-4 h-4 ${
-                        star <= tool.average_rating
+                        star <= tool.average_rating!
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
@@ -152,7 +155,7 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
                   ))}
                 </div>
                 <span className="text-sm text-gray-600">
-                  {tool.average_rating.toFixed(1)} ({tool.review_count})
+                  {tool.average_rating.toFixed(1)} ({tool.total_ratings})
                 </span>
               </div>
             )}
@@ -185,9 +188,9 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
             <span className="text-sm text-gray-500">/day</span>
           </div>
           
-          {tool.deposit_required > 0 && (
+          {tool.deposit_amount && tool.deposit_amount > 0 && (
             <div className="text-xs text-gray-500">
-              + {formatPrice(tool.deposit_required)} deposit
+              + {formatPrice(tool.deposit_amount)} deposit
             </div>
           )}
           

@@ -70,7 +70,7 @@ export function Navbar() {
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/profile">
                       <User className="h-4 w-4 mr-2" />
-                      {user?.full_name}
+                      {user?.display_name}
                     </Link>
                   </Button>
                 </div>

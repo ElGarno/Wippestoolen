@@ -1,39 +1,82 @@
 export interface User {
   id: string
   email: string
-  full_name: string
-  location?: string
+  display_name: string
+  first_name?: string
+  last_name?: string
   phone_number?: string
   bio?: string
-  profile_picture_url?: string
+  avatar_url?: string
   average_rating: number
-  review_count: number
+  total_ratings: number
   is_active: boolean
+  is_verified: boolean
+  email_verified_at?: string
+  location_visible: boolean
+  profile_visible: boolean
   created_at: string
-  updated_at: string
+  last_login_at?: string
+}
+
+export interface ToolPhoto {
+  id: string
+  original_url: string
+  thumbnail_url?: string
+  medium_url?: string
+  large_url?: string
+  display_order: number
+  is_primary: boolean
+}
+
+export interface ToolCategory {
+  id: number
+  name: string
+  slug: string
+  description?: string
+  icon_name?: string
+}
+
+export interface ToolOwner {
+  id: string
+  display_name: string
+  first_name?: string
+  last_name?: string
+  avatar_url?: string
+  average_rating?: number
+  total_ratings: number
+  is_verified: boolean
 }
 
 export interface Tool {
   id: string
   title: string
-  description: string
-  category: string
-  owner_id: string
-  owner?: User
-  photos: string[]
-  daily_rate: number
-  deposit_required: number
-  is_available: boolean
-  location: string
-  delivery_available: boolean
-  delivery_fee?: number
+  description?: string
+  category: ToolCategory
   condition: string
+  is_available: boolean
+  daily_rate: number
+  deposit_amount?: number
+  pickup_city?: string
+  pickup_postal_code?: string
+  delivery_available: boolean
+  average_rating?: number
+  total_ratings: number
+  primary_photo?: ToolPhoto
+  photos?: ToolPhoto[]
+  owner: ToolOwner
+  distance_km?: number
   brand?: string
   model?: string
-  year_purchased?: number
-  purchase_price?: number
-  average_rating: number
-  review_count: number
+  max_loan_days?: number
+  pickup_address?: string
+  pickup_latitude?: number
+  pickup_longitude?: number
+  delivery_radius_km?: number
+  usage_instructions?: string
+  safety_notes?: string
+  last_maintenance_date?: string
+  next_maintenance_due?: string
+  total_bookings?: number
   created_at: string
   updated_at: string
 }
@@ -84,15 +127,16 @@ export interface Notification {
 }
 
 export interface LoginRequest {
-  username: string
+  email: string
   password: string
 }
 
 export interface RegisterRequest {
   email: string
   password: string
-  full_name: string
-  location?: string
+  display_name: string
+  first_name?: string
+  last_name?: string
   phone_number?: string
 }
 

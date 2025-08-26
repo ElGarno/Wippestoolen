@@ -17,10 +17,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 
 const profileSchema = z.object({
-  full_name: z.string()
-    .min(2, 'Full name must be at least 2 characters')
-    .max(100, 'Full name must be less than 100 characters'),
-  location: z.string().optional(),
+  display_name: z.string()
+    .min(2, 'Display name must be at least 2 characters')
+    .max(100, 'Display name must be less than 100 characters'),
+  first_name: z.string()
+    .max(50, 'First name must be less than 50 characters')
+    .optional()
+    .or(z.literal('')),
+  last_name: z.string()
+    .max(50, 'Last name must be less than 50 characters')
+    .optional()
+    .or(z.literal('')),
   phone_number: z.string()
     .regex(/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number')
     .optional()
@@ -72,8 +79,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       reset({
-        full_name: user.full_name,
-        location: user.location || '',
+        display_name: user.display_name,
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
         phone_number: user.phone_number || '',
         bio: user.bio || '',
       })
@@ -161,7 +169,7 @@ export default function ProfilePage() {
                   <User className="h-10 w-10 text-gray-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">{user.full_name}</CardTitle>
+                  <CardTitle className="text-xl">{user.display_name}</CardTitle>
                   <CardDescription className="flex items-center mt-1">
                     <Mail className="h-4 w-4 mr-1" />
                     {user.email}
@@ -179,7 +187,7 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-semibold mb-2">Community Rating</h4>
-                  <StarRating rating={user.average_rating} count={user.review_count} />
+                  <StarRating rating={user.average_rating} count={user.total_ratings} />
                 </div>
                 
                 <Separator />
@@ -210,24 +218,41 @@ export default function ProfilePage() {
               {isEditing ? (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name</Label>
+                    <Label htmlFor="display_name">Display Name</Label>
                     <Input
-                      id="full_name"
-                      {...register('full_name')}
-                      className={errors.full_name ? 'border-red-500' : ''}
+                      id="display_name"
+                      {...register('display_name')}
+                      className={errors.display_name ? 'border-red-500' : ''}
                     />
-                    {errors.full_name && (
-                      <p className="text-sm text-red-600">{errors.full_name.message}</p>
+                    {errors.display_name && (
+                      <p className="text-sm text-red-600">{errors.display_name.message}</p>
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      placeholder="City, State"
-                      {...register('location')}
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input
+                        id="first_name"
+                        {...register('first_name')}
+                        className={errors.first_name ? 'border-red-500' : ''}
+                      />
+                      {errors.first_name && (
+                        <p className="text-sm text-red-600">{errors.first_name.message}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        {...register('last_name')}
+                        className={errors.last_name ? 'border-red-500' : ''}
+                      />
+                      {errors.last_name && (
+                        <p className="text-sm text-red-600">{errors.last_name.message}</p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -273,15 +298,18 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <Label>Full Name</Label>
-                    <p className="text-gray-900 mt-1">{user.full_name}</p>
+                    <Label>Display Name</Label>
+                    <p className="text-gray-900 mt-1">{user.display_name}</p>
                   </div>
 
                   <div>
-                    <Label>Location</Label>
-                    <p className="text-gray-900 mt-1">
-                      {user.location || 'Not specified'}
-                    </p>
+                    <Label>First Name</Label>
+                    <p className="text-gray-900 mt-1">{user.first_name || 'Not specified'}</p>
+                  </div>
+
+                  <div>
+                    <Label>Last Name</Label>
+                    <p className="text-gray-900 mt-1">{user.last_name || 'Not specified'}</p>
                   </div>
 
                   <div>

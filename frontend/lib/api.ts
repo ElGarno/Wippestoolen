@@ -199,10 +199,10 @@ class ApiClient {
   // Auth endpoints
   async login(credentials: LoginRequest): Promise<TokenResponse> {
     // Validate input
-    this.validateEmail(credentials.username) // API expects username field
+    this.validateEmail(credentials.email) // API expects email field
     this.validatePassword(credentials.password)
     
-    const response = await this.client.post<TokenResponse>('/api/v1/auth/token', credentials)
+    const response = await this.client.post<TokenResponse>('/api/v1/auth/login', credentials)
     this.setTokens(response.data.access_token, response.data.refresh_token)
     return response.data
   }
@@ -212,8 +212,8 @@ class ApiClient {
     this.validateEmail(data.email)
     this.validatePassword(data.password)
     
-    if (!data.full_name || data.full_name.trim().length < 2) {
-      throw new Error('Full name must be at least 2 characters long')
+    if (!data.display_name || data.display_name.trim().length < 2) {
+      throw new Error('Display name must be at least 2 characters long')
     }
     
     const response = await this.client.post<TokenResponse>('/api/v1/auth/register', data)

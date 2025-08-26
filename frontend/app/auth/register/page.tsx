@@ -16,9 +16,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 const registerSchema = z.object({
-  full_name: z.string()
-    .min(2, 'Full name must be at least 2 characters')
-    .max(100, 'Full name must be less than 100 characters'),
+  display_name: z.string()
+    .min(2, 'Display name must be at least 2 characters')
+    .max(100, 'Display name must be less than 100 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
@@ -26,7 +26,8 @@ const registerSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
   confirmPassword: z.string(),
-  location: z.string().optional(),
+  first_name: z.string().max(50, 'First name must be less than 50 characters').optional().or(z.literal('')),
+  last_name: z.string().max(50, 'Last name must be less than 50 characters').optional().or(z.literal('')),
   phone_number: z.string()
     .regex(/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number')
     .optional()
@@ -122,17 +123,47 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
+              <Label htmlFor="display_name">Display Name</Label>
               <Input
-                id="full_name"
+                id="display_name"
                 type="text"
-                placeholder="Enter your full name"
-                {...register('full_name')}
-                className={errors.full_name ? 'border-red-500' : ''}
+                placeholder="Enter your display name"
+                {...register('display_name')}
+                className={errors.display_name ? 'border-red-500' : ''}
               />
-              {errors.full_name && (
-                <p className="text-sm text-red-600">{errors.full_name.message}</p>
+              {errors.display_name && (
+                <p className="text-sm text-red-600">{errors.display_name.message}</p>
               )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="first_name">First Name (Optional)</Label>
+                <Input
+                  id="first_name"
+                  type="text"
+                  placeholder="First name"
+                  {...register('first_name')}
+                  className={errors.first_name ? 'border-red-500' : ''}
+                />
+                {errors.first_name && (
+                  <p className="text-sm text-red-600">{errors.first_name.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name (Optional)</Label>
+                <Input
+                  id="last_name"
+                  type="text"
+                  placeholder="Last name"
+                  {...register('last_name')}
+                  className={errors.last_name ? 'border-red-500' : ''}
+                />
+                {errors.last_name && (
+                  <p className="text-sm text-red-600">{errors.last_name.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -204,15 +235,6 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="location">Location (Optional)</Label>
-              <Input
-                id="location"
-                type="text"
-                placeholder="City, State"
-                {...register('location')}
-              />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone_number">Phone Number (Optional)</Label>
