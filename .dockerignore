@@ -1,0 +1,81 @@
+# .dockerignore for Wippestoolen
+
+# Development files
+.git
+.gitignore
+README.md
+Dockerfile*
+docker-compose*
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache
+.coverage
+htmlcov/
+
+# Virtual environment
+.venv
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Infrastructure
+infrastructure/
+*.tfstate*
+.terraform/
+
+# Frontend
+frontend/
+node_modules/
+
+# Local development
+.env.local
+.env.development
+
+# Database
+*.db
+*.sqlite
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Documentation (not needed in container)
+docs/
+*.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Backup files
+*.bak
+*.backup
