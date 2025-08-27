@@ -29,10 +29,10 @@ const SORT_OPTIONS = [
 
 export default function ToolsPage() {
   const searchParams = useSearchParams()
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '')
+  const [searchTerm, setSearchTerm] = useState(searchParams?.get('search') || '')
+  const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') || '')
   const [priceRange, setPriceRange] = useState([0, 200])
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
+  const [sortBy, setSortBy] = useState(searchParams?.get('sort') || 'newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [page, setPage] = useState(1)

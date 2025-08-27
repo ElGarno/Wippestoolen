@@ -12,7 +12,9 @@
       "Bash(source:*)",
       "Bash(pytest:*)",
       "Bash(npx shadcn@latest init:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

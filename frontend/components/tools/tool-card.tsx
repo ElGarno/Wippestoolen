@@ -203,9 +203,9 @@ export function ToolCard({ tool, className = '' }: ToolCardProps) {
             </div>
           )}
           
-          {tool.delivery_available && tool.delivery_fee && (
-            <div className="text-xs text-gray-500">
-              Lieferung: {formatPrice(tool.delivery_fee)}
+          {tool.delivery_available && (
+            <div className="text-xs text-green-600">
+              Lieferung verfügbar
             </div>
           )}
         </div>

@@ -250,7 +250,25 @@ class ApiClient {
     return response.data
   }
 
-  async createTool(data: Omit<Tool, 'id' | 'owner_id' | 'created_at' | 'updated_at' | 'average_rating' | 'review_count'>): Promise<Tool> {
+  async createTool(data: {
+    title: string
+    description?: string
+    category_id: number
+    condition: string
+    daily_rate: number
+    deposit_amount?: number
+    brand?: string
+    model?: string
+    pickup_city?: string
+    pickup_postal_code?: string
+    pickup_address?: string
+    delivery_available: boolean
+    delivery_radius_km?: number
+    max_loan_days?: number
+    usage_instructions?: string
+    safety_notes?: string
+    is_available: boolean
+  }): Promise<Tool> {
     const response = await this.client.post<Tool>('/api/v1/tools', data)
     return response.data
   }
@@ -293,8 +311,8 @@ class ApiClient {
       items: response.data.bookings || [],
       total: response.data.pagination?.total || 0,
       pages: response.data.pagination?.pages || 1,
-      skip: params?.skip || 0,
-      limit: params?.limit || 20
+      page: queryParams.page || 1,
+      size: queryParams.size || 20
     }
   }
 

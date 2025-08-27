@@ -174,12 +174,6 @@ export default function ProfilePage() {
                     <Mail className="h-4 w-4 mr-1" />
                     {user.email}
                   </CardDescription>
-                  {user.location && (
-                    <CardDescription className="flex items-center mt-1">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {user.location}
-                    </CardDescription>
-                  )}
                 </div>
               </div>
             </CardHeader>

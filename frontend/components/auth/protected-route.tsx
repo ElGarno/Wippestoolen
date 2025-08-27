@@ -23,7 +23,7 @@ export function ProtectedRoute({
   useEffect(() => {
     if (!isLoading && requireAuth && !isAuthenticated) {
       // Store the intended destination for redirect after login
-      const redirectUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`
+      const redirectUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname || '/')}`
       router.push(redirectUrl)
     }
   }, [isLoading, isAuthenticated, requireAuth, router, pathname])
@@ -59,7 +59,7 @@ export function useAuthGuard(requireAuth: boolean = true) {
   const pathname = usePathname()
 
   const redirectToLogin = () => {
-    const redirectUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`
+    const redirectUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname || '/')}`
     router.push(redirectUrl)
   }
 

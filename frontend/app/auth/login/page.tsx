@@ -29,7 +29,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const { login, error, clearError } = useAuth()
 
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  const redirectTo = searchParams?.get('redirectTo') || '/'
 
   const {
     register,
