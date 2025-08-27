@@ -95,3 +95,5 @@ When passing tasks to sub-agents, ensure they have the necessary context from `.
 After each sub agent finishes their documentation work, make sure you read their output to get full context before you start implementing.
 
 If the essence of different subagents is contradictory, you can override the subagent's output with your own decision, but always document this in the context file.
+
+- logging in to my private aws account goes by 'assume private-account' followed by Bash(AWS_PROFILE=private-account aws sts get-caller-identity) or any other aws command

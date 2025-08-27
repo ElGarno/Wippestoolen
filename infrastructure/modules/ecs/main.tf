@@ -223,7 +223,7 @@ data "aws_route53_zone" "existing" {
 resource "aws_acm_certificate" "main" {
   count                     = var.enable_ssl ? 1 : 0
   domain_name               = var.domain_name
-  subject_alternative_names = ["www.${var.domain_name}"]
+  subject_alternative_names = ["www.${var.domain_name}", "api.${var.domain_name}"]
   validation_method         = "DNS"
 
   lifecycle {
@@ -289,6 +289,20 @@ resource "aws_route53_record" "www" {
   count = var.enable_ssl ? 1 : 0
   zone_id = var.create_route53_zone ? aws_route53_zone.main[0].zone_id : data.aws_route53_zone.existing[0].zone_id
   name    = "www.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.main.dns_name
+    zone_id                = aws_lb.main.zone_id
+    evaluate_target_health = true
+  }
+}
+
+# A Record for api subdomain
+resource "aws_route53_record" "api" {
+  count = var.enable_ssl ? 1 : 0
+  zone_id = var.create_route53_zone ? aws_route53_zone.main[0].zone_id : data.aws_route53_zone.existing[0].zone_id
+  name    = "api.${var.domain_name}"
   type    = "A"
 
   alias {
@@ -464,7 +478,7 @@ resource "aws_ecs_task_definition" "main" {
         },
         {
           name  = "ALLOWED_HOSTS"
-          value = var.domain_name != "" ? jsonencode(["${var.domain_name}", "www.${var.domain_name}", aws_lb.main.dns_name]) : jsonencode([aws_lb.main.dns_name])
+          value = var.domain_name != "" ? jsonencode(["${var.domain_name}", "www.${var.domain_name}", "api.${var.domain_name}", aws_lb.main.dns_name]) : jsonencode([aws_lb.main.dns_name])
         }
       ]
 

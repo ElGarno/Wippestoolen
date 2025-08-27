@@ -1,6 +1,7 @@
 """Application configuration settings."""
 
-from typing import Any, Optional
+import json
+from typing import Any, Optional, Union
 
 from pydantic import Field, PostgresDsn, computed_field, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -114,6 +115,17 @@ class Settings(BaseSettings):
     
     # Logging
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
+
+    @validator("ALLOWED_HOSTS", pre=True)
+    def parse_allowed_hosts(cls, v: Union[str, list[str]]) -> list[str]:
+        """Parse ALLOWED_HOSTS from JSON string or list."""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                # If it's not JSON, treat as comma-separated string
+                return [host.strip() for host in v.split(",") if host.strip()]
+        return v
 
     @validator("ENVIRONMENT")
     def validate_environment(cls, v: str) -> str:

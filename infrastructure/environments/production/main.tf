@@ -14,14 +14,14 @@ terraform {
     }
   }
   
-  # Backend configuration for state management
-  backend "s3" {
-    bucket         = "wippestoolen-terraform-state-qy7taft8"
-    key            = "production/terraform.tfstate"
-    region         = "eu-central-1"
-    dynamodb_table = "wippestoolen-terraform-locks"
-    encrypt        = true
-  }
+  # Backend configuration for state management - temporarily disabled for certificate update
+  # backend "s3" {
+  #   bucket         = "wippestoolen-terraform-state-qy7taft8"
+  #   key            = "production/terraform.tfstate"
+  #   region         = "eu-central-1"
+  #   dynamodb_table = "wippestoolen-terraform-locks"
+  #   encrypt        = true
+  # }
 }
 
 provider "aws" {
