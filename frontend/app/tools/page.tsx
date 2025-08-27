@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Search, SlidersHorizontal, Grid3X3, List, Loader2 } from 'lucide-react'
 import useSWR from 'swr'
@@ -27,7 +27,7 @@ const SORT_OPTIONS = [
   { value: 'popular', label: 'Beliebteste' },
 ]
 
-export default function ToolsPage() {
+function ToolsPageContent() {
   const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState(searchParams?.get('search') || '')
   const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') || '')
@@ -384,5 +384,19 @@ export default function ToolsPage() {
         </div>
       </div>
     </Layout>
+  )
+}
+
+export default function ToolsPage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="container mx-auto py-8 px-4 flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </Layout>
+    }>
+      <ToolsPageContent />
+    </Suspense>
   )
 }
