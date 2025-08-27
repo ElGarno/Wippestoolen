@@ -76,6 +76,13 @@ logs/
 # Docker
 .docker/
 
+# AWS / Infrastructure
+**/task-def.json
+**/new-task-def.json
+**/*-policy.json
+deploy.sh
+entrypoint.sh
+
 # OS
 .DS_Store
 Thumbs.db

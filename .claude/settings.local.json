@@ -14,7 +14,12 @@
       "Bash(npx shadcn@latest init:*)",
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(aws ecs update-service:*)",
+      "Bash(aws logs tail:*)",
+      "Bash(aws ecs describe-services:*)",
+      "Bash(docker build:*)",
+      "Bash(docker tag:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

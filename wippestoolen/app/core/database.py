@@ -15,8 +15,12 @@ class Base(DeclarativeBase):
 
 
 # Create async database engine
+# Convert sslmode parameter to ssl parameter for asyncpg compatibility
+async_db_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+async_db_url = async_db_url.replace("sslmode=require", "ssl=require")
+
 engine = create_async_engine(
-    settings.database_url.replace("postgresql://", "postgresql+asyncpg://"),
+    async_db_url,
     echo=settings.DEBUG,
     pool_size=20,
     max_overflow=30,

@@ -30,8 +30,9 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Set the database URL from our settings
+# Convert asyncpg URL to regular postgresql URL for migrations
 # Use double percent signs to escape % in config parser
-database_url = settings.DATABASE_URL.replace('%', '%%')
+database_url = settings.DATABASE_URL.replace('postgresql+asyncpg://', 'postgresql://').replace('%', '%%')
 config.set_main_option("sqlalchemy.url", database_url)
 
 # other values from the config, defined by the needs of env.py,
