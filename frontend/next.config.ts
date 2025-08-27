@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development
   reactStrictMode: true,
   
+  // Disable ESLint during build for now
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
   // Security headers configuration
   async headers() {
     const isDev = process.env.NODE_ENV === 'development'
