@@ -120,6 +120,8 @@ async def browse_tools(
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     sort_by: str = Query("created_at", regex="^(created_at|daily_rate|rating|title)$"),
     sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    search: Optional[str] = Query(None, description="Search term"),
+    category: Optional[str] = Query(None, description="Category slug filter"),
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedToolResponse:
     """
@@ -142,7 +144,9 @@ async def browse_tools(
             page=page,
             page_size=page_size,
             sort_by=sort_by,
-            sort_order=sort_order
+            sort_order=sort_order,
+            search=search,
+            category=category
         )
     except Exception as e:
         raise HTTPException(

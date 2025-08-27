@@ -42,7 +42,10 @@ class Settings(BaseSettings):
         default=[
             "http://localhost:3000",
             "http://localhost:8000",
+            "http://localhost:8002",
+            "http://127.0.0.1:3000",
             "http://127.0.0.1:8000",
+            "http://127.0.0.1:8002",
         ],
         description="Allowed CORS origins",
     )
@@ -56,10 +59,15 @@ class Settings(BaseSettings):
     )
     POSTGRES_DB: str = Field(default="wippestoolen", description="PostgreSQL database")
 
+    # Database URL - can be set directly or will be constructed from individual settings
+    DATABASE_URL: Optional[str] = Field(default=None, description="Complete database URL")
+
     @computed_field  # type: ignore
     @property
-    def DATABASE_URL(self) -> str:
-        """Construct database URL."""
+    def database_url(self) -> str:
+        """Get database URL - use direct URL if provided, otherwise construct from components."""
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         return (
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

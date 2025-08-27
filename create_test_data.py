@@ -24,12 +24,12 @@ async def create_test_tools():
         
         # First, create tool categories
         categories = [
-            {"name": "Power Tools", "slug": "power-tools"},
-            {"name": "Garden Tools", "slug": "garden-tools"},
-            {"name": "Cleaning Equipment", "slug": "cleaning-equipment"},
-            {"name": "Ladders & Scaffolding", "slug": "ladders-scaffolding"},
-            {"name": "Painting Tools", "slug": "painting-tools"},
-            {"name": "Electrical Equipment", "slug": "electrical-equipment"},
+            {"name": "Elektrowerkzeuge", "slug": "power-tools"},
+            {"name": "Gartenwerkzeuge", "slug": "garden-tools"},
+            {"name": "Reinigungsgeräte", "slug": "cleaning-equipment"},
+            {"name": "Leitern & Gerüste", "slug": "ladders-scaffolding"},
+            {"name": "Malerwerkzeuge", "slug": "painting-tools"},
+            {"name": "Elektrogeräte", "slug": "electrical-equipment"},
         ]
         
         category_ids = {}
@@ -51,9 +51,9 @@ async def create_test_tools():
         # Define test tools (using proper Tool model fields)
         test_tools = [
             {
-                "title": "Electric Drill",
-                "description": "Powerful cordless drill perfect for home projects. 20V battery included.",
-                "category_name": "Power Tools",
+                "title": "Akku-Bohrschrauber",
+                "description": "Leistungsstarker Akkubohrer perfekt für Heimwerkerprojekte. 20V Akku inklusive.",
+                "category_name": "Elektrowerkzeuge",
                 "daily_rate": 15.00,
                 "deposit_amount": 50.00,
                 "is_available": True,
@@ -62,9 +62,9 @@ async def create_test_tools():
                 "model": "DCD777C2"
             },
             {
-                "title": "Lawn Mower",
-                "description": "Self-propelled gas lawn mower, great for medium to large yards. Recently serviced.",
-                "category_name": "Garden Tools",
+                "title": "Rasenmäher",
+                "description": "Benzin-Rasenmäher mit Radantrieb, ideal für mittlere bis große Gärten. Kürzlich gewartet.",
+                "category_name": "Gartenwerkzeuge",
                 "daily_rate": 25.00,
                 "deposit_amount": 100.00,
                 "is_available": True,
@@ -73,20 +73,20 @@ async def create_test_tools():
                 "model": "HRX217"
             },
             {
-                "title": "Pressure Washer",
-                "description": "2000 PSI electric pressure washer. Perfect for driveways, decks, and siding.",
-                "category_name": "Cleaning Equipment",
+                "title": "Hochdruckreiniger",
+                "description": "2000 PSI Elektro-Hochdruckreiniger. Perfekt für Einfahrten, Terrassen und Fassaden.",
+                "category_name": "Reinigungsgeräte",
                 "daily_rate": 30.00,
                 "deposit_amount": 75.00,
                 "is_available": True,
                 "condition": "excellent",
-                "brand": "Karcher",
+                "brand": "Kärcher",
                 "model": "K1700"
             },
             {
-                "title": "Circular Saw",
-                "description": "7-1/4 inch circular saw with laser guide. Great for straight cuts.",
-                "category_name": "Power Tools",
+                "title": "Handkreissäge",
+                "description": "185mm Handkreissäge mit Laserführung. Ideal für gerade Schnitte.",
+                "category_name": "Elektrowerkzeuge",
                 "daily_rate": 12.00,
                 "deposit_amount": 40.00,
                 "is_available": True,
@@ -95,9 +95,9 @@ async def create_test_tools():
                 "model": "5007MG"
             },
             {
-                "title": "Ladder - 24ft Extension",
-                "description": "Aluminum extension ladder, extends up to 24 feet. Perfect for roof work.",
-                "category_name": "Ladders & Scaffolding",
+                "title": "Leiter - 7m Schiebeleiter",
+                "description": "Aluminium-Schiebeleiter, ausziehbar bis 7 Meter. Perfekt für Dacharbeiten.",
+                "category_name": "Leitern & Gerüste",
                 "daily_rate": 20.00,
                 "deposit_amount": 60.00,
                 "is_available": True,
@@ -105,9 +105,9 @@ async def create_test_tools():
                 "brand": "Werner"
             },
             {
-                "title": "Tile Saw",
-                "description": "Wet tile saw for ceramic and porcelain tiles. Includes stand.",
-                "category_name": "Power Tools",
+                "title": "Fliesenschneidemaschine",
+                "description": "Nass-Fliesenschneider für Keramik- und Porzellanfliesen. Mit Untergestell.",
+                "category_name": "Elektrowerkzeuge",
                 "daily_rate": 35.00,
                 "deposit_amount": 100.00,
                 "is_available": True,
@@ -115,9 +115,9 @@ async def create_test_tools():
                 "brand": "RIDGID"
             },
             {
-                "title": "Paint Sprayer",
-                "description": "Airless paint sprayer for interior and exterior projects.",
-                "category_name": "Painting Tools",
+                "title": "Farbsprühgerät",
+                "description": "Airless-Farbsprühgerät für Innen- und Außenprojekte.",
+                "category_name": "Malerwerkzeuge",
                 "daily_rate": 40.00,
                 "deposit_amount": 120.00,
                 "is_available": True,
@@ -126,9 +126,9 @@ async def create_test_tools():
                 "model": "Magnum X5"
             },
             {
-                "title": "Generator - 3500W",
-                "description": "Portable generator, 3500 watts. Great for power outages or job sites.",
-                "category_name": "Electrical Equipment",
+                "title": "Stromgenerator - 3500W",
+                "description": "Tragbarer Stromerzeuger, 3500 Watt. Ideal bei Stromausfall oder auf Baustellen.",
+                "category_name": "Elektrogeräte",
                 "daily_rate": 45.00,
                 "deposit_amount": 200.00,
                 "is_available": True,

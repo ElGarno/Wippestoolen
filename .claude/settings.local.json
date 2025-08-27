@@ -11,7 +11,8 @@
       "Bash(python:*)",
       "Bash(source:*)",
       "Bash(pytest:*)",
-      "Bash(npx shadcn@latest init:*)"
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npm install:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

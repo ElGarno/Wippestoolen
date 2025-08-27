@@ -356,6 +356,28 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# SSM parameter access for task execution role
+resource "aws_iam_role_policy" "ecs_task_execution_ssm" {
+  name = "${var.app_name}-${var.environment}-ecs-task-execution-ssm"
+  role = aws_iam_role.ecs_task_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameters",
+          "ssm:GetParameter"
+        ]
+        Resource = [
+          "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.app_name}/${var.environment}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # ECS Task Role
 resource "aws_iam_role" "ecs_task" {
   name = "${var.app_name}-${var.environment}-ecs-task"
@@ -426,7 +448,7 @@ resource "aws_ecs_task_definition" "main" {
         },
         {
           name  = "DATABASE_URL"
-          value = "postgresql+asyncpg://${var.db_username}:${var.db_password}@${var.db_host}:5432/${var.db_name}"
+          value = "postgresql+asyncpg://${var.db_username}:${var.db_password}@${var.db_host}/${var.db_name}?sslmode=require"
         },
         {
           name  = "AWS_S3_BUCKET"
@@ -438,11 +460,11 @@ resource "aws_ecs_task_definition" "main" {
         },
         {
           name  = "CORS_ORIGINS"
-          value = join(",", var.cors_origins)
+          value = jsonencode(var.cors_origins)
         },
         {
           name  = "ALLOWED_HOSTS"
-          value = var.domain_name != "" ? "${var.domain_name},${aws_lb.main.dns_name}" : aws_lb.main.dns_name
+          value = var.domain_name != "" ? jsonencode(["${var.domain_name}", "www.${var.domain_name}", aws_lb.main.dns_name]) : jsonencode([aws_lb.main.dns_name])
         }
       ]
 

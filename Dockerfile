@@ -54,9 +54,11 @@ COPY --from=builder /app/.venv /app/.venv
 COPY wippestoolen/ ./wippestoolen/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
+COPY entrypoint.sh ./
 
 # Create directory for logs and make wippestoolen user own the app directory
 RUN mkdir -p /app/logs && \
+    chmod +x /app/entrypoint.sh && \
     chown -R wippestoolen:wippestoolen /app
 
 # Switch to non-root user
@@ -69,5 +71,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8000
 
-# Default command
-CMD ["uvicorn", "wippestoolen.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Default command - use entrypoint script
+CMD ["./entrypoint.sh"]

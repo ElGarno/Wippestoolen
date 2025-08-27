@@ -46,6 +46,9 @@ export function Navbar() {
                   <Link href="/my-tools" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
                     Meine Werkzeuge
                   </Link>
+                  <Link href="/reviews" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                    Bewertungen
+                  </Link>
                 </>
               )}
             </div>
@@ -137,6 +140,13 @@ export function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   Meine Werkzeuge
+                </Link>
+                <Link
+                  href="/reviews"
+                  className="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Bewertungen
                 </Link>
                 <Link
                   href="/tools/new"

@@ -144,15 +144,15 @@ class AuthService:
         user = result.scalar_one_or_none()
         
         if not user:
-            raise InvalidCredentialsError("Invalid email or password")
+            raise InvalidCredentialsError("Ungültige E-Mail-Adresse oder Passwort")
         
         # Verify password
         if not verify_password(credentials.password, user.password_hash):
-            raise InvalidCredentialsError("Invalid email or password")
+            raise InvalidCredentialsError("Ungültige E-Mail-Adresse oder Passwort")
         
         # Check if user is active
         if not user.is_active:
-            raise InvalidCredentialsError("User account is inactive")
+            raise InvalidCredentialsError("Benutzerkonto ist inaktiv")
         
         # Update last login
         user.last_login_at = datetime.utcnow()

@@ -165,23 +165,37 @@ class ToolService:
         page: int = 1, 
         page_size: int = 20, 
         sort_by: str = "created_at", 
-        sort_order: str = "desc"
+        sort_order: str = "desc",
+        search: Optional[str] = None,
+        category: Optional[str] = None
     ) -> PaginatedToolResponse:
         """Browse all available tools with pagination."""
         
         # Build order clause
         order_clause = f"t.{sort_by} {sort_order.upper()}"
         
+        # Build WHERE conditions
+        where_conditions = ["t.is_active = true", "t.deleted_at IS NULL", "t.is_available = true"]
+        params = {}
+        
+        if search:
+            where_conditions.append("(t.title ILIKE :search OR t.description ILIKE :search)")
+            params["search"] = f"%{search}%"
+        
+        if category:
+            where_conditions.append("tc.slug = :category")
+            params["category"] = category
+        
+        where_clause = " AND ".join(where_conditions)
+        
         # Get total count
-        count_result = await self.db.execute(
-            text("""
-                SELECT COUNT(*) 
-                FROM tools t 
-                WHERE t.is_active = true 
-                AND t.deleted_at IS NULL 
-                AND t.is_available = true
-            """)
-        )
+        count_query = f"""
+            SELECT COUNT(*) 
+            FROM tools t 
+            JOIN tool_categories tc ON t.category_id = tc.id
+            WHERE {where_clause}
+        """
+        count_result = await self.db.execute(text(count_query), params)
         total = count_result.scalar()
         
         # Calculate pagination
@@ -189,31 +203,33 @@ class ToolService:
         total_pages = math.ceil(total / page_size)
         
         # Get tools with pagination
-        result = await self.db.execute(
-            text(f"""
-                SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate, 
-                       t.pickup_city, t.pickup_postal_code, t.delivery_available,
-                       t.average_rating, t.total_ratings,
-                       tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug, 
-                       tc.description as cat_desc, tc.icon_name as cat_icon,
-                       u.id as owner_id, u.display_name, u.first_name, u.last_name,
-                       u.avatar_url, u.average_rating as owner_rating, u.total_ratings as owner_ratings, u.is_verified,
-                       tp.photo_id, tp.original_url, tp.thumbnail_url, tp.medium_url, tp.large_url, tp.display_order, tp.is_primary
-                FROM tools t
-                JOIN tool_categories tc ON t.category_id = tc.id
-                JOIN users u ON t.owner_id = u.id
-                LEFT JOIN (
-                    SELECT DISTINCT ON (tool_id) tool_id, id as photo_id, original_url, thumbnail_url, medium_url, large_url, display_order, is_primary
-                    FROM tool_photos 
-                    WHERE is_active = true AND is_primary = true
-                    ORDER BY tool_id, is_primary DESC, display_order ASC
-                ) tp ON t.id = tp.tool_id
-                WHERE t.is_active = true AND t.deleted_at IS NULL AND t.is_available = true
-                ORDER BY {order_clause}
-                LIMIT :limit OFFSET :offset
-            """),
-            {"limit": page_size, "offset": offset}
-        )
+        main_query = f"""
+            SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate, 
+                   t.pickup_city, t.pickup_postal_code, t.delivery_available,
+                   t.average_rating, t.total_ratings,
+                   tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug, 
+                   tc.description as cat_desc, tc.icon_name as cat_icon,
+                   u.id as owner_id, u.display_name, u.first_name, u.last_name,
+                   u.avatar_url, u.average_rating as owner_rating, u.total_ratings as owner_ratings, u.is_verified,
+                   tp.photo_id, tp.original_url, tp.thumbnail_url, tp.medium_url, tp.large_url, tp.display_order, tp.is_primary
+            FROM tools t
+            JOIN tool_categories tc ON t.category_id = tc.id
+            JOIN users u ON t.owner_id = u.id
+            LEFT JOIN (
+                SELECT DISTINCT ON (tool_id) tool_id, id as photo_id, original_url, thumbnail_url, medium_url, large_url, display_order, is_primary
+                FROM tool_photos 
+                WHERE is_active = true AND is_primary = true
+                ORDER BY tool_id, is_primary DESC, display_order ASC
+            ) tp ON t.id = tp.tool_id
+            WHERE {where_clause}
+            ORDER BY {order_clause}
+            LIMIT :limit OFFSET :offset
+        """
+        
+        # Add pagination params
+        params.update({"limit": page_size, "offset": offset})
+        
+        result = await self.db.execute(text(main_query), params)
         
         tools = []
         for row in result:

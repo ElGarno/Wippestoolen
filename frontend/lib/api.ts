@@ -269,15 +269,33 @@ class ApiClient {
     return response.data
   }
 
-  async getToolCategories(): Promise<string[]> {
-    const response = await this.client.get<string[]>('/api/v1/tools/categories')
+  async getToolCategories(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/v1/tools/categories')
     return response.data
   }
 
   // Bookings endpoints
   async getBookings(params?: PaginationParams): Promise<PaginatedResponse<Booking>> {
-    const response = await this.client.get<PaginatedResponse<Booking>>('/api/v1/bookings', { params })
-    return response.data
+    // Convert skip/limit to page/size for backend API
+    let queryParams: any = {}
+    if (params) {
+      if (params.skip !== undefined && params.limit !== undefined) {
+        queryParams.page = Math.floor(params.skip / params.limit) + 1
+        queryParams.size = params.limit
+      } else {
+        queryParams = params
+      }
+    }
+    const response = await this.client.get<{bookings: Booking[], pagination: any}>('/api/v1/bookings', { params: queryParams })
+    
+    // Transform the response to match expected format
+    return {
+      items: response.data.bookings || [],
+      total: response.data.pagination?.total || 0,
+      pages: response.data.pagination?.pages || 1,
+      skip: params?.skip || 0,
+      limit: params?.limit || 20
+    }
   }
 
   async getBooking(id: string): Promise<Booking> {
