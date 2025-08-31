@@ -93,11 +93,16 @@ class ToolService:
         """Get tool by ID with all relationships loaded."""
         result = await self.db.execute(
             text("""
-                SELECT t.*, tc.*, u.*, 
+                SELECT t.id, t.owner_id, t.category_id, t.title, t.description, 
+                       t.brand, t.model, t.condition, t.is_available, t.max_loan_days,
+                       t.deposit_amount, t.daily_rate, t.pickup_address, t.pickup_city,
+                       t.pickup_postal_code, t.pickup_latitude, t.pickup_longitude,
+                       t.delivery_available, t.delivery_radius_km, t.usage_instructions,
+                       t.safety_notes, t.last_maintenance_date, t.next_maintenance_due,
+                       t.total_bookings, t.average_rating, t.total_ratings, 
+                       t.is_active, t.created_at, t.updated_at, t.deleted_at,
                        COALESCE(tp.photo_data, '[]'::json) as photos
                 FROM tools t
-                JOIN tool_categories tc ON t.category_id = tc.id
-                JOIN users u ON t.owner_id = u.id
                 LEFT JOIN (
                     SELECT tool_id, 
                            json_agg(
@@ -124,7 +129,7 @@ class ToolService:
         if not row:
             return None
             
-        # Manually construct the tool object
+        # Manually construct the tool object with explicit column mapping
         tool = Tool(
             id=UUID(row[0]),
             owner_id=UUID(row[1]),
