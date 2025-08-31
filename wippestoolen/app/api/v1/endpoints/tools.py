@@ -336,10 +336,16 @@ async def get_tool_details(
             created_at=tool.created_at,
             updated_at=tool.updated_at,
         )
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
+        print(f"Error in get_tool_details: {str(e)}")  # Debug logging
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve tool details"
+            detail=f"Failed to retrieve tool details: {str(e)}"
         )
 
 
