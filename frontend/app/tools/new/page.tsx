@@ -97,16 +97,27 @@ export default function NewToolPage() {
     const fetchCategories = async () => {
       try {
         const categories = await apiClient.getToolCategories()
-        setCategories(categories)
+        // Use hardcoded categories if API returns empty array
+        if (categories.length === 0) {
+          setCategories([
+            { id: 1, name: 'Elektrowerkzeuge', slug: 'power-tools', description: 'Bohrmaschinen, Sägen, etc.' },
+            { id: 2, name: 'Handwerkzeuge', slug: 'hand-tools', description: 'Schraubendreher, Hammer, etc.' },
+            { id: 3, name: 'Gartenwerkzeuge', slug: 'garden-tools', description: 'Rasenmäher, Spaten, etc.' },
+            { id: 4, name: 'Leiter & Gerüste', slug: 'ladders', description: 'Leitern und Gerüstteile' },
+            { id: 5, name: 'Reinigungsgeräte', slug: 'cleaning', description: 'Hochdruckreiniger, Staubsauger' },
+          ])
+        } else {
+          setCategories(categories)
+        }
       } catch (error) {
         console.error('Failed to fetch categories:', error)
         // Fallback to placeholder data if API fails
         setCategories([
-      { id: 1, name: 'Elektrowerkzeuge', slug: 'power-tools', description: 'Bohrmaschinen, Sägen, etc.' },
-      { id: 2, name: 'Handwerkzeuge', slug: 'hand-tools', description: 'Schraubendreher, Hammer, etc.' },
-      { id: 3, name: 'Gartenwerkzeuge', slug: 'garden-tools', description: 'Rasenmäher, Spaten, etc.' },
-      { id: 4, name: 'Leiter & Gerüste', slug: 'ladders', description: 'Leitern und Gerüstteile' },
-      { id: 5, name: 'Reinigungsgeräte', slug: 'cleaning', description: 'Hochdruckreiniger, Staubsauger' },
+          { id: 1, name: 'Elektrowerkzeuge', slug: 'power-tools', description: 'Bohrmaschinen, Sägen, etc.' },
+          { id: 2, name: 'Handwerkzeuge', slug: 'hand-tools', description: 'Schraubendreher, Hammer, etc.' },
+          { id: 3, name: 'Gartenwerkzeuge', slug: 'garden-tools', description: 'Rasenmäher, Spaten, etc.' },
+          { id: 4, name: 'Leiter & Gerüste', slug: 'ladders', description: 'Leitern und Gerüstteile' },
+          { id: 5, name: 'Reinigungsgeräte', slug: 'cleaning', description: 'Hochdruckreiniger, Staubsauger' },
         ])
       }
     }
