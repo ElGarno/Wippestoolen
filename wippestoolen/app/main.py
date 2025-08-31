@@ -6,9 +6,11 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from sqlalchemy import text
 
 from wippestoolen.app.core.config import settings
 from wippestoolen.app.api.v1.api import api_router
+from wippestoolen.app.core.database import AsyncSessionLocal
 
 # Create rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -54,6 +56,44 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router)
+
+
+@app.on_event("startup")
+async def create_default_categories():
+    """Create default tool categories if they don't exist."""
+    categories = [
+        {"id": 1, "name": "Elektrowerkzeuge", "slug": "power-tools", "description": "Bohrmaschinen, Sägen, Schleifer", "sort_order": 1},
+        {"id": 2, "name": "Handwerkzeuge", "slug": "hand-tools", "description": "Schraubendreher, Hammer, Zangen", "sort_order": 2},
+        {"id": 3, "name": "Gartenwerkzeuge", "slug": "garden-tools", "description": "Rasenmäher, Spaten, Scheren", "sort_order": 3},
+        {"id": 4, "name": "Leiter & Gerüste", "slug": "ladders-scaffolding", "description": "Leitern und Gerüstteile", "sort_order": 4},
+        {"id": 5, "name": "Reinigungsgeräte", "slug": "cleaning-equipment", "description": "Hochdruckreiniger, Staubsauger", "sort_order": 5},
+    ]
+    
+    try:
+        async with AsyncSessionLocal() as db:
+            # Check if categories exist
+            result = await db.execute(text("SELECT COUNT(*) FROM tool_categories"))
+            count = result.scalar()
+            
+            if count == 0:
+                print("Creating default tool categories...")
+                for cat in categories:
+                    await db.execute(
+                        text('''
+                            INSERT INTO tool_categories (id, name, slug, description, is_active, sort_order, created_at)
+                            VALUES (:id, :name, :slug, :description, true, :sort_order, NOW())
+                            ON CONFLICT (id) DO NOTHING
+                        '''),
+                        cat
+                    )
+                    print(f"Created category: {cat['name']}")
+                
+                await db.commit()
+                print("✅ Default categories created successfully!")
+            else:
+                print(f"Categories already exist ({count} found)")
+    except Exception as e:
+        print(f"❌ Error creating categories: {e}")
 
 
 @app.get("/")
