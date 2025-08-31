@@ -122,7 +122,7 @@ class ToolService:
                 ) tp ON t.id = tp.tool_id
                 WHERE t.id = :tool_id AND t.is_active = true AND t.deleted_at IS NULL
             """),
-            {"tool_id": str(tool_id)}
+            {"tool_id": tool_id}
         )
         
         row = result.fetchone()
@@ -314,7 +314,7 @@ class ToolService:
                 FROM tools t 
                 WHERE t.owner_id = :user_id {status_filter}
             """),
-            {"user_id": str(user_id)}
+            {"user_id": user_id}
         )
         total = count_result.scalar()
         
@@ -346,7 +346,7 @@ class ToolService:
                 ORDER BY t.created_at DESC
                 LIMIT :limit OFFSET :offset
             """),
-            {"user_id": str(user_id), "limit": page_size, "offset": offset}
+            {"user_id": user_id, "limit": page_size, "offset": offset}
         )
         
         tools = []
@@ -414,7 +414,7 @@ class ToolService:
                 SELECT id, owner_id FROM tools 
                 WHERE id = :tool_id AND is_active = true AND deleted_at IS NULL
             """),
-            {"tool_id": str(tool_id)}
+            {"tool_id": tool_id}
         )
         tool_row = result.fetchone()
         
@@ -426,7 +426,7 @@ class ToolService:
         
         # Build update query dynamically
         update_fields = []
-        params = {"tool_id": str(tool_id)}
+        params = {"tool_id": tool_id}
         
         update_dict = update_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():
@@ -458,7 +458,7 @@ class ToolService:
                 SELECT id, owner_id FROM tools 
                 WHERE id = :tool_id AND is_active = true AND deleted_at IS NULL
             """),
-            {"tool_id": str(tool_id)}
+            {"tool_id": tool_id}
         )
         tool_row = result.fetchone()
         
@@ -477,7 +477,7 @@ class ToolService:
                 SET is_active = false, deleted_at = :deleted_at 
                 WHERE id = :tool_id
             """),
-            {"tool_id": str(tool_id), "deleted_at": datetime.utcnow()}
+            {"tool_id": tool_id, "deleted_at": datetime.utcnow()}
         )
         await self.db.commit()
         
