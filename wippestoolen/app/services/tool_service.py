@@ -131,8 +131,8 @@ class ToolService:
             
         # Manually construct the tool object with explicit column mapping
         tool = Tool(
-            id=UUID(row[0]),
-            owner_id=UUID(row[1]),
+            id=row[0],
+            owner_id=row[1],
             category_id=row[2],
             title=row[3],
             description=row[4],
@@ -421,7 +421,7 @@ class ToolService:
         if not tool_row:
             raise ToolNotFoundError("Tool not found")
         
-        if UUID(tool_row[1]) != user_id:
+        if tool_row[1] != user_id:
             raise ToolOwnershipError("You can only modify your own tools")
         
         # Build update query dynamically
@@ -465,7 +465,7 @@ class ToolService:
         if not tool_row:
             raise ToolNotFoundError("Tool not found")
         
-        if UUID(tool_row[1]) != user_id:
+        if tool_row[1] != user_id:
             raise ToolOwnershipError("You can only delete your own tools")
         
         # TODO: Check for active bookings when booking system is implemented
