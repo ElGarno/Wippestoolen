@@ -27,11 +27,19 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 
+// Mapping between German display values and English API values
+const conditionMapping = {
+  'excellent': 'Ausgezeichnet',
+  'good': 'Gut', 
+  'fair': 'Akzeptabel',
+  'poor': 'Schlecht'
+}
+
 const toolFormSchema = z.object({
   title: z.string().min(3, 'Titel muss mindestens 3 Zeichen lang sein'),
   description: z.string().min(10, 'Beschreibung muss mindestens 10 Zeichen lang sein').optional(),
   category_id: z.string().min(1, 'Bitte wählen Sie eine Kategorie'),
-  condition: z.enum(['Neu', 'Wie neu', 'Gut', 'Gebraucht', 'Beschädigt']),
+  condition: z.enum(['excellent', 'good', 'fair', 'poor']),
   daily_rate: z.string().min(1, 'Tagesrate ist erforderlich'),
   deposit_amount: z.string().optional(),
   brand: z.string().optional(),
@@ -63,7 +71,7 @@ export default function NewToolPage() {
       title: '',
       description: '',
       category_id: '',
-      condition: 'Gut',
+      condition: 'good',
       daily_rate: '',
       deposit_amount: '',
       brand: '',
@@ -85,15 +93,25 @@ export default function NewToolPage() {
       return
     }
 
-    // In a real implementation, we'd fetch categories from the API
-    // For now, we'll use placeholder data
-    setCategories([
+    // Fetch categories from the API
+    const fetchCategories = async () => {
+      try {
+        const categories = await apiClient.getToolCategories()
+        setCategories(categories)
+      } catch (error) {
+        console.error('Failed to fetch categories:', error)
+        // Fallback to placeholder data if API fails
+        setCategories([
       { id: 1, name: 'Elektrowerkzeuge', slug: 'power-tools', description: 'Bohrmaschinen, Sägen, etc.' },
       { id: 2, name: 'Handwerkzeuge', slug: 'hand-tools', description: 'Schraubendreher, Hammer, etc.' },
       { id: 3, name: 'Gartenwerkzeuge', slug: 'garden-tools', description: 'Rasenmäher, Spaten, etc.' },
       { id: 4, name: 'Leiter & Gerüste', slug: 'ladders', description: 'Leitern und Gerüstteile' },
       { id: 5, name: 'Reinigungsgeräte', slug: 'cleaning', description: 'Hochdruckreiniger, Staubsauger' },
-    ])
+        ])
+      }
+    }
+    
+    fetchCategories()
   }, [isAuthenticated, router])
 
   const onSubmit = async (data: ToolFormData) => {
@@ -115,11 +133,13 @@ export default function NewToolPage() {
         pickup_postal_code: data.pickup_postal_code,
         pickup_address: data.pickup_address || '',
         delivery_available: data.delivery_available,
-        delivery_radius_km: data.delivery_radius_km ? parseInt(data.delivery_radius_km) : undefined,
-        max_loan_days: data.max_loan_days ? parseInt(data.max_loan_days) : undefined,
+        delivery_radius_km: data.delivery_radius_km ? parseInt(data.delivery_radius_km) : 0,
+        max_loan_days: data.max_loan_days ? parseInt(data.max_loan_days) : 7,
         usage_instructions: data.usage_instructions || '',
         safety_notes: data.safety_notes || '',
         is_available: true,
+        pickup_latitude: null,
+        pickup_longitude: null,
       }
 
       const newTool = await apiClient.createTool(toolData)
@@ -129,9 +149,16 @@ export default function NewToolPage() {
       setTimeout(() => {
         router.push(`/tools/${newTool.id}`)
       }, 2000)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating tool:', err)
-      setError('Werkzeug konnte nicht erstellt werden. Bitte versuchen Sie es erneut.')
+      // Try to extract a more specific error message
+      if (err.response?.data?.detail) {
+        setError(`Fehler: ${err.response.data.detail}`)
+      } else if (err.message) {
+        setError(`Fehler: ${err.message}`)
+      } else {
+        setError('Werkzeug konnte nicht erstellt werden. Bitte versuchen Sie es erneut.')
+      }
     } finally {
       setLoading(false)
     }
@@ -272,11 +299,10 @@ export default function NewToolPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Neu">Neu</SelectItem>
-                            <SelectItem value="Wie neu">Wie neu</SelectItem>
-                            <SelectItem value="Gut">Gut</SelectItem>
-                            <SelectItem value="Gebraucht">Gebraucht</SelectItem>
-                            <SelectItem value="Beschädigt">Beschädigt</SelectItem>
+                            <SelectItem value="excellent">Ausgezeichnet</SelectItem>
+                            <SelectItem value="good">Gut</SelectItem>
+                            <SelectItem value="fair">Akzeptabel</SelectItem>
+                            <SelectItem value="poor">Schlecht</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
