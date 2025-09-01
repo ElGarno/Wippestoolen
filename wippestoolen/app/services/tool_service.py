@@ -483,6 +483,52 @@ class ToolService:
         
         return True
     
+    async def get_category_by_id(self, category_id: int) -> Optional[dict]:
+        """Get category details by ID."""
+        result = await self.db.execute(
+            text("""
+                SELECT id, name, slug, description, icon_name
+                FROM tool_categories
+                WHERE id = :category_id AND is_active = true
+            """),
+            {"category_id": category_id}
+        )
+        row = result.fetchone()
+        if row:
+            return {
+                "id": row[0],
+                "name": row[1],
+                "slug": row[2],
+                "description": row[3],
+                "icon_name": row[4]
+            }
+        return None
+    
+    async def get_owner_by_id(self, owner_id: UUID) -> Optional[dict]:
+        """Get owner details by ID."""
+        result = await self.db.execute(
+            text("""
+                SELECT id, display_name, first_name, last_name, 
+                       avatar_url, average_rating, total_ratings, is_verified
+                FROM users
+                WHERE id = :owner_id AND is_active = true
+            """),
+            {"owner_id": owner_id}
+        )
+        row = result.fetchone()
+        if row:
+            return {
+                "id": row[0],
+                "display_name": row[1],
+                "first_name": row[2],
+                "last_name": row[3],
+                "avatar_url": row[4],
+                "average_rating": row[5],
+                "total_ratings": row[6],
+                "is_verified": row[7]
+            }
+        return None
+    
     async def get_categories_with_counts(self, active_only: bool = True) -> List[dict]:
         """Get tool categories with tool counts."""
         active_filter = "AND tc.is_active = true" if active_only else ""

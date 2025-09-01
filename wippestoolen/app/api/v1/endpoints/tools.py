@@ -295,12 +295,21 @@ async def get_tool_details(
                 detail="Tool not found"
             )
         
-        # This is simplified - in a real implementation we'd properly load relationships
+        # Load category and owner details
+        category_data = await tool_service.get_category_by_id(tool.category_id)
+        owner_data = await tool_service.get_owner_by_id(tool.owner_id)
+        
         return ToolResponse(
             id=tool.id,
             title=tool.title,
             description=tool.description,
-            category={"id": tool.category_id, "name": "Unknown", "slug": "unknown", "description": None, "icon_name": None},
+            category={
+                "id": category_data.get("id"),
+                "name": category_data.get("name"),
+                "slug": category_data.get("slug"),
+                "description": category_data.get("description"),
+                "icon_name": category_data.get("icon_name")
+            } if category_data else {"id": tool.category_id, "name": "Unknown", "slug": "unknown", "description": None, "icon_name": None},
             brand=tool.brand,
             model=tool.model,
             condition=tool.condition,
@@ -324,6 +333,15 @@ async def get_tool_details(
             total_ratings=tool.total_ratings,
             photos=[],
             owner={
+                "id": owner_data.get("id"),
+                "display_name": owner_data.get("display_name"),
+                "first_name": owner_data.get("first_name"),
+                "last_name": owner_data.get("last_name"),
+                "avatar_url": owner_data.get("avatar_url"),
+                "average_rating": owner_data.get("average_rating"),
+                "total_ratings": owner_data.get("total_ratings", 0),
+                "is_verified": owner_data.get("is_verified", False),
+            } if owner_data else {
                 "id": tool.owner_id,
                 "display_name": "Owner",
                 "first_name": None,
