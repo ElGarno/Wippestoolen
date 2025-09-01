@@ -283,7 +283,17 @@ class ApiClient {
   }
 
   async getMyTools(params?: PaginationParams): Promise<PaginatedResponse<Tool>> {
-    const response = await this.client.get<PaginatedResponse<Tool>>('/api/v1/tools/my-tools', { params })
+    // Convert skip/limit to page/page_size for backend API
+    let queryParams: any = {}
+    if (params) {
+      if (params.skip !== undefined && params.limit !== undefined) {
+        queryParams.page = Math.floor(params.skip / params.limit) + 1
+        queryParams.page_size = params.limit
+      } else {
+        queryParams = params
+      }
+    }
+    const response = await this.client.get<PaginatedResponse<Tool>>('/api/v1/tools/my-tools', { params: queryParams })
     return response.data
   }
 

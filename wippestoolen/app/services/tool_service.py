@@ -334,7 +334,7 @@ class ToolService:
                        u.avatar_url, u.average_rating as owner_rating, u.total_ratings as owner_ratings, u.is_verified,
                        tp.photo_id, tp.original_url, tp.thumbnail_url, tp.medium_url, tp.large_url, tp.display_order, tp.is_primary
                 FROM tools t
-                JOIN tool_categories tc ON t.category_id = tc.id
+                LEFT JOIN tool_categories tc ON t.category_id = tc.id
                 JOIN users u ON t.owner_id = u.id
                 LEFT JOIN (
                     SELECT DISTINCT ON (tool_id) tool_id, id as photo_id, original_url, thumbnail_url, medium_url, large_url, display_order, is_primary
@@ -355,11 +355,11 @@ class ToolService:
                 "id": row[0],
                 "title": row[1],
                 "category": {
-                    "id": row[10],
-                    "name": row[11],
-                    "slug": row[12],
-                    "description": row[13],
-                    "icon_name": row[14]
+                    "id": row[10] if row[10] else 0,
+                    "name": row[11] if row[11] else "Unbekannt",
+                    "slug": row[12] if row[12] else "unknown",
+                    "description": row[13] if row[13] else None,
+                    "icon_name": row[14] if row[14] else None
                 },
                 "condition": row[2],
                 "is_available": row[3],
@@ -604,7 +604,7 @@ class ToolService:
                        u.avatar_url, u.average_rating as owner_rating, u.total_ratings as owner_ratings, u.is_verified,
                        tp.photo_id, tp.original_url, tp.thumbnail_url, tp.medium_url, tp.large_url, tp.display_order, tp.is_primary
                 FROM tools t
-                JOIN tool_categories tc ON t.category_id = tc.id
+                LEFT JOIN tool_categories tc ON t.category_id = tc.id
                 JOIN users u ON t.owner_id = u.id
                 LEFT JOIN (
                     SELECT DISTINCT ON (tool_id) tool_id, id as photo_id, original_url, thumbnail_url, medium_url, large_url, display_order, is_primary
@@ -626,11 +626,11 @@ class ToolService:
                 "id": row[0],
                 "title": row[1],
                 "category": {
-                    "id": row[10],
-                    "name": row[11],
-                    "slug": row[12],
-                    "description": row[13],
-                    "icon_name": row[14]
+                    "id": row[10] if row[10] else 0,
+                    "name": row[11] if row[11] else "Unbekannt",
+                    "slug": row[12] if row[12] else "unknown",
+                    "description": row[13] if row[13] else None,
+                    "icon_name": row[14] if row[14] else None
                 },
                 "condition": row[2],
                 "is_available": row[3],
