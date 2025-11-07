@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from wippestoolen.app.api.v1.endpoints import auth, tools, bookings, reviews, notifications
+from wippestoolen.app.api.v1.endpoints import auth, tools, bookings, reviews, notifications, admin
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -20,3 +20,6 @@ api_router.include_router(reviews.router)
 
 # Include notification management routes
 api_router.include_router(notifications.router)
+
+# Include admin routes (temporary for database management)
+api_router.include_router(admin.router)
