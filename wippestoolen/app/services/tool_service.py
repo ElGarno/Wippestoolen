@@ -166,30 +166,35 @@ class ToolService:
         return tool
     
     async def browse_tools(
-        self, 
-        page: int = 1, 
-        page_size: int = 20, 
-        sort_by: str = "created_at", 
+        self,
+        page: int = 1,
+        page_size: int = 20,
+        sort_by: str = "created_at",
         sort_order: str = "desc",
         search: Optional[str] = None,
-        category: Optional[str] = None
+        category: Optional[str] = None,
+        available: Optional[bool] = None
     ) -> PaginatedToolResponse:
         """Browse all available tools with pagination."""
-        
+
         # Build order clause
         order_clause = f"t.{sort_by} {sort_order.upper()}"
-        
+
         # Build WHERE conditions
         where_conditions = ["t.is_active = true", "t.deleted_at IS NULL", "t.is_available = true"]
         params = {}
-        
+
         if search:
             where_conditions.append("(t.title ILIKE :search OR t.description ILIKE :search)")
             params["search"] = f"%{search}%"
-        
+
         if category:
             where_conditions.append("tc.slug = :category")
             params["category"] = category
+
+        if available is not None:
+            where_conditions.append("t.is_available = :available")
+            params["available"] = available
         
         where_clause = " AND ".join(where_conditions)
         

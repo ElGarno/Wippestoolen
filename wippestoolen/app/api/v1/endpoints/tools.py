@@ -122,23 +122,27 @@ async def browse_tools(
     sort_order: str = Query("desc", regex="^(asc|desc)$"),
     search: Optional[str] = Query(None, description="Search term"),
     category: Optional[str] = Query(None, description="Category slug filter"),
+    available: Optional[bool] = Query(None, description="Filter by availability"),
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedToolResponse:
     """
     Browse all available tools with pagination.
-    
+
     Args:
         page: Page number (1-based)
         page_size: Number of items per page
         sort_by: Sort field
         sort_order: Sort order (asc/desc)
+        search: Search term
+        category: Category slug filter
+        available: Filter by availability
         db: Database session
-        
+
     Returns:
         PaginatedToolResponse: Paginated list of tools
     """
     tool_service = ToolService(db)
-    
+
     try:
         return await tool_service.browse_tools(
             page=page,
@@ -146,7 +150,8 @@ async def browse_tools(
             sort_by=sort_by,
             sort_order=sort_order,
             search=search,
-            category=category
+            category=category,
+            available=available
         )
     except Exception as e:
         raise HTTPException(
