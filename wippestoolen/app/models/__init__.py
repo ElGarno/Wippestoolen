@@ -5,14 +5,16 @@ from wippestoolen.app.models.tool import Tool, ToolCategory, ToolPhoto
 from wippestoolen.app.models.booking import Booking, BookingStatusHistory
 from wippestoolen.app.models.review import Review
 from wippestoolen.app.models.notification import Notification
+from wippestoolen.app.models.push_token import PushToken
 
 __all__ = [
     "User",
     "Tool",
-    "ToolCategory", 
+    "ToolCategory",
     "ToolPhoto",
     "Booking",
     "BookingStatusHistory",
     "Review",
     "Notification",
+    "PushToken",
 ]

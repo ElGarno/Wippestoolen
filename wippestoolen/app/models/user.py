@@ -107,6 +107,11 @@ class User(Base):
         cascade="all, delete-orphan",
         uselist=False
     )
+    push_tokens: Mapped[list["PushToken"]] = relationship(
+        "PushToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
     # Constraints
     __table_args__ = (

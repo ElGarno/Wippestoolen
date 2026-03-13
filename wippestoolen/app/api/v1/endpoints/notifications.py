@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wippestoolen.app.api.v1.dependencies import get_current_active_user
@@ -34,6 +35,7 @@ from wippestoolen.app.services.notification_service import (
     NotificationPermissionError,
     InvalidNotificationError
 )
+from wippestoolen.app.services.push_service import PushService
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
