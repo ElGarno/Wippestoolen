@@ -34,7 +34,7 @@ interface AvailabilityResponse {
 
 export function useBookings(params: BookingListParams = {}) {
   return useQuery({
-    queryKey: queryKeys.bookings.list(params),
+    queryKey: queryKeys.bookings.list(params as Record<string, unknown>),
     queryFn: async () => {
       const { data } = await api.get<PaginatedBookingResponse<BookingSummary>>("/bookings", {
         params,
@@ -57,7 +57,7 @@ export function useBooking(id: string) {
 
 export function useToolAvailability(toolId: string, params: AvailabilityParams = {}) {
   return useQuery({
-    queryKey: queryKeys.bookings.toolAvailability(toolId, params),
+    queryKey: queryKeys.bookings.toolAvailability(toolId, params as Record<string, unknown>),
     queryFn: async () => {
       const { data } = await api.get<AvailabilityResponse>(
         `/bookings/tools/${toolId}/availability`,

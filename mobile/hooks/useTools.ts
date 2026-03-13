@@ -22,7 +22,7 @@ interface BrowseToolsParams {
 
 export function useTools(params: BrowseToolsParams = {}) {
   return useQuery({
-    queryKey: queryKeys.tools.list(params),
+    queryKey: queryKeys.tools.list(params as Record<string, unknown>),
     queryFn: async () => {
       const { data } = await api.get<PaginatedToolResponse<ToolListItem>>("/tools", { params });
       return data;

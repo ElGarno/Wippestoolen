@@ -24,7 +24,7 @@ interface UnreadCountResponse {
 
 export function useNotifications(params: NotificationListParams = {}) {
   return useQuery({
-    queryKey: queryKeys.notifications.list(params),
+    queryKey: queryKeys.notifications.list(params as Record<string, unknown>),
     queryFn: async () => {
       const { data } = await api.get<NotificationListResponse>("/notifications", { params });
       return data;
