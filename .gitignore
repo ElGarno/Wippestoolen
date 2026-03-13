@@ -87,3 +87,4 @@ entrypoint.sh
 .DS_Store
 Thumbs.db
 .env.production.backup
+.superpowers/
