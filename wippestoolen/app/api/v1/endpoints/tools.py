@@ -15,9 +15,11 @@ from wippestoolen.app.schemas.tool import (
     PaginatedToolResponse,
     ToolCategoryWithCountResponse,
     ToolCreateRequest,
+    ToolPhotoResponse,
     ToolResponse,
     ToolUpdateRequest,
 )
+from wippestoolen.app.services.photo_service import PhotoService
 from wippestoolen.app.services.tool_service import (
     ToolCategoryNotFoundError,
     ToolNotFoundError,
@@ -55,10 +57,25 @@ async def create_tool(
         HTTPException: If category not found or validation fails
     """
     tool_service = ToolService(db)
-    
+    photo_service = PhotoService(db)
+
     try:
         tool = await tool_service.create_tool(current_user.id, tool_data)
-        
+
+        photos = await photo_service.get_photos_for_tool(tool.id)
+        photo_responses = [
+            ToolPhotoResponse(
+                id=p.id,
+                original_url=p.original_url,
+                thumbnail_url=p.thumbnail_url,
+                medium_url=p.medium_url,
+                large_url=p.large_url,
+                display_order=p.display_order,
+                is_primary=p.is_primary,
+            )
+            for p in photos
+        ]
+
         # Convert to response format (simplified for now)
         return ToolResponse(
             id=tool.id,
@@ -86,7 +103,7 @@ async def create_tool(
             total_bookings=tool.total_bookings,
             average_rating=tool.average_rating,
             total_ratings=tool.total_ratings,
-            photos=[],
+            photos=photo_responses,
             owner={
                 "id": current_user.id,
                 "display_name": current_user.display_name,
@@ -300,10 +317,24 @@ async def get_tool_details(
                 detail="Tool not found"
             )
         
-        # Load category and owner details
+        # Load category, owner and photo details
         category_data = await tool_service.get_category_by_id(tool.category_id)
         owner_data = await tool_service.get_owner_by_id(tool.owner_id)
-        
+        photo_service = PhotoService(db)
+        photos = await photo_service.get_photos_for_tool(tool.id)
+        photo_responses = [
+            ToolPhotoResponse(
+                id=p.id,
+                original_url=p.original_url,
+                thumbnail_url=p.thumbnail_url,
+                medium_url=p.medium_url,
+                large_url=p.large_url,
+                display_order=p.display_order,
+                is_primary=p.is_primary,
+            )
+            for p in photos
+        ]
+
         return ToolResponse(
             id=tool.id,
             title=tool.title,
@@ -336,7 +367,7 @@ async def get_tool_details(
             total_bookings=tool.total_bookings,
             average_rating=tool.average_rating,
             total_ratings=tool.total_ratings,
-            photos=[],
+            photos=photo_responses,
             owner={
                 "id": owner_data.get("id"),
                 "display_name": owner_data.get("display_name"),
@@ -397,11 +428,26 @@ async def update_tool(
         HTTPException: If tool not found or user doesn't own it
     """
     tool_service = ToolService(db)
-    
+    photo_service = PhotoService(db)
+
     try:
         tool = await tool_service.update_tool(tool_id, current_user.id, update_data)
-        
-        # Simplified response - in real implementation we'd properly load relationships
+
+        photos = await photo_service.get_photos_for_tool(tool.id)
+        photo_responses = [
+            ToolPhotoResponse(
+                id=p.id,
+                original_url=p.original_url,
+                thumbnail_url=p.thumbnail_url,
+                medium_url=p.medium_url,
+                large_url=p.large_url,
+                display_order=p.display_order,
+                is_primary=p.is_primary,
+            )
+            for p in photos
+        ]
+
+        # Load relationships and return full response
         return ToolResponse(
             id=tool.id,
             title=tool.title,
@@ -428,7 +474,7 @@ async def update_tool(
             total_bookings=tool.total_bookings,
             average_rating=tool.average_rating,
             total_ratings=tool.total_ratings,
-            photos=[],
+            photos=photo_responses,
             owner={
                 "id": current_user.id,
                 "display_name": current_user.display_name,
