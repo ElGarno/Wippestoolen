@@ -419,11 +419,14 @@ async def websocket_notifications(
     """
     try:
         # Authenticate user via token
-        from wippestoolen.app.core.security import decode_token
+        from wippestoolen.app.core.security import verify_token
         from wippestoolen.app.services.auth_service import AuthService
-        
+
         try:
-            payload = decode_token(token)
+            payload = verify_token(token)
+            if payload is None:
+                await websocket.close(code=4001, reason="Invalid token")
+                return
             user_id = UUID(payload.get("sub"))
             
             # Verify user exists and is active
