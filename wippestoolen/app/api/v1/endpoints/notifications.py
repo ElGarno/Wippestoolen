@@ -509,7 +509,7 @@ async def send_unread_count_update(user_id: UUID, unread_count: UnreadCountRespo
 async def notification_health():
     """
     Health check for notification service.
-    
+
     Returns service status and connection information.
     """
     return {
@@ -517,3 +517,89 @@ async def notification_health():
         "active_connections": len(manager.active_connections),
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+# ---------------------------------------------------------------------------
+# Push notification token endpoints
+# ---------------------------------------------------------------------------
+
+
+class PushTokenRequest(BaseModel):
+    """Request body for registering a push token."""
+
+    token: str
+    platform: str  # "ios" or "android"
+    device_name: Optional[str] = None
+
+
+class PushTokenDeleteRequest(BaseModel):
+    """Request body for unregistering a push token."""
+
+    token: str
+
+
+@router.post(
+    "/push-token",
+    status_code=status.HTTP_201_CREATED,
+)
+async def register_push_token(
+    payload: PushTokenRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Register a device push token for the authenticated user.
+
+    Registers an Expo push token so the user can receive push notifications on
+    their device. If the token already exists it will be reactivated and
+    associated with the current user.
+
+    Args:
+        payload: Token registration data (token, platform, optional device_name)
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        dict: Confirmation with the token id
+    """
+    if payload.platform not in ("ios", "android"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="platform must be 'ios' or 'android'",
+        )
+
+    push_service = PushService(db)
+    push_token = await push_service.register_push_token(
+        user_id=current_user.id,
+        token=payload.token,
+        platform=payload.platform,
+        device_name=payload.device_name,
+    )
+    return {"id": str(push_token.id), "token": push_token.token, "platform": push_token.platform}
+
+
+@router.delete(
+    "/push-token",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def unregister_push_token(
+    payload: PushTokenDeleteRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Unregister a device push token for the authenticated user.
+
+    Deactivates the given push token so the user no longer receives push
+    notifications on that device. The record is soft-deleted, not removed.
+
+    Args:
+        payload: Token to deactivate
+        current_user: Current authenticated user
+        db: Database session
+    """
+    push_service = PushService(db)
+    await push_service.unregister_push_token(
+        user_id=current_user.id,
+        token=payload.token,
+    )

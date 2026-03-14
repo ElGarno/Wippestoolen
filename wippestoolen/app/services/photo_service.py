@@ -1,10 +1,10 @@
 """Photo service for tool photo uploads and management."""
 
+import os
 import uuid
+from pathlib import Path
 from typing import Optional
 
-import boto3
-from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,35 +12,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from wippestoolen.app.core.config import settings
 from wippestoolen.app.models.tool import Tool, ToolPhoto
 
-
-class PhotoNotFoundError(Exception):
-    """Photo not found error."""
-    pass
-
-
-class PhotoOwnershipError(Exception):
-    """Photo ownership error."""
-    pass
-
-
-class PhotoUploadError(Exception):
-    """Photo upload error."""
-    pass
+# Local storage directory (configurable via PHOTO_STORAGE_DIR env var)
+PHOTO_STORAGE_DIR = Path(os.getenv("PHOTO_STORAGE_DIR", "/app/uploads/photos"))
+PHOTO_BASE_URL = os.getenv("PHOTO_BASE_URL", "/uploads/photos")
 
 
 class PhotoService:
-    """Service for managing tool photos."""
+    """Service for managing tool photos with local file storage."""
 
     def __init__(self, db: AsyncSession):
         self.db = db
-
-    def _get_s3_client(self):
-        """Get a boto3 S3 client."""
-        kwargs = {"region_name": settings.AWS_REGION}
-        if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
-            kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
-            kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
-        return boto3.client("s3", **kwargs)
 
     async def upload_photo(
         self,
@@ -48,24 +29,7 @@ class PhotoService:
         file: UploadFile,
         user_id: uuid.UUID,
     ) -> ToolPhoto:
-        """
-        Upload a photo for a tool.
-
-        Validates that the user owns the tool, uploads the file to S3,
-        and creates a ToolPhoto record in the database.
-
-        Args:
-            tool_id: UUID of the tool to attach the photo to
-            file: Uploaded file
-            user_id: UUID of the current user
-
-        Returns:
-            ToolPhoto: Created photo record
-
-        Raises:
-            HTTPException: If tool not found, user doesn't own the tool,
-                           file validation fails, or upload fails
-        """
+        """Upload a photo for a tool to local storage."""
         # Check tool exists and user owns it
         result = await self.db.execute(select(Tool).where(Tool.id == tool_id))
         tool = result.scalar_one_or_none()
@@ -97,29 +61,18 @@ class PhotoService:
                 detail=f"File too large. Maximum size is {settings.MAX_FILE_SIZE // (1024 * 1024)}MB",
             )
 
-        # Generate a unique S3 key
+        # Generate unique filename and ensure directory exists
         extension = (file.filename or "photo").rsplit(".", 1)[-1].lower()
-        s3_key = f"tools/{tool_id}/photos/{uuid.uuid4()}.{extension}"
+        photo_id = uuid.uuid4()
+        relative_path = f"{tool_id}/{photo_id}.{extension}"
+        full_path = PHOTO_STORAGE_DIR / relative_path
+        full_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Upload to S3
-        try:
-            s3_client = self._get_s3_client()
-            s3_client.put_object(
-                Bucket=settings.S3_BUCKET_NAME,
-                Key=s3_key,
-                Body=content,
-                ContentType=file.content_type,
-            )
-        except (BotoCoreError, ClientError) as exc:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to upload photo to storage: {exc}",
-            )
+        # Write file to disk
+        full_path.write_bytes(content)
 
-        # Build public URL
-        original_url = (
-            f"https://{settings.S3_BUCKET_NAME}.s3.{settings.AWS_REGION}.amazonaws.com/{s3_key}"
-        )
+        # Build URL (served by FastAPI static files or reverse proxy)
+        original_url = f"{PHOTO_BASE_URL}/{relative_path}"
 
         # Count existing photos for display_order
         existing_count_result = await self.db.execute(
@@ -155,18 +108,7 @@ class PhotoService:
         user_id: uuid.UUID,
         tool_id: uuid.UUID,
     ) -> None:
-        """
-        Delete a photo by soft-deleting it and removing it from S3.
-
-        Args:
-            photo_id: UUID of the photo to delete
-            user_id: UUID of the current user
-            tool_id: UUID of the tool (used for ownership validation)
-
-        Raises:
-            HTTPException: If photo not found or user doesn't own the tool
-        """
-        # Load photo with its tool
+        """Delete a photo by soft-deleting it and removing the file."""
         result = await self.db.execute(
             select(ToolPhoto).where(
                 ToolPhoto.id == photo_id,
@@ -192,30 +134,20 @@ class PhotoService:
                 detail="You do not own this tool",
             )
 
-        # Attempt S3 deletion (best-effort; don't block on failure)
+        # Delete file from disk (best-effort)
+        relative_path = photo.original_url.removeprefix(f"{PHOTO_BASE_URL}/")
+        file_path = PHOTO_STORAGE_DIR / relative_path
         try:
-            s3_key = photo.original_url.split(
-                f"https://{settings.S3_BUCKET_NAME}.s3.{settings.AWS_REGION}.amazonaws.com/"
-            )[-1]
-            s3_client = self._get_s3_client()
-            s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
-        except (BotoCoreError, ClientError):
-            pass  # Log in production; don't fail the request
+            file_path.unlink(missing_ok=True)
+        except OSError:
+            pass
 
         # Soft-delete the record
         photo.is_active = False
         await self.db.commit()
 
     async def get_photos_for_tool(self, tool_id: uuid.UUID) -> list[ToolPhoto]:
-        """
-        Return active photos for a tool, ordered by display_order.
-
-        Args:
-            tool_id: UUID of the tool
-
-        Returns:
-            List[ToolPhoto]: Active photos ordered by display_order
-        """
+        """Return active photos for a tool, ordered by display_order."""
         result = await self.db.execute(
             select(ToolPhoto)
             .where(
