@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
+import { Image } from "react-native";
 import { useRouter } from "expo-router";
 import type { ToolListItem } from "../../types";
 
@@ -22,8 +22,7 @@ export function ToolCard({ tool }: ToolCardProps) {
           <Image
             source={{ uri: tool.primary_photo.medium_url || tool.primary_photo.original_url }}
             className="w-full h-full"
-            contentFit="cover"
-            transition={200}
+            resizeMode="cover"
           />
         ) : (
           <View className="w-full h-full items-center justify-center">

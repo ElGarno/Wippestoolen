@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { Image } from "expo-image";
+import { Image } from "react-native";
 import { useTool } from "../../hooks/useTools";
 import { StarRating } from "../../components/reviews/StarRating";
 import { Button } from "../../components/ui/Button";
@@ -41,7 +41,7 @@ export default function ToolDetailScreen() {
             <Image
               source={{ uri: primaryPhoto.large_url || primaryPhoto.original_url }}
               className="w-full h-full"
-              contentFit="cover"
+              resizeMode="cover"
             />
           ) : (
             <View className="w-full h-full items-center justify-center">
