@@ -40,6 +40,7 @@ dependencies = [
     "celery>=5.3.0",
     "slowapi>=0.1.9",
     "structlog>=23.2.0",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]
