@@ -165,8 +165,14 @@ async def analyze_tool_photo(
 
     # Extract and parse JSON from the model response
     raw_text = message.content[0].text if message.content else ""
+    # Strip markdown code fences if present
+    cleaned = raw_text.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3].strip()
     try:
-        payload = json.loads(raw_text)
+        payload = json.loads(cleaned)
         return ToolAnalysisResponse(**payload)
     except (json.JSONDecodeError, ValueError, TypeError):
         logger.exception(
