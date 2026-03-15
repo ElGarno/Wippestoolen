@@ -1,11 +1,13 @@
 """AI-powered tool analysis endpoints."""
 
 import base64
+import io
 import json
 import logging
 from typing import Optional
 
 import anthropic
+from PIL import Image
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel
 from slowapi import Limiter
@@ -92,26 +94,6 @@ async def analyze_tool_photo(
             detail="AI analysis is not available: ANTHROPIC_API_KEY is not configured.",
         )
 
-    # Validate content type — fall back to extension-based detection
-    content_type = file.content_type or ""
-    if content_type not in _ALLOWED_IMAGE_TYPES:
-        # Try to infer from filename
-        filename = (file.filename or "").lower()
-        if filename.endswith(".png"):
-            content_type = "image/png"
-        elif filename.endswith(".webp"):
-            content_type = "image/webp"
-        elif filename.endswith((".jpg", ".jpeg", ".heic")):
-            content_type = "image/jpeg"
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=(
-                    f"Unsupported image type '{file.content_type}'. "
-                    "Accepted types: image/jpeg, image/png, image/webp."
-                ),
-            )
-
     # Read file bytes and enforce size limit
     image_bytes = await file.read()
     if len(image_bytes) > _MAX_FILE_SIZE:
@@ -120,16 +102,26 @@ async def analyze_tool_photo(
             detail="Image exceeds the maximum allowed size of 5 MB.",
         )
 
-    # Encode to base64
-    image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+    # Convert any image format to JPEG for Claude compatibility
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        if img.mode in ("RGBA", "P", "LA"):
+            img = img.convert("RGB")
+        # Resize if very large (max 1568px on longest side — Claude limit)
+        max_dim = 1568
+        if max(img.size) > max_dim:
+            img.thumbnail((max_dim, max_dim), Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=80)
+        image_bytes = buf.getvalue()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Could not process the uploaded image. Please try a different photo.",
+        )
 
-    # Map FastAPI content_type to Anthropic media_type literal
-    media_type_map = {
-        "image/jpeg": "image/jpeg",
-        "image/png": "image/png",
-        "image/webp": "image/webp",
-    }
-    media_type = media_type_map[content_type]
+    image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+    media_type = "image/jpeg"
 
     # Call Claude Haiku Vision
     try:

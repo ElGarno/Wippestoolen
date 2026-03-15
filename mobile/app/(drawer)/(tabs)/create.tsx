@@ -109,7 +109,7 @@ export default function CreateToolScreen() {
             Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf die Kamera.");
             return;
           }
-          const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+          const result = await ImagePicker.launchCameraAsync({ quality: 0.7, exif: false });
           if (!result.canceled) {
             const uri = result.assets[0].uri;
             if (photoUris.length < 5 && !photoUris.includes(uri)) {
@@ -150,7 +150,8 @@ export default function CreateToolScreen() {
           const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ["images"],
             allowsMultipleSelection: false,
-            quality: 0.8,
+            quality: 0.7,
+            exif: false,
           });
           if (!result.canceled) {
             const uri = result.assets[0].uri;
