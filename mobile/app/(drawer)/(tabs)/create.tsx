@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
-import { useToolCategories, useCreateTool } from "../../../hooks/useTools";
+import { useToolCategories, useCreateTool, useAnalyzeToolPhoto } from "../../../hooks/useTools";
 import api from "../../../lib/api";
 import { Input } from "../../../components/ui/Input";
 import { Button } from "../../../components/ui/Button";
@@ -37,8 +37,11 @@ export default function CreateToolScreen() {
   const router = useRouter();
   const { data: categories, isLoading: categoriesLoading } = useToolCategories();
   const createTool = useCreateTool();
+  const analyzePhoto = useAnalyzeToolPhoto();
 
   const [photoUris, setPhotoUris] = useState<string[]>([]);
+  const [aiSuggested, setAiSuggested] = useState(false);
+  const [showAiBanner, setShowAiBanner] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -88,6 +91,98 @@ export default function CreateToolScreen() {
 
   const removePhoto = (index: number) => {
     setPhotoUris((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    if (!showAiBanner) return;
+    const timer = setTimeout(() => setShowAiBanner(false), 5000);
+    return () => clearTimeout(timer);
+  }, [showAiBanner]);
+
+  const handleAiAnalyze = () => {
+    Alert.alert("Foto auswählen", "Wähle ein Foto für die KI-Analyse", [
+      {
+        text: "Kamera",
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf die Kamera.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+          if (!result.canceled) {
+            const uri = result.assets[0].uri;
+            if (photoUris.length < 5 && !photoUris.includes(uri)) {
+              setPhotoUris((prev) => [...prev, uri]);
+            }
+            try {
+              const analysis = await analyzePhoto.mutateAsync(uri);
+              if (analysis.title) setTitle(analysis.title);
+              if (analysis.description) setDescription(analysis.description);
+              if (analysis.brand) setBrand(analysis.brand);
+              if (analysis.model) setModel(analysis.model);
+              if (analysis.safety_notes) setSafetyNotes(analysis.safety_notes);
+              if (analysis.condition) setCondition(analysis.condition as Condition);
+              if (analysis.category_slug && categories) {
+                const matched = categories.find(
+                  (c) =>
+                    c.slug === analysis.category_slug ||
+                    c.name.toLowerCase() === analysis.category_slug.toLowerCase()
+                );
+                if (matched) setCategoryId(matched.id);
+              }
+              setAiSuggested(true);
+              setShowAiBanner(true);
+            } catch {
+              Alert.alert("AI-Analyse fehlgeschlagen", "Bitte fuell die Felder manuell aus.");
+            }
+          }
+        },
+      },
+      {
+        text: "Galerie",
+        onPress: async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf deine Fotos.");
+            return;
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsMultipleSelection: false,
+            quality: 0.8,
+          });
+          if (!result.canceled) {
+            const uri = result.assets[0].uri;
+            if (photoUris.length < 5 && !photoUris.includes(uri)) {
+              setPhotoUris((prev) => [...prev, uri]);
+            }
+            try {
+              const analysis = await analyzePhoto.mutateAsync(uri);
+              if (analysis.title) setTitle(analysis.title);
+              if (analysis.description) setDescription(analysis.description);
+              if (analysis.brand) setBrand(analysis.brand);
+              if (analysis.model) setModel(analysis.model);
+              if (analysis.safety_notes) setSafetyNotes(analysis.safety_notes);
+              if (analysis.condition) setCondition(analysis.condition as Condition);
+              if (analysis.category_slug && categories) {
+                const matched = categories.find(
+                  (c) =>
+                    c.slug === analysis.category_slug ||
+                    c.name.toLowerCase() === analysis.category_slug.toLowerCase()
+                );
+                if (matched) setCategoryId(matched.id);
+              }
+              setAiSuggested(true);
+              setShowAiBanner(true);
+            } catch {
+              Alert.alert("AI-Analyse fehlgeschlagen", "Bitte fuell die Felder manuell aus.");
+            }
+          }
+        },
+      },
+      { text: "Abbrechen", style: "cancel" },
+    ]);
   };
 
   const handleSubmit = async () => {
@@ -226,17 +321,62 @@ export default function CreateToolScreen() {
           <Text style={styles.photoHint}>{photoUris.length}/5 Fotos hinzugefügt</Text>
         </View>
 
+        {/* AI analyze button */}
+        <TouchableOpacity
+          onPress={handleAiAnalyze}
+          disabled={analyzePhoto.isPending}
+          activeOpacity={0.85}
+          style={styles.aiButtonWrapper}
+        >
+          <LinearGradient
+            colors={["#E8470A", "#F5A623"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.aiButton}
+          >
+            {analyzePhoto.isPending ? (
+              <>
+                <ActivityIndicator color="#fff" size="small" style={styles.aiButtonSpinner} />
+                <View>
+                  <Text style={styles.aiButtonTitle}>Werkzeug wird analysiert...</Text>
+                  <Text style={styles.aiButtonSubtitle}>Bitte warten</Text>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.aiButtonIcon}>🤖</Text>
+                <View>
+                  <Text style={styles.aiButtonTitle}>AI Werkzeug-Erkennung</Text>
+                  <Text style={styles.aiButtonSubtitle}>
+                    Foto machen — Felder automatisch ausfuellen
+                  </Text>
+                </View>
+              </>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* AI success banner */}
+        {showAiBanner && (
+          <View style={styles.aiBanner}>
+            <Text style={styles.aiBannerTitle}>7 Felder vorgeschlagen</Text>
+            <Text style={styles.aiBannerSubtitle}>Pruefe und passe die Vorschlaege an</Text>
+          </View>
+        )}
+
         {/* Basic info */}
         <SectionTitle title="Grundinformationen" />
         <View style={styles.card}>
           <Input
-            label="Titel *"
+            label={aiSuggested ? "Titel * 🤖 AI" : "Titel *"}
             placeholder="z.B. Bohrmaschine Bosch GSR 18V"
             value={title}
             onChangeText={setTitle}
           />
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Beschreibung *</Text>
+            <Text style={styles.inputLabel}>
+              {aiSuggested ? "Beschreibung * 🤖 AI" : "Beschreibung *"}
+            </Text>
             <TextInput
               style={[styles.textInput, styles.textArea]}
               placeholder="Beschreibe das Werkzeug, seinen Zustand und besondere Eigenschaften..."
@@ -248,13 +388,13 @@ export default function CreateToolScreen() {
             />
           </View>
           <Input
-            label="Marke (optional)"
+            label={aiSuggested ? "Marke (optional) 🤖 AI" : "Marke (optional)"}
             placeholder="z.B. Bosch"
             value={brand}
             onChangeText={setBrand}
           />
           <Input
-            label="Modell (optional)"
+            label={aiSuggested ? "Modell (optional) 🤖 AI" : "Modell (optional)"}
             placeholder="z.B. GSR 18V-55"
             value={model}
             onChangeText={setModel}
@@ -409,7 +549,9 @@ export default function CreateToolScreen() {
             />
           </View>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Sicherheitshinweise</Text>
+            <Text style={styles.inputLabel}>
+              {aiSuggested ? "Sicherheitshinweise 🤖 AI" : "Sicherheitshinweise"}
+            </Text>
             <TextInput
               style={[styles.textInput, styles.textAreaSm]}
               placeholder="Wichtige Sicherheitshinweise..."
@@ -651,5 +793,54 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  aiButtonWrapper: {
+    marginBottom: 16,
+  },
+  aiButton: {
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    shadowColor: "#E8470A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  aiButtonIcon: {
+    fontSize: 28,
+  },
+  aiButtonSpinner: {
+    marginRight: 4,
+  },
+  aiButtonTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  aiButtonSubtitle: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 2,
+  },
+  aiBanner: {
+    backgroundColor: "#DCFCE7",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  aiBannerTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#15803D",
+  },
+  aiBannerSubtitle: {
+    fontSize: 12,
+    color: "#166534",
+    marginTop: 2,
   },
 });

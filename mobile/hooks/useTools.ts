@@ -127,3 +127,36 @@ export function useDeleteTool() {
     },
   });
 }
+
+export interface ToolAnalysisResult {
+  title: string;
+  brand: string | null;
+  model: string | null;
+  category_slug: string;
+  condition: string;
+  description: string;
+  safety_notes: string | null;
+}
+
+export function useAnalyzeToolPhoto() {
+  return useMutation({
+    mutationFn: async (uri: string) => {
+      const filename = uri.split("/").pop() || "photo.jpg";
+      const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+      const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+
+      const formData = new FormData();
+      formData.append("file", {
+        uri,
+        name: filename,
+        type: mimeType,
+      } as unknown as Blob);
+
+      const { data } = await api.post("/ai/analyze-photo", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+      return data as ToolAnalysisResult;
+    },
+  });
+}

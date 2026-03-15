@@ -41,6 +41,7 @@ dependencies = [
     "slowapi>=0.1.9",
     "structlog>=23.2.0",
     "httpx>=0.28.1",
+    "anthropic>=0.84.0",
 ]
 
 [project.optional-dependencies]
