@@ -92,16 +92,25 @@ async def analyze_tool_photo(
             detail="AI analysis is not available: ANTHROPIC_API_KEY is not configured.",
         )
 
-    # Validate content type
+    # Validate content type — fall back to extension-based detection
     content_type = file.content_type or ""
     if content_type not in _ALLOWED_IMAGE_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                f"Unsupported image type '{content_type}'. "
-                "Accepted types: image/jpeg, image/png, image/webp."
-            ),
-        )
+        # Try to infer from filename
+        filename = (file.filename or "").lower()
+        if filename.endswith(".png"):
+            content_type = "image/png"
+        elif filename.endswith(".webp"):
+            content_type = "image/webp"
+        elif filename.endswith((".jpg", ".jpeg", ".heic")):
+            content_type = "image/jpeg"
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    f"Unsupported image type '{file.content_type}'. "
+                    "Accepted types: image/jpeg, image/png, image/webp."
+                ),
+            )
 
     # Read file bytes and enforce size limit
     image_bytes = await file.read()
