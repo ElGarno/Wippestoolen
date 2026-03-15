@@ -11,8 +11,7 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-import { useNavigation, useRouter } from "expo-router";
-import { DrawerActions } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import api from "../../../lib/api";
@@ -187,7 +186,7 @@ function ToolCardInline({ tool, onPress }: CardProps) {
 // ─── Home Screen ─────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
 
@@ -231,14 +230,11 @@ export default function HomeScreen() {
       >
         {/* Top bar */}
         <View style={styles.headerTopBar}>
+          <Text style={styles.headerBrand}>Wippestoolen</Text>
           <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            onPress={() => router.push("/notifications")}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.headerIcon}>☰</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerBrand}>Wippestoolen</Text>
-          <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Text style={styles.headerIcon}>🔔</Text>
           </TouchableOpacity>
         </View>

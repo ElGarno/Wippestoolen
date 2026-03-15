@@ -34,16 +34,7 @@ export default function MyBookingsScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: "Meine Buchungen",
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 8 }}>
-              <Text style={{ fontSize: 17, color: colors.primary[600] }}>‹ Zurück</Text>
-            </TouchableOpacity>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
         {/* Gradient header */}
         <LinearGradient
@@ -52,6 +43,9 @@ export default function MyBookingsScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.gradientHeader}
         >
+          <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 8 }}>
+            <Text style={{ fontSize: 17, color: "rgba(255,255,255,0.9)" }}>‹ Zurück</Text>
+          </TouchableOpacity>
           <Text style={styles.gradientTitle}>Meine Buchungen</Text>
           <Text style={styles.gradientSubtitle}>Verwalte deine Ausleihen und Verleihungen</Text>
         </LinearGradient>
@@ -123,7 +117,7 @@ const styles = StyleSheet.create({
   },
   gradientHeader: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 56,
     paddingBottom: 20,
   },
   gradientTitle: {
