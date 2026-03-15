@@ -61,8 +61,7 @@ class PhotoService:
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"File type not allowed. Allowed types: {', '.join(settings.ALLOWED_IMAGE_TYPES)}",
                 )
-        # Update file content_type for downstream use
-        file.content_type = content_type
+        # content_type variable is used below instead of file.content_type
 
         # Read file and validate size
         content = await file.read()
@@ -102,7 +101,7 @@ class PhotoService:
             original_url=original_url,
             filename=file.filename,
             file_size_bytes=len(content),
-            mime_type=file.content_type,
+            mime_type=content_type,
             display_order=display_order,
             is_primary=is_primary,
             is_active=True,
