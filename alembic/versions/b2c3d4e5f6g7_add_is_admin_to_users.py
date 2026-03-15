@@ -7,6 +7,7 @@ Create Date: 2026-03-15
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision = "b2c3d4e5f6g7"
@@ -16,7 +17,11 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("users", sa.Column("is_admin", sa.Boolean(), nullable=False, server_default=sa.text("false")))
+    conn = op.get_bind()
+    inspector = inspect(conn)
+    columns = [c["name"] for c in inspector.get_columns("users")]
+    if "is_admin" not in columns:
+        op.add_column("users", sa.Column("is_admin", sa.Boolean(), nullable=False, server_default=sa.text("false")))
 
 
 def downgrade() -> None:

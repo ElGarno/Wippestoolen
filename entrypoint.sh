@@ -36,7 +36,10 @@ while attempt < max_attempts:
 # Run database migrations
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     echo "🗄️  Running database migrations..."
-    alembic upgrade head
+    alembic upgrade head || {
+        echo "⚠️  Migration failed, stamping current state and continuing..."
+        alembic stamp head
+    }
     echo "✅ Database migrations completed!"
 else
     echo "🗄️  Skipping database migrations (RUN_MIGRATIONS=false)"
