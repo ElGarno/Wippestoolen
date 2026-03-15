@@ -105,7 +105,8 @@ export function useUploadToolPhoto(toolId: string) {
       } as unknown as Blob);
 
       const { data } = await api.post(`/tools/${toolId}/photos`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": undefined },
+        transformRequest: (d) => d,
       });
       return data;
     },
@@ -153,8 +154,9 @@ export function useAnalyzeToolPhoto() {
       } as unknown as Blob);
 
       const { data } = await api.post("/ai/analyze-photo", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": undefined },
         timeout: 30000,
+        transformRequest: (d) => d,
       });
       return data as ToolAnalysisResult;
     },

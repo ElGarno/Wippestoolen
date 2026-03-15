@@ -239,7 +239,8 @@ export default function CreateToolScreen() {
             } as unknown as Blob);
 
             await api.post(`/tools/${tool.id}/photos`, formData, {
-              headers: { "Content-Type": "multipart/form-data" },
+              headers: { "Content-Type": undefined },
+              transformRequest: (d: FormData) => d,
               timeout: 30000,
             });
           } catch {
