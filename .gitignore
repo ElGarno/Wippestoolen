@@ -3,10 +3,12 @@
 
 # Environment files
 .env
+.env.*
 .env.local
 .env.development
 .env.production
 .env.deploy
+.env.nas
 
 # Python
 __pycache__/
