@@ -1,7 +1,10 @@
 """Tool management API endpoints."""
 
+import logging
 from typing import List, Optional
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from slowapi import Limiter
@@ -76,12 +79,18 @@ async def create_tool(
             for p in photos
         ]
 
-        # Convert to response format (simplified for now)
+        category_data = await tool_service.get_category_by_id(tool.category_id)
         return ToolResponse(
             id=tool.id,
             title=tool.title,
             description=tool.description,
-            category={"id": tool.category_id, "name": "Unknown", "slug": "unknown", "description": None, "icon_name": None},
+            category={
+                "id": category_data.get("id") if category_data else tool.category_id,
+                "name": category_data.get("name") if category_data else "Unknown",
+                "slug": category_data.get("slug") if category_data else "unknown",
+                "description": category_data.get("description") if category_data else None,
+                "icon_name": category_data.get("icon_name") if category_data else None,
+            },
             brand=tool.brand,
             model=tool.model,
             condition=tool.condition,
@@ -122,7 +131,8 @@ async def create_tool(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in create_tool")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Tool creation failed"
@@ -170,7 +180,8 @@ async def browse_tools(
             category=category,
             available=available
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in browse_tools")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve tools"
@@ -209,10 +220,11 @@ async def get_my_tools(
             page=page,
             page_size=page_size
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in get_my_tools")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve user tools: {str(e)}"
+            detail="Failed to retrieve user tools"
         )
 
 
@@ -238,7 +250,8 @@ async def get_tool_categories(
     try:
         categories = await tool_service.get_categories_with_counts(active_only=active_only)
         return [ToolCategoryWithCountResponse(**cat) for cat in categories]
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in get_tool_categories")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve categories"
@@ -280,7 +293,8 @@ async def get_tools_by_category(
             sort_by=sort_by,
             sort_order=sort_order
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in get_tools_by_category")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve tools by category"
@@ -393,13 +407,11 @@ async def get_tool_details(
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
-    except Exception as e:
-        print(f"Error in get_tool_details: {str(e)}")  # Debug logging
-        import traceback
-        traceback.print_exc()
+    except Exception:
+        logger.exception("Unexpected error in get_tool_details")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve tool details: {str(e)}"
+            detail="Failed to retrieve tool details"
         )
 
 
@@ -448,11 +460,18 @@ async def update_tool(
         ]
 
         # Load relationships and return full response
+        category_data = await tool_service.get_category_by_id(tool.category_id)
         return ToolResponse(
             id=tool.id,
             title=tool.title,
             description=tool.description,
-            category={"id": tool.category_id, "name": "Unknown", "slug": "unknown", "description": None, "icon_name": None},
+            category={
+                "id": category_data.get("id") if category_data else tool.category_id,
+                "name": category_data.get("name") if category_data else "Unknown",
+                "slug": category_data.get("slug") if category_data else "unknown",
+                "description": category_data.get("description") if category_data else None,
+                "icon_name": category_data.get("icon_name") if category_data else None,
+            },
             brand=tool.brand,
             model=tool.model,
             condition=tool.condition,
@@ -498,7 +517,8 @@ async def update_tool(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e)
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in update_tool")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Tool update failed"
@@ -538,7 +558,8 @@ async def delete_tool(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e)
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Unexpected error in delete_tool")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Tool deletion failed"

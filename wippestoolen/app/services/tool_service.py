@@ -177,6 +177,15 @@ class ToolService:
     ) -> PaginatedToolResponse:
         """Browse all available tools with pagination."""
 
+        # Allowlist validation to prevent SQL injection via sort parameters.
+        # The "rating" alias accepted by the endpoint maps to the actual column name.
+        ALLOWED_SORT_COLUMNS = {"created_at", "daily_rate", "average_rating", "title"}
+        ALLOWED_SORT_ORDERS = {"asc", "desc"}
+        if sort_by == "rating":
+            sort_by = "average_rating"
+        sort_by = sort_by if sort_by in ALLOWED_SORT_COLUMNS else "created_at"
+        sort_order = sort_order if sort_order.lower() in ALLOWED_SORT_ORDERS else "desc"
+
         # Build order clause
         order_clause = f"t.{sort_by} {sort_order.upper()}"
 
@@ -430,12 +439,26 @@ class ToolService:
         if tool_row[1] != user_id:
             raise ToolOwnershipError("You can only modify your own tools")
         
+        # Allowlist of columns that callers are permitted to update.
+        # Any field name not in this set is silently skipped to prevent
+        # SQL injection through f-string interpolation of field names.
+        ALLOWED_UPDATE_FIELDS = {
+            "title", "description", "brand", "model", "condition",
+            "is_available", "max_loan_days", "deposit_amount", "daily_rate",
+            "pickup_address", "pickup_city", "pickup_postal_code",
+            "pickup_latitude", "pickup_longitude", "delivery_available",
+            "delivery_radius_km", "usage_instructions", "safety_notes",
+            "last_maintenance_date", "next_maintenance_due",
+        }
+
         # Build update query dynamically
         update_fields = []
         params = {"tool_id": tool_id}
-        
+
         update_dict = update_data.model_dump(exclude_unset=True)
         for field, value in update_dict.items():
+            if field not in ALLOWED_UPDATE_FIELDS:
+                continue
             update_fields.append(f"{field} = :{field}")
             params[field] = value
         
@@ -576,10 +599,19 @@ class ToolService:
         sort_order: str = "desc"
     ) -> PaginatedToolResponse:
         """Get tools in a specific category."""
-        
+
+        # Allowlist validation to prevent SQL injection via sort parameters.
+        # The "rating" alias accepted by the endpoint maps to the actual column name.
+        ALLOWED_SORT_COLUMNS = {"created_at", "daily_rate", "average_rating", "title"}
+        ALLOWED_SORT_ORDERS = {"asc", "desc"}
+        if sort_by == "rating":
+            sort_by = "average_rating"
+        sort_by = sort_by if sort_by in ALLOWED_SORT_COLUMNS else "created_at"
+        sort_order = sort_order if sort_order.lower() in ALLOWED_SORT_ORDERS else "desc"
+
         # Build order clause
         order_clause = f"t.{sort_by} {sort_order.upper()}"
-        
+
         # Get total count
         count_result = await self.db.execute(
             text("""
@@ -601,10 +633,10 @@ class ToolService:
         # Get tools
         result = await self.db.execute(
             text(f"""
-                SELECT t.id, t.title, t.condition, t.is_available, t.daily_rate, 
+                SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate,
                        t.pickup_city, t.pickup_postal_code, t.delivery_available,
                        t.average_rating, t.total_ratings,
-                       tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug, 
+                       tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug,
                        tc.description as cat_desc, tc.icon_name as cat_icon,
                        u.id as owner_id, u.display_name, u.first_name, u.last_name,
                        u.avatar_url, u.average_rating as owner_rating, u.total_ratings as owner_ratings, u.is_verified,
@@ -631,40 +663,41 @@ class ToolService:
             tool_data = {
                 "id": row[0],
                 "title": row[1],
+                "description": row[2],
                 "category": {
-                    "id": row[10] if row[10] else 0,
-                    "name": row[11] if row[11] else "Unbekannt",
-                    "slug": row[12] if row[12] else "unknown",
-                    "description": row[13] if row[13] else None,
-                    "icon_name": row[14] if row[14] else None
+                    "id": row[11] if row[11] else 0,
+                    "name": row[12] if row[12] else "Unbekannt",
+                    "slug": row[13] if row[13] else "unknown",
+                    "description": row[14] if row[14] else None,
+                    "icon_name": row[15] if row[15] else None
                 },
-                "condition": row[2],
-                "is_available": row[3],
-                "daily_rate": row[4],
-                "pickup_city": row[5],
-                "pickup_postal_code": row[6],
-                "delivery_available": row[7],
-                "average_rating": row[8],
-                "total_ratings": row[9],
+                "condition": row[3],
+                "is_available": row[4],
+                "daily_rate": row[5],
+                "pickup_city": row[6],
+                "pickup_postal_code": row[7],
+                "delivery_available": row[8],
+                "average_rating": row[9],
+                "total_ratings": row[10],
                 "owner": {
-                    "id": row[15],
-                    "display_name": row[16],
-                    "first_name": row[17],
-                    "last_name": row[18],
-                    "avatar_url": row[19],
-                    "average_rating": row[20],
-                    "total_ratings": row[21],
-                    "is_verified": row[22]
+                    "id": row[16],
+                    "display_name": row[17],
+                    "first_name": row[18],
+                    "last_name": row[19],
+                    "avatar_url": row[20],
+                    "average_rating": row[21],
+                    "total_ratings": row[22],
+                    "is_verified": row[23]
                 },
                 "primary_photo": {
-                    "id": row[23],
-                    "original_url": row[24],
-                    "thumbnail_url": row[25],
-                    "medium_url": row[26],
-                    "large_url": row[27],
-                    "display_order": row[28],
-                    "is_primary": row[29]
-                } if row[23] else None
+                    "id": row[24],
+                    "original_url": row[25],
+                    "thumbnail_url": row[26],
+                    "medium_url": row[27],
+                    "large_url": row[28],
+                    "display_order": row[29],
+                    "is_primary": row[30]
+                } if row[24] else None
             }
             tools.append(ToolListResponse(**tool_data))
         

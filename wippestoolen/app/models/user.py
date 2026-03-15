@@ -53,6 +53,7 @@ class User(Base):
     # Account status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Privacy settings

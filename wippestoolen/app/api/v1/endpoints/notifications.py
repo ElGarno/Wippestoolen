@@ -1,8 +1,11 @@
 """Notification endpoints for the API."""
 
+import logging
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
@@ -374,13 +377,12 @@ async def broadcast_notification(
     
     **Admin permissions required.**
     """
-    # TODO: Add admin permission check
-    # if not current_user.is_admin:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Admin permissions required"
-    #     )
-    
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin permissions required"
+        )
+
     notification_service = NotificationService(db)
     
     try:
@@ -439,6 +441,7 @@ async def websocket_notifications(
                 return
                 
         except Exception:
+            logger.exception("WebSocket authentication failed")
             await websocket.close(code=4001, reason="Invalid token")
             return
         
@@ -472,10 +475,11 @@ async def websocket_notifications(
         except WebSocketDisconnect:
             manager.disconnect(user_id)
             
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error in websocket_notifications")
         try:
             await websocket.close(code=4000, reason="Server error")
-        except:
+        except Exception:
             pass
 
 

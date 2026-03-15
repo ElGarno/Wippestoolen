@@ -647,7 +647,7 @@ class ReviewService:
         await self.db.execute(
             text("UPDATE users SET average_rating = :avg_rating, total_ratings = :total_reviews WHERE id = :user_id"),
             {
-                "avg_rating": float(avg_rating),
+                "avg_rating": round(avg_rating, 2),
                 "total_reviews": total_reviews,
                 "user_id": str(user_id)
             }
@@ -678,7 +678,7 @@ class ReviewService:
         await self.db.execute(
             text("UPDATE tools SET average_rating = :avg_rating, total_ratings = :total_reviews WHERE id = :tool_id"),
             {
-                "avg_rating": float(avg_rating),
+                "avg_rating": round(avg_rating, 2),
                 "total_reviews": total_reviews,
                 "tool_id": str(tool_id)
             }

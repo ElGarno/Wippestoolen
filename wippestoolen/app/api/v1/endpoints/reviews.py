@@ -1,8 +1,11 @@
 """Review endpoints for the API."""
 
+import logging
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -471,8 +474,14 @@ async def get_review_statistics(
     
     Useful for admin dashboards and platform insights.
     """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin permissions required"
+        )
+
     review_service = ReviewService(db)
-    
+
     try:
         return await review_service.get_review_statistics()
         
@@ -526,16 +535,15 @@ async def delete_review(
         )
     
     try:
-        # Delete review
+        # Delete review and update ratings in the same transaction
         await db.delete(review)
-        await db.commit()
-        
-        # Update aggregated ratings
         await review_service._update_user_rating(review.reviewee_id)
         if review.review_type == "borrower_to_owner":
             await review_service._update_tool_rating(review.booking.tool_id)
-        
-    except Exception as e:
+        await db.commit()
+
+    except Exception:
+        logger.exception("Unexpected error in delete_review for review_id=%s", review_id)
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
