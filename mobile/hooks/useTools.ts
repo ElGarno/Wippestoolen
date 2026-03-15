@@ -89,6 +89,33 @@ export function useUpdateTool(id: string) {
   });
 }
 
+export function useUploadToolPhoto(toolId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (uri: string) => {
+      const filename = uri.split("/").pop() || "photo.jpg";
+      const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+      const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+
+      const formData = new FormData();
+      formData.append("file", {
+        uri,
+        name: filename,
+        type: mimeType,
+      } as unknown as Blob);
+
+      const { data } = await api.post(`/tools/${toolId}/photos`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.detail(toolId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.all });
+    },
+  });
+}
+
 export function useDeleteTool() {
   const queryClient = useQueryClient();
   return useMutation({

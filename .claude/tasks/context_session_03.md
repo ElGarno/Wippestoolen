@@ -35,9 +35,9 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] Domain migration (Route53 → Cloudflare DNS)
 
 ## Known Issues (Next Session)
-- [ ] **Back navigation missing**: Tool detail and other sub-screens don't show a back button
-- [ ] **Tab bar disappears**: Bottom tab bar vanishes when navigating to sub-screens (tool detail, booking detail)
-- [ ] **Camera/Photo**: No photo capture functionality implemented yet in the create tool screen
+- [x] **Back navigation fixed**: Root layout changed from Slot to Stack, all sub-layouts styled with back button
+- [x] **Tab bar behavior**: Tab bar hides on detail screens (standard mobile UX pattern, no change needed)
+- [x] **Camera/Photo implemented**: expo-image-picker for gallery + camera, up to 5 photos per tool
 - [ ] **Drawer disabled**: Temporarily replaced with `<Slot>` due to Worklets version mismatch in Expo Go — works with dev builds
 - [ ] **Push notifications**: Not functional in Expo Go (Expo limitation) — needs dev build
 - [ ] **expo-image removed**: Replaced with React Native `Image` due to Node 25 incompatibility
@@ -60,6 +60,16 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - expo-image replaced with React Native Image (Node 25 type-stripping issue)
 - react-native-worklets pinned to 0.5.1 for Expo Go compatibility
 - App successfully running on physical iPhone via Expo Go tunnel
+
+### 2026-03-15
+- Fixed back navigation: Root layout changed from `<Slot />` to `<Stack screenOptions={{ headerShown: false }} />`
+- Styled all sub-layouts (tool, booking, my-tools) with consistent headers, back button tint, and "Zurueck" label
+- Tab bar hiding on detail screens confirmed as standard mobile UX (no fix needed)
+- Added photo upload to Create Tool screen: gallery picker + camera capture via expo-image-picker
+- Photos uploaded sequentially after tool creation via `POST /tools/{id}/photos` (multipart/form-data)
+- Added `useUploadToolPhoto` hook for reuse in edit screen
+- Max 5 photos per tool, with preview thumbnails and remove button
+- TypeScript compiles clean
 
 ## Infrastructure
 - **Backend**: Synology NAS via Portainer stack

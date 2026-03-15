@@ -7,9 +7,12 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import { useToolCategories, useCreateTool } from "../../../hooks/useTools";
+import api from "../../../lib/api";
 import { Input } from "../../../components/ui/Input";
 import { Button } from "../../../components/ui/Button";
 import type { ToolCreateRequest } from "../../../types";
@@ -32,6 +35,7 @@ export default function CreateToolScreen() {
   const { data: categories, isLoading: categoriesLoading } = useToolCategories();
   const createTool = useCreateTool();
 
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -47,6 +51,41 @@ export default function CreateToolScreen() {
   const [deliveryRadiusKm, setDeliveryRadiusKm] = useState("10");
   const [usageInstructions, setUsageInstructions] = useState("");
   const [safetyNotes, setSafetyNotes] = useState("");
+
+  const pickFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf deine Fotos.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5 - photoUris.length,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setPhotoUris((prev) => [...prev, ...result.assets.map((a) => a.uri)].slice(0, 5));
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf die Kamera.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+    });
+    if (!result.canceled && photoUris.length < 5) {
+      setPhotoUris((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotoUris((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -82,6 +121,42 @@ export default function CreateToolScreen() {
 
     try {
       const tool = await createTool.mutateAsync(payload);
+
+      // Upload photos if any were selected
+      if (photoUris.length > 0) {
+        let uploadFailures = 0;
+        for (const uri of photoUris) {
+          try {
+            const filename = uri.split("/").pop() || "photo.jpg";
+            const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+            const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+
+            const formData = new FormData();
+            formData.append("file", {
+              uri,
+              name: filename,
+              type: mimeType,
+            } as unknown as Blob);
+
+            await api.post(`/tools/${tool.id}/photos`, formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+              timeout: 30000,
+            });
+          } catch {
+            uploadFailures++;
+          }
+        }
+
+        if (uploadFailures > 0) {
+          Alert.alert(
+            "Werkzeug erstellt",
+            `${uploadFailures} von ${photoUris.length} Fotos konnten nicht hochgeladen werden. Du kannst sie spaeter hinzufuegen.`,
+            [{ text: "OK", onPress: () => router.push(`/tool/${tool.id}`) }]
+          );
+          return;
+        }
+      }
+
       Alert.alert("Werkzeug erstellt!", "Dein Werkzeug wurde erfolgreich eingestellt.", [
         { text: "OK", onPress: () => router.push(`/tool/${tool.id}`) },
       ]);
@@ -109,6 +184,49 @@ export default function CreateToolScreen() {
       </View>
 
       <View className="p-4">
+        {/* Photos */}
+        <SectionTitle title="Fotos" />
+        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row gap-3">
+              {photoUris.map((uri, index) => (
+                <View key={uri} className="relative">
+                  <Image
+                    source={{ uri }}
+                    className="w-24 h-24 rounded-lg"
+                    resizeMode="cover"
+                  />
+                  <TouchableOpacity
+                    className="absolute -top-2 -right-2 bg-red-500 w-6 h-6 rounded-full items-center justify-center"
+                    onPress={() => removePhoto(index)}
+                  >
+                    <Text className="text-white text-xs font-bold">X</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {photoUris.length < 5 && (
+                <View className="gap-2">
+                  <TouchableOpacity
+                    className="w-24 h-11 bg-gray-100 rounded-lg items-center justify-center border border-dashed border-gray-300"
+                    onPress={pickFromGallery}
+                  >
+                    <Text className="text-2xl">🖼</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="w-24 h-11 bg-gray-100 rounded-lg items-center justify-center border border-dashed border-gray-300"
+                    onPress={takePhoto}
+                  >
+                    <Text className="text-2xl">📷</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+          <Text className="text-xs text-gray-400 mt-2">
+            {photoUris.length}/5 Fotos · Tippe auf 🖼 (Galerie) oder 📷 (Kamera)
+          </Text>
+        </View>
+
         {/* Basic info */}
         <SectionTitle title="Grundinformationen" />
         <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
