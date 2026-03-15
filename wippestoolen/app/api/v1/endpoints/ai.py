@@ -8,6 +8,10 @@ from typing import Optional
 
 import anthropic
 from PIL import Image
+import pillow_heif
+
+# Register HEIF/HEIC format with Pillow so Image.open() handles iPhone photos
+pillow_heif.register_heif_opener()
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel
 from slowapi import Limiter
