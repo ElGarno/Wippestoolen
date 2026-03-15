@@ -6,19 +6,23 @@ import {
   RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useBookings } from "../hooks/useBookings";
 import { BookingCard } from "../components/bookings/BookingCard";
+import { colors } from "../constants/colors";
 
 type RoleTab = "borrower" | "owner";
 
 const TABS: { label: string; value: RoleTab }[] = [
-  { label: "Als Ausleiher", value: "borrower" },
-  { label: "Als Verleiher", value: "owner" },
+  { label: "Ausgeliehen", value: "borrower" },
+  { label: "Verliehen", value: "owner" },
 ];
 
 export default function MyBookingsScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<RoleTab>("borrower");
 
   const { data, isLoading, refetch, isRefetching } = useBookings({
@@ -30,46 +34,75 @@ export default function MyBookingsScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Meine Buchungen", headerBackTitle: "Zurück" }} />
-      <View className="flex-1 bg-gray-50">
-        {/* Tab bar */}
-        <View className="bg-white flex-row border-b border-gray-100">
+      <Stack.Screen
+        options={{
+          title: "Meine Buchungen",
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 8 }}>
+              <Text style={{ fontSize: 17, color: colors.primary[600] }}>‹ Zurück</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <View style={styles.container}>
+        {/* Gradient header */}
+        <LinearGradient
+          colors={[colors.gradient.start, colors.gradient.end]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientHeader}
+        >
+          <Text style={styles.gradientTitle}>Meine Buchungen</Text>
+          <Text style={styles.gradientSubtitle}>Verwalte deine Ausleihen und Verleihungen</Text>
+        </LinearGradient>
+
+        {/* Tab switcher with orange active underline */}
+        <View style={styles.tabBar}>
           {TABS.map((tab) => (
             <TouchableOpacity
               key={tab.value}
-              className={`flex-1 py-3 items-center border-b-2 ${
-                activeTab === tab.value ? "border-primary-600" : "border-transparent"
-              }`}
+              style={styles.tabItem}
               onPress={() => setActiveTab(tab.value)}
+              activeOpacity={0.75}
             >
               <Text
-                className={`text-sm font-medium ${
-                  activeTab === tab.value ? "text-primary-600" : "text-gray-500"
-                }`}
+                style={[
+                  styles.tabLabel,
+                  activeTab === tab.value ? styles.tabLabelActive : styles.tabLabelInactive,
+                ]}
               >
                 {tab.label}
               </Text>
+              {activeTab === tab.value && <View style={styles.tabUnderline} />}
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* List */}
+        {/* Booking list */}
         <FlatList
           data={bookings}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <BookingCard booking={item} role={activeTab} />}
-          contentContainerClassName="p-4"
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
+          contentContainerStyle={styles.listContent}
+          style={styles.list}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={() => refetch()}
+              tintColor={colors.primary[600]}
+              colors={[colors.primary[600]]}
+            />
+          }
           ListEmptyComponent={
             isLoading ? (
-              <View className="items-center justify-center py-20">
-                <ActivityIndicator size="large" />
+              <View style={styles.emptyContainer}>
+                <ActivityIndicator size="large" color={colors.primary[600]} />
               </View>
             ) : (
-              <View className="items-center justify-center py-20">
-                <Text className="text-4xl mb-4">📋</Text>
-                <Text className="text-lg font-medium text-gray-500">Keine Buchungen</Text>
-                <Text className="text-sm text-gray-400 mt-1">
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyIcon}>📋</Text>
+                <Text style={styles.emptyTitle}>Keine Buchungen</Text>
+                <Text style={styles.emptySubtitle}>
                   {activeTab === "borrower"
                     ? "Du hast noch keine Werkzeuge ausgeliehen"
                     : "Du hast noch keine Verleihungen"}
@@ -82,3 +115,85 @@ export default function MyBookingsScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.gray[50],
+  },
+  gradientHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  gradientTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.white,
+    letterSpacing: -0.3,
+  },
+  gradientSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 3,
+  },
+  tabBar: {
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    position: "relative",
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  tabLabelActive: {
+    color: colors.primary[600],
+  },
+  tabLabelInactive: {
+    color: colors.gray[500],
+  },
+  tabUnderline: {
+    position: "absolute",
+    bottom: 0,
+    left: "15%",
+    right: "15%",
+    height: 2.5,
+    backgroundColor: colors.primary[600],
+    borderRadius: 2,
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 80,
+  },
+  emptyIcon: {
+    fontSize: 40,
+    marginBottom: 14,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: colors.gray[500],
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: colors.gray[400],
+    marginTop: 4,
+    textAlign: "center",
+    paddingHorizontal: 32,
+  },
+});

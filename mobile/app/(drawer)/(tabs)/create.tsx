@@ -8,13 +8,16 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import { useToolCategories, useCreateTool } from "../../../hooks/useTools";
 import api from "../../../lib/api";
 import { Input } from "../../../components/ui/Input";
 import { Button } from "../../../components/ui/Button";
+import { colors } from "../../../constants/colors";
 import type { ToolCreateRequest } from "../../../types";
 
 type Condition = "excellent" | "good" | "fair" | "poor";
@@ -27,7 +30,7 @@ const CONDITIONS: { label: string; value: Condition }[] = [
 ];
 
 function SectionTitle({ title }: { title: string }) {
-  return <Text className="text-base font-semibold text-gray-900 mb-3 mt-2">{title}</Text>;
+  return <Text style={styles.sectionTitle}>{title}</Text>;
 }
 
 export default function CreateToolScreen() {
@@ -129,7 +132,8 @@ export default function CreateToolScreen() {
           try {
             const filename = uri.split("/").pop() || "photo.jpg";
             const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-            const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+            const mimeType =
+              ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
 
             const formData = new FormData();
             formData.append("file", {
@@ -167,109 +171,114 @@ export default function CreateToolScreen() {
 
   if (categoriesLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary[600]} />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-white px-4 pt-14 pb-4 border-b border-gray-100">
-        <Text className="text-xl font-bold text-gray-900">Werkzeug anbieten</Text>
-        <Text className="text-sm text-gray-500 mt-1">
+    <ScrollView style={styles.scrollView}>
+      {/* Gradient header */}
+      <LinearGradient
+        colors={[colors.gradient.start, colors.gradient.end]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.gradientHeader}
+      >
+        <Text style={styles.gradientTitle}>Werkzeug anbieten</Text>
+        <Text style={styles.gradientSubtitle}>
           Stelle dein Werkzeug für andere zum Ausleihen ein
         </Text>
-      </View>
+      </LinearGradient>
 
-      <View className="p-4">
+      <View style={styles.content}>
         {/* Photos */}
         <SectionTitle title="Fotos" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+        <View style={styles.card}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-3">
+            <View style={styles.photoRow}>
               {photoUris.map((uri, index) => (
-                <View key={uri} className="relative">
-                  <Image
-                    source={{ uri }}
-                    className="w-24 h-24 rounded-lg"
-                    resizeMode="cover"
-                  />
+                <View key={uri} style={styles.photoWrapper}>
+                  <Image source={{ uri }} style={styles.photoThumb} resizeMode="cover" />
                   <TouchableOpacity
-                    className="absolute -top-2 -right-2 bg-red-500 w-6 h-6 rounded-full items-center justify-center"
+                    style={styles.removePhotoBtn}
                     onPress={() => removePhoto(index)}
                   >
-                    <Text className="text-white text-xs font-bold">X</Text>
+                    <Text style={styles.removePhotoBtnText}>X</Text>
                   </TouchableOpacity>
                 </View>
               ))}
               {photoUris.length < 5 && (
-                <View className="gap-2">
-                  <TouchableOpacity
-                    className="w-24 h-11 bg-gray-100 rounded-lg items-center justify-center border border-dashed border-gray-300"
-                    onPress={pickFromGallery}
-                  >
-                    <Text className="text-2xl">🖼</Text>
+                <View style={styles.photoActions}>
+                  <TouchableOpacity style={styles.photoPickerBtn} onPress={pickFromGallery}>
+                    <Text style={styles.photoPickerIcon}>🖼</Text>
+                    <Text style={styles.photoPickerLabel}>Galerie</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    className="w-24 h-11 bg-gray-100 rounded-lg items-center justify-center border border-dashed border-gray-300"
-                    onPress={takePhoto}
-                  >
-                    <Text className="text-2xl">📷</Text>
+                  <TouchableOpacity style={styles.photoPickerBtn} onPress={takePhoto}>
+                    <Text style={styles.photoPickerIcon}>📷</Text>
+                    <Text style={styles.photoPickerLabel}>Kamera</Text>
                   </TouchableOpacity>
                 </View>
               )}
             </View>
           </ScrollView>
-          <Text className="text-xs text-gray-400 mt-2">
-            {photoUris.length}/5 Fotos · Tippe auf 🖼 (Galerie) oder 📷 (Kamera)
-          </Text>
+          <Text style={styles.photoHint}>{photoUris.length}/5 Fotos hinzugefügt</Text>
         </View>
 
         {/* Basic info */}
         <SectionTitle title="Grundinformationen" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+        <View style={styles.card}>
           <Input
             label="Titel *"
             placeholder="z.B. Bohrmaschine Bosch GSR 18V"
             value={title}
             onChangeText={setTitle}
           />
-          <View className="mb-4">
-            <Text className="text-sm font-medium text-gray-700 mb-1">Beschreibung *</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Beschreibung *</Text>
             <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[80px]"
+              style={[styles.textInput, styles.textArea]}
               placeholder="Beschreibe das Werkzeug, seinen Zustand und besondere Eigenschaften..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.gray[400]}
               value={description}
               onChangeText={setDescription}
               multiline
               textAlignVertical="top"
             />
           </View>
-          <Input label="Marke (optional)" placeholder="z.B. Bosch" value={brand} onChangeText={setBrand} />
-          <Input label="Modell (optional)" placeholder="z.B. GSR 18V-55" value={model} onChangeText={setModel} />
+          <Input
+            label="Marke (optional)"
+            placeholder="z.B. Bosch"
+            value={brand}
+            onChangeText={setBrand}
+          />
+          <Input
+            label="Modell (optional)"
+            placeholder="z.B. GSR 18V-55"
+            value={model}
+            onChangeText={setModel}
+          />
         </View>
 
         {/* Category */}
         <SectionTitle title="Kategorie *" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-          <View className="flex-row flex-wrap gap-2">
+        <View style={styles.card}>
+          <View style={styles.chipsRow}>
             {categories?.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
-                className={`px-3 py-2 rounded-lg border ${
-                  categoryId === cat.id
-                    ? "bg-primary-600 border-primary-600"
-                    : "bg-white border-gray-300"
-                }`}
+                style={[
+                  styles.chip,
+                  categoryId === cat.id ? styles.chipActive : styles.chipInactive,
+                ]}
                 onPress={() => setCategoryId(cat.id)}
               >
                 <Text
-                  className={`text-sm ${
-                    categoryId === cat.id ? "text-white font-medium" : "text-gray-700"
-                  }`}
+                  style={[
+                    styles.chipText,
+                    categoryId === cat.id ? styles.chipTextActive : styles.chipTextInactive,
+                  ]}
                 >
                   {cat.name}
                 </Text>
@@ -280,22 +289,22 @@ export default function CreateToolScreen() {
 
         {/* Condition */}
         <SectionTitle title="Zustand" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-          <View className="flex-row flex-wrap gap-2">
+        <View style={styles.card}>
+          <View style={styles.chipsRow}>
             {CONDITIONS.map((c) => (
               <TouchableOpacity
                 key={c.value}
-                className={`px-4 py-2 rounded-lg border ${
-                  condition === c.value
-                    ? "bg-primary-600 border-primary-600"
-                    : "bg-white border-gray-300"
-                }`}
+                style={[
+                  styles.chip,
+                  condition === c.value ? styles.chipActive : styles.chipInactive,
+                ]}
                 onPress={() => setCondition(c.value)}
               >
                 <Text
-                  className={`text-sm ${
-                    condition === c.value ? "text-white font-medium" : "text-gray-700"
-                  }`}
+                  style={[
+                    styles.chipText,
+                    condition === c.value ? styles.chipTextActive : styles.chipTextInactive,
+                  ]}
                 >
                   {c.label}
                 </Text>
@@ -306,7 +315,7 @@ export default function CreateToolScreen() {
 
         {/* Pricing */}
         <SectionTitle title="Preise & Bedingungen" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+        <View style={styles.card}>
           <Input
             label="Tagesrate (€)"
             placeholder="0.00"
@@ -332,7 +341,7 @@ export default function CreateToolScreen() {
 
         {/* Location */}
         <SectionTitle title="Abholort" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+        <View style={styles.card}>
           <Input
             label="Stadt"
             placeholder="z.B. Köln"
@@ -347,29 +356,32 @@ export default function CreateToolScreen() {
             keyboardType="number-pad"
           />
 
-          {/* Delivery toggle */}
+          {/* Delivery toggle with orange active state */}
           <TouchableOpacity
-            className={`flex-row items-center justify-between p-3 rounded-lg border ${
-              deliveryAvailable ? "bg-primary-50 border-primary-200" : "bg-gray-50 border-gray-200"
-            }`}
+            style={[
+              styles.toggleRow,
+              deliveryAvailable ? styles.toggleRowActive : styles.toggleRowInactive,
+            ]}
             onPress={() => setDeliveryAvailable(!deliveryAvailable)}
           >
-            <Text className="text-sm font-medium text-gray-700">Lieferung möglich</Text>
+            <Text style={styles.toggleLabel}>Lieferung möglich</Text>
             <View
-              className={`w-12 h-6 rounded-full ${
-                deliveryAvailable ? "bg-primary-600" : "bg-gray-300"
-              }`}
+              style={[
+                styles.toggleTrack,
+                deliveryAvailable ? styles.toggleTrackActive : styles.toggleTrackInactive,
+              ]}
             >
               <View
-                className={`w-5 h-5 bg-white rounded-full mt-0.5 shadow-sm ${
-                  deliveryAvailable ? "ml-6" : "ml-0.5"
-                }`}
+                style={[
+                  styles.toggleThumb,
+                  deliveryAvailable ? styles.toggleThumbRight : styles.toggleThumbLeft,
+                ]}
               />
             </View>
           </TouchableOpacity>
 
           {deliveryAvailable && (
-            <View className="mt-3">
+            <View style={styles.deliveryRadiusWrapper}>
               <Input
                 label="Lieferradius (km)"
                 placeholder="10"
@@ -383,25 +395,25 @@ export default function CreateToolScreen() {
 
         {/* Instructions */}
         <SectionTitle title="Hinweise (optional)" />
-        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-          <View className="mb-4">
-            <Text className="text-sm font-medium text-gray-700 mb-1">Benutzungshinweise</Text>
+        <View style={styles.card}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Benutzungshinweise</Text>
             <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[60px]"
+              style={[styles.textInput, styles.textAreaSm]}
               placeholder="Tipps zur korrekten Bedienung..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.gray[400]}
               value={usageInstructions}
               onChangeText={setUsageInstructions}
               multiline
               textAlignVertical="top"
             />
           </View>
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">Sicherheitshinweise</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Sicherheitshinweise</Text>
             <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[60px]"
+              style={[styles.textInput, styles.textAreaSm]}
               placeholder="Wichtige Sicherheitshinweise..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.gray[400]}
               value={safetyNotes}
               onChangeText={setSafetyNotes}
               multiline
@@ -415,8 +427,229 @@ export default function CreateToolScreen() {
           onPress={handleSubmit}
           isLoading={createTool.isPending}
         />
-        <View className="h-8" />
+        <View style={styles.bottomSpacer} />
       </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[50],
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.gray[50],
+  },
+  gradientHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: 24,
+  },
+  gradientTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.white,
+    letterSpacing: -0.3,
+  },
+  gradientSubtitle: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 4,
+  },
+  content: {
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+    marginBottom: 10,
+    marginTop: 6,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  photoRow: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  photoWrapper: {
+    position: "relative",
+  },
+  photoThumb: {
+    width: 88,
+    height: 88,
+    borderRadius: 12,
+  },
+  removePhotoBtn: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: colors.error,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removePhotoBtnText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  photoActions: {
+    gap: 8,
+  },
+  photoPickerBtn: {
+    width: 88,
+    height: 38,
+    backgroundColor: colors.primary[50],
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: colors.primary[200],
+    borderStyle: "dashed",
+    flexDirection: "row",
+    gap: 4,
+  },
+  photoPickerIcon: {
+    fontSize: 16,
+  },
+  photoPickerLabel: {
+    fontSize: 11,
+    color: colors.primary[600],
+    fontWeight: "500",
+  },
+  photoHint: {
+    fontSize: 11,
+    color: colors.gray[400],
+    marginTop: 10,
+  },
+  inputGroup: {
+    marginBottom: 14,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.gray[700],
+    marginBottom: 6,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    backgroundColor: colors.white,
+    color: colors.gray[900],
+  },
+  textArea: {
+    minHeight: 88,
+    textAlignVertical: "top",
+  },
+  textAreaSm: {
+    minHeight: 64,
+    textAlignVertical: "top",
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+  },
+  chipActive: {
+    backgroundColor: colors.gray[900],
+    borderColor: colors.gray[900],
+  },
+  chipInactive: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray[300],
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  chipTextActive: {
+    color: colors.white,
+  },
+  chipTextInactive: {
+    color: colors.gray[700],
+  },
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  toggleRowActive: {
+    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[200],
+  },
+  toggleRowInactive: {
+    backgroundColor: colors.gray[50],
+    borderColor: colors.gray[200],
+  },
+  toggleLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.gray[700],
+  },
+  toggleTrack: {
+    width: 48,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: "center",
+  },
+  toggleTrackActive: {
+    backgroundColor: colors.primary[600],
+  },
+  toggleTrackInactive: {
+    backgroundColor: colors.gray[300],
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleThumbRight: {
+    marginLeft: 24,
+  },
+  toggleThumbLeft: {
+    marginLeft: 3,
+  },
+  deliveryRadiusWrapper: {
+    marginTop: 12,
+  },
+  bottomSpacer: {
+    height: 40,
+  },
+});

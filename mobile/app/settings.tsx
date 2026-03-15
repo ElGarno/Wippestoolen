@@ -3,14 +3,44 @@ import { View, Text, ScrollView, TouchableOpacity, Alert, Switch } from "react-n
 import { useRouter, Stack } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import Constants from "expo-constants";
+import { colors } from "../constants/colors";
 
-function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionLabel({ title }: { title: string }) {
   return (
-    <View className="mb-6">
-      <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 mb-2">
-        {title}
-      </Text>
-      <View className="bg-white rounded-xl border border-gray-100 shadow-sm mx-4">{children}</View>
+    <Text
+      style={{
+        fontSize: 11,
+        fontWeight: "700",
+        color: colors.gray[400],
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        paddingHorizontal: 20,
+        marginBottom: 8,
+        marginTop: 4,
+      }}
+    >
+      {title}
+    </Text>
+  );
+}
+
+function SettingsCard({ children }: { children: React.ReactNode }) {
+  return (
+    <View
+      style={{
+        backgroundColor: colors.white,
+        borderRadius: 16,
+        marginHorizontal: 16,
+        marginBottom: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
+        overflow: "hidden",
+      }}
+    >
+      {children}
     </View>
   );
 }
@@ -21,27 +51,49 @@ function SettingsRow({
   onPress,
   rightElement,
   isDestructive,
+  isLast,
 }: {
   label: string;
   value?: string;
   onPress?: () => void;
   rightElement?: React.ReactNode;
   isDestructive?: boolean;
+  isLast?: boolean;
 }) {
   const content = (
-    <View className="flex-row items-center px-4 py-3.5 border-b border-gray-50">
-      <Text className={`flex-1 text-base ${isDestructive ? "text-red-500" : "text-gray-800"}`}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderBottomWidth: isLast ? 0 : 1,
+        borderBottomColor: colors.gray[100],
+      }}
+    >
+      <Text
+        style={{
+          flex: 1,
+          fontSize: 16,
+          color: isDestructive ? colors.error : colors.gray[800],
+          fontWeight: isDestructive ? "500" : "400",
+        }}
+      >
         {label}
       </Text>
-      {value && <Text className="text-sm text-gray-400 mr-2">{value}</Text>}
+      {value && (
+        <Text style={{ fontSize: 14, color: colors.gray[400], marginRight: 8 }}>{value}</Text>
+      )}
       {rightElement}
-      {onPress && !rightElement && <Text className="text-gray-400">›</Text>}
+      {onPress && !rightElement && (
+        <Text style={{ fontSize: 20, color: colors.primary[600], fontWeight: "300" }}>›</Text>
+      )}
     </View>
   );
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.6}>
         {content}
       </TouchableOpacity>
     );
@@ -76,18 +128,31 @@ export default function SettingsScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Einstellungen", headerBackTitle: "Zurück" }} />
-      <ScrollView className="flex-1 bg-gray-50 pt-4">
+      <Stack.Screen
+        options={{
+          title: "Einstellungen",
+          headerBackTitle: "Zurück",
+          headerStyle: { backgroundColor: colors.white },
+          headerTintColor: colors.primary[600],
+          headerTitleStyle: { fontWeight: "700", color: colors.gray[900] },
+        }}
+      />
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.gray[50] }}
+        contentContainerStyle={{ paddingTop: 20, paddingBottom: 40 }}
+      >
         {/* Notifications */}
-        <SettingsSection title="Benachrichtigungen">
+        <SectionLabel title="Benachrichtigungen" />
+        <SettingsCard>
           <SettingsRow
             label="In-App Benachrichtigungen"
             rightElement={
               <Switch
                 value={inAppEnabled}
                 onValueChange={setInAppEnabled}
-                trackColor={{ false: "#d1d5db", true: "#7c3aed" }}
-                thumbColor="white"
+                trackColor={{ false: colors.gray[300], true: colors.primary[600] }}
+                thumbColor={colors.white}
+                ios_backgroundColor={colors.gray[300]}
               />
             }
           />
@@ -97,26 +162,30 @@ export default function SettingsScreen() {
               <Switch
                 value={bookingNotifications}
                 onValueChange={setBookingNotifications}
-                trackColor={{ false: "#d1d5db", true: "#7c3aed" }}
-                thumbColor="white"
+                trackColor={{ false: colors.gray[300], true: colors.primary[600] }}
+                thumbColor={colors.white}
+                ios_backgroundColor={colors.gray[300]}
               />
             }
           />
           <SettingsRow
             label="Bewertungsbenachrichtigungen"
+            isLast
             rightElement={
               <Switch
                 value={reviewNotifications}
                 onValueChange={setReviewNotifications}
-                trackColor={{ false: "#d1d5db", true: "#7c3aed" }}
-                thumbColor="white"
+                trackColor={{ false: colors.gray[300], true: colors.primary[600] }}
+                thumbColor={colors.white}
+                ios_backgroundColor={colors.gray[300]}
               />
             }
           />
-        </SettingsSection>
+        </SettingsCard>
 
         {/* Account */}
-        <SettingsSection title="Konto">
+        <SectionLabel title="Konto" />
+        <SettingsCard>
           <SettingsRow
             label="Profil bearbeiten"
             onPress={() => router.push("/(drawer)/(tabs)/profile")}
@@ -127,27 +196,24 @@ export default function SettingsScreen() {
           />
           <SettingsRow
             label="Meine Werkzeuge"
+            isLast
             onPress={() => router.push("/my-tools")}
           />
-        </SettingsSection>
+        </SettingsCard>
 
-        {/* Info */}
-        <SettingsSection title="Über die App">
+        {/* App Info */}
+        <SectionLabel title="Uber die App" />
+        <SettingsCard>
           <SettingsRow label="Version" value={`v${appVersion}`} />
           <SettingsRow label="Datenschutz" onPress={() => {}} />
-          <SettingsRow label="Nutzungsbedingungen" onPress={() => {}} />
-        </SettingsSection>
+          <SettingsRow label="Nutzungsbedingungen" isLast onPress={() => {}} />
+        </SettingsCard>
 
         {/* Logout */}
-        <SettingsSection title="Sitzung">
-          <SettingsRow
-            label="Abmelden"
-            onPress={handleLogout}
-            isDestructive
-          />
-        </SettingsSection>
-
-        <View className="h-8" />
+        <SectionLabel title="Sitzung" />
+        <SettingsCard>
+          <SettingsRow label="Abmelden" onPress={handleLogout} isDestructive isLast />
+        </SettingsCard>
       </ScrollView>
     </>
   );

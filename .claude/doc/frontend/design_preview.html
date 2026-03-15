@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wippestoolen - Home Screen Design Directions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #111827;
+      color: #f9fafb;
+      min-height: 100vh;
+      padding: 40px 24px 60px;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f9fafb;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      text-align: center;
+      font-size: 0.875rem;
+      color: #9ca3af;
+      margin-bottom: 48px;
+    }
+
+    .designs-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .design-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .design-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    .design-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f9fafb;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* Phone frame */
+    .phone-frame {
+      width: 320px;
+      height: 693px;
+      border-radius: 44px;
+      background: #1a1a1a;
+      padding: 12px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 32px 64px -12px rgba(0,0,0,0.7),
+        0 0 0 10px #0d0d0d,
+        0 0 0 11px rgba(255,255,255,0.06),
+        inset 0 0 0 1px rgba(255,255,255,0.04);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* Notch */
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 28px;
+      background: #0d0d0d;
+      border-radius: 0 0 18px 18px;
+      z-index: 100;
+    }
+
+    /* Home indicator */
+    .phone-frame::after {
+      content: '';
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      z-index: 100;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 34px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== DESIGN 1: CLEAN & MINIMAL ===== */
+
+    .d1-screen {
+      background: #F5F5F0;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .d1-status-bar {
+      height: 44px;
+      background: #F5F5F0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 20px 6px;
+      flex-shrink: 0;
+    }
+
+    .d1-status-bar .time {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1A1A1A;
+    }
+
+    .d1-status-bar .icons {
+      font-size: 10px;
+      color: #1A1A1A;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .d1-header {
+      padding: 8px 20px 14px;
+      background: #F5F5F0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .d1-greeting-sub {
+      font-size: 11px;
+      color: #8A8A8A;
+      font-weight: 400;
+    }
+
+    .d1-greeting-main {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1A1A1A;
+      letter-spacing: -0.4px;
+      margin-top: 1px;
+      line-height: 1.2;
+    }
+
+    .d1-bell {
+      width: 34px;
+      height: 34px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .d1-search {
+      margin: 0 20px 16px;
+      background: white;
+      border-radius: 999px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+
+    .d1-search-icon { font-size: 12px; color: #8A8A8A; }
+
+    .d1-search-text {
+      font-size: 12px;
+      color: #8A8A8A;
+    }
+
+    .d1-categories {
+      display: flex;
+      gap: 18px;
+      padding: 0 20px 12px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .d1-cat {
+      font-size: 11px;
+      color: #8A8A8A;
+      padding-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .d1-cat.active {
+      color: #1A1A1A;
+      font-weight: 600;
+      border-bottom: 2px solid #2563EB;
+    }
+
+    .d1-section-label {
+      padding: 0 20px 10px;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8A8A8A;
+      flex-shrink: 0;
+    }
+
+    .d1-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 20px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .d1-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .d1-card-image {
+      height: 106px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      position: relative;
+    }
+
+    .d1-card-img-1 { background: #E8F0E8; }
+    .d1-card-img-2 { background: #E8E8F0; }
+    .d1-card-img-3 { background: #F0E8E8; }
+    .d1-card-img-4 { background: #F0F0E0; }
+
+    .d1-card-body {
+      padding: 8px 10px 10px;
+    }
+
+    .d1-card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1A1A1A;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .d1-card-price {
+      font-size: 11px;
+      font-weight: 700;
+      color: #2563EB;
+    }
+
+    .d1-card-owner {
+      font-size: 10px;
+      color: #8A8A8A;
+      margin-top: 1px;
+    }
+
+    .d1-card-unavailable .d1-card-image::after {
+      content: '🔒';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* ===== DESIGN 2: BOLD & VIBRANT ===== */
+
+    .d2-screen {
+      background: #FAFAFA;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+
+    .d2-header {
+      background: linear-gradient(135deg, #E8470A 0%, #F5A623 100%);
+      padding: 44px 16px 18px;
+      flex-shrink: 0;
+    }
+
+    .d2-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .d2-greeting-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 2px;
+    }
+
+    .d2-greeting-main {
+      font-size: 18px;
+      font-weight: 800;
+      color: white;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
+
+    .d2-bell {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .d2-search {
+      background: white;
+      border-radius: 14px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .d2-search-text { font-size: 11px; color: #9CA3AF; }
+
+    .d2-chips-row {
+      display: flex;
+      gap: 6px;
+      padding: 10px 16px;
+      overflow: hidden;
+      background: #FAFAFA;
+      flex-shrink: 0;
+    }
+
+    .d2-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 10px;
+      background: #F0F0F0;
+      font-size: 10px;
+      font-weight: 500;
+      color: #444;
+      white-space: nowrap;
+    }
+
+    .d2-chip.active {
+      background: #1A1A1A;
+      color: white;
+    }
+
+    .d2-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 16px 10px;
+      flex-shrink: 0;
+    }
+
+    .d2-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1A1A1A;
+    }
+
+    .d2-count-badge {
+      background: #FFF3E8;
+      color: #E8470A;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 2px 7px;
+    }
+
+    .d2-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 12px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .d2-card {
+      background: white;
+      border-radius: 14px;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .d2-accent { width: 4px; flex-shrink: 0; }
+    .d2-accent-orange { background: #F97316; }
+    .d2-accent-green  { background: #22C55E; }
+    .d2-accent-blue   { background: #3B82F6; }
+    .d2-accent-purple { background: #A855F7; }
+
+    .d2-thumb {
+      width: 68px;
+      height: 68px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .d2-thumb-1 { background: #F0EDE8; }
+    .d2-thumb-2 { background: #E8F0E8; }
+    .d2-thumb-3 { background: #E8EAF0; }
+    .d2-thumb-4 { background: #EDE8F0; }
+
+    .d2-card-body {
+      flex: 1;
+      padding: 9px 10px 9px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .d2-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .d2-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1A1A1A;
+      flex: 1;
+      margin-right: 6px;
+      line-height: 1.3;
+    }
+
+    .d2-card-price {
+      font-size: 13px;
+      font-weight: 800;
+      color: #E8470A;
+      flex-shrink: 0;
+    }
+
+    .d2-card-meta {
+      font-size: 10px;
+      color: #6B7280;
+      margin-top: 2px;
+    }
+
+    .d2-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+
+    .d2-badge {
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    .d2-badge-available { background: #DCFCE7; color: #16A34A; }
+    .d2-badge-borrowed  { background: #FEE2E2; color: #DC2626; }
+
+    .d2-rating { font-size: 10px; color: #6B7280; }
+
+    .d2-fab {
+      position: absolute;
+      bottom: 24px;
+      right: 14px;
+      width: 44px;
+      height: 44px;
+      background: #E8470A;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: white;
+      font-weight: 300;
+      box-shadow: 0 6px 18px rgba(232,71,10,0.5);
+      line-height: 1;
+      z-index: 50;
+    }
+
+    /* ===== DESIGN 3: PROFESSIONAL & DENSE ===== */
+
+    .d3-screen {
+      background: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .d3-header {
+      background: #0F172A;
+      padding: 44px 14px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .d3-app-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #F8FAFC;
+      letter-spacing: -0.2px;
+      flex: 1;
+    }
+
+    .d3-header-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #94A3B8;
+    }
+
+    .d3-search-bar {
+      background: white;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 8px 14px 10px;
+      flex-shrink: 0;
+    }
+
+    .d3-search-inner {
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+      background: white;
+    }
+
+    .d3-search-icon { font-size: 11px; color: #94A3B8; }
+    .d3-search-text { font-size: 11px; color: #94A3B8; flex: 1; }
+
+    .d3-filter-btn {
+      background: #0F172A;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .d3-pills-row {
+      background: white;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 6px 14px;
+      display: flex;
+      gap: 5px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .d3-pill {
+      height: 26px;
+      padding: 0 9px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 500;
+      background: #F1F5F9;
+      color: #64748B;
+      white-space: nowrap;
+    }
+
+    .d3-pill.active {
+      background: #E0F2FE;
+      color: #0369A1;
+      font-weight: 600;
+    }
+
+    .d3-result-bar {
+      background: #F8FAFC;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 5px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .d3-result-count { font-size: 10px; color: #64748B; }
+    .d3-sort-link { font-size: 10px; color: #0EA5E9; font-weight: 500; }
+
+    .d3-list {
+      background: white;
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .d3-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .d3-thumb {
+      width: 58px;
+      height: 58px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .d3-thumb-1 { background: #F1F5F9; }
+    .d3-thumb-2 { background: #F0F0EA; }
+    .d3-thumb-3 { background: #EAF4EA; }
+    .d3-thumb-4 { background: #EAEAf4; }
+    .d3-thumb-5 { background: #F4EAEA; }
+
+    .d3-row-body { flex: 1; min-width: 0; }
+
+    .d3-row-title-line {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .d3-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .d3-dot-green { background: #22C55E; }
+    .d3-dot-red   { background: #EF4444; }
+
+    .d3-row-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #0F172A;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .d3-row-meta {
+      font-size: 10px;
+      color: #64748B;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .d3-row-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .d3-rating { font-size: 10px; color: #64748B; }
+
+    .d3-price {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .d3-price-free {
+      font-size: 10px;
+      font-weight: 600;
+      color: #22C55E;
+    }
+
+    /* Comparison table */
+    .comparison-section {
+      max-width: 1100px;
+      margin: 56px auto 0;
+    }
+
+    .comparison-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f9fafb;
+      margin-bottom: 20px;
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .comparison-table th {
+      background: #1f2937;
+      color: #9ca3af;
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid #374151;
+    }
+
+    .comparison-table th:first-child { border-radius: 8px 0 0 0; }
+    .comparison-table th:last-child  { border-radius: 0 8px 0 0; }
+
+    .comparison-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #1f2937;
+      color: #d1d5db;
+      vertical-align: top;
+    }
+
+    .comparison-table tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+    .comparison-table tr:last-child td:last-child   { border-radius: 0 0 8px 0; }
+
+    .comparison-table tr:nth-child(odd) td { background: #161d2b; }
+    .comparison-table tr:nth-child(even) td { background: #131720; }
+
+    .comparison-table td:first-child {
+      font-weight: 600;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    .color-swatch {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: middle;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    @media (max-width: 1100px) {
+      .designs-wrapper { gap: 36px; }
+    }
+
+    @media (max-width: 780px) {
+      .designs-wrapper { flex-direction: column; align-items: center; gap: 48px; }
+      .phone-frame { width: 300px; height: 650px; }
+      .comparison-section { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="page-title">Wippestoolen &mdash; Home Screen Design Directions</h1>
+  <p class="page-subtitle">Drei visuelle Richtungen fuer den mobilen Home Screen &middot; React Native / Expo SDK 54</p>
+
+  <div class="designs-wrapper">
+
+    <!-- ===== DESIGN 1: CLEAN & MINIMAL ===== -->
+    <div class="design-column">
+      <div>
+        <div class="design-label">Direction 1</div>
+        <div class="design-name">Clean &amp; Minimal</div>
+      </div>
+
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="d1-screen">
+
+            <!-- Status bar -->
+            <div class="d1-status-bar">
+              <span class="time">9:41</span>
+              <div class="icons">
+                <span>&#9679;&#9679;&#9679;&#9679;</span>
+                <span>WiFi</span>
+                <span>&#9646;</span>
+              </div>
+            </div>
+
+            <!-- Header -->
+            <div class="d1-header">
+              <div>
+                <div class="d1-greeting-sub">Willkommen zurueck</div>
+                <div class="d1-greeting-main">Was brauchst<br>du heute?</div>
+              </div>
+              <div class="d1-bell">&#128276;</div>
+            </div>
+
+            <!-- Search -->
+            <div class="d1-search">
+              <span class="d1-search-icon">&#128269;</span>
+              <span class="d1-search-text">Werkzeug suchen...</span>
+            </div>
+
+            <!-- Categories (underline tabs) -->
+            <div class="d1-categories">
+              <span class="d1-cat active">Alle</span>
+              <span class="d1-cat">Werkzeug</span>
+              <span class="d1-cat">Garten</span>
+              <span class="d1-cat">Haushalt</span>
+              <span class="d1-cat">Sport</span>
+            </div>
+
+            <!-- Section label -->
+            <div class="d1-section-label">In deiner Naehe</div>
+
+            <!-- 2-column grid -->
+            <div class="d1-grid">
+
+              <div class="d1-card">
+                <div class="d1-card-image d1-card-img-1">&#128296;</div>
+                <div class="d1-card-body">
+                  <div class="d1-card-title">Bosch GSR 18V Akkuschrauber</div>
+                  <div class="d1-card-price">3,50 &euro;</div>
+                  <div class="d1-card-owner">von Klaus M.</div>
+                </div>
+              </div>
+
+              <div class="d1-card">
+                <div class="d1-card-image d1-card-img-2">&#127807;</div>
+                <div class="d1-card-body">
+                  <div class="d1-card-title">Stihl Rasenmaeher RM 248 T</div>
+                  <div class="d1-card-price">8,00 &euro;</div>
+                  <div class="d1-card-owner">von Anna S.</div>
+                </div>
+              </div>
+
+              <div class="d1-card">
+                <div class="d1-card-image d1-card-img-3">&#128296;</div>
+                <div class="d1-card-body">
+                  <div class="d1-card-title">Makita Stichsaege JV0600</div>
+                  <div class="d1-card-price">4,00 &euro;</div>
+                  <div class="d1-card-owner">von Peter H.</div>
+                </div>
+              </div>
+
+              <div class="d1-card d1-card-unavailable">
+                <div class="d1-card-image d1-card-img-4" style="position:relative;">
+                  <span>&#128268;</span>
+                  <div style="position:absolute;inset:0;background:rgba(255,255,255,0.62);display:flex;align-items:center;justify-content:center;font-size:18px;">&#128274;</div>
+                </div>
+                <div class="d1-card-body">
+                  <div class="d1-card-title">Dewalt Schlagbohrer</div>
+                  <div class="d1-card-price" style="color:#8A8A8A;">5,00 &euro;</div>
+                  <div class="d1-card-owner">von Frank B.</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Palette swatches -->
+      <div style="display:flex;flex-direction:column;gap:5px;align-self:flex-start;">
+        <div style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin-bottom:2px;">Farbpalette</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#F5F5F0;border:1px solid rgba(255,255,255,0.12);"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#F5F5F0 Background</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#FFFFFF;border:1px solid rgba(255,255,255,0.12);"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#FFFFFF Surface</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#2563EB;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#2563EB Accent / Preis</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#1A1A1A;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#1A1A1A Primary Text</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#8A8A8A;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#8A8A8A Secondary Text</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== DESIGN 2: BOLD & VIBRANT ===== -->
+    <div class="design-column">
+      <div>
+        <div class="design-label">Direction 2</div>
+        <div class="design-name">Bold &amp; Vibrant</div>
+      </div>
+
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="d2-screen">
+
+            <!-- Gradient header -->
+            <div class="d2-header">
+              <div class="d2-header-top">
+                <div>
+                  <div class="d2-greeting-sub">Werkzeug leihen statt kaufen</div>
+                  <div class="d2-greeting-main">Was brauchst<br>du heute?</div>
+                </div>
+                <div class="d2-bell">&#128276;</div>
+              </div>
+              <!-- Floating search -->
+              <div class="d2-search">
+                <span style="font-size:12px;color:#9CA3AF;">&#128269;</span>
+                <span class="d2-search-text">Bohrmaschine, Rasenmaeher...</span>
+              </div>
+            </div>
+
+            <!-- Category chips: icon + label -->
+            <div class="d2-chips-row">
+              <div class="d2-chip active">&#10024; Alle</div>
+              <div class="d2-chip">&#128296; Werkzeug</div>
+              <div class="d2-chip">&#127807; Garten</div>
+              <div class="d2-chip">&#127968; Haushalt</div>
+            </div>
+
+            <!-- Section header -->
+            <div class="d2-section-header">
+              <span class="d2-section-title">Verfuegbare Werkzeuge</span>
+              <span class="d2-count-badge">12</span>
+            </div>
+
+            <!-- Single-column list with horizontal cards -->
+            <div class="d2-list">
+
+              <div class="d2-card">
+                <div class="d2-accent d2-accent-orange"></div>
+                <div class="d2-thumb d2-thumb-1">&#128296;</div>
+                <div class="d2-card-body">
+                  <div class="d2-card-top">
+                    <div class="d2-card-title">Bosch GSR 18V Akkuschrauber</div>
+                    <div class="d2-card-price">4 &euro;</div>
+                  </div>
+                  <div class="d2-card-meta">Klaus M. &middot; Koeln-Nippes</div>
+                  <div class="d2-card-bottom">
+                    <span class="d2-badge d2-badge-available">Verfuegbar</span>
+                    <span class="d2-rating">&#11088; 4.8</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d2-card">
+                <div class="d2-accent d2-accent-green"></div>
+                <div class="d2-thumb d2-thumb-2">&#127807;</div>
+                <div class="d2-card-body">
+                  <div class="d2-card-top">
+                    <div class="d2-card-title">Stihl Rasenmaeher RM 248 T</div>
+                    <div class="d2-card-price">8 &euro;</div>
+                  </div>
+                  <div class="d2-card-meta">Anna S. &middot; Koeln-Ehrenfeld</div>
+                  <div class="d2-card-bottom">
+                    <span class="d2-badge d2-badge-available">Verfuegbar</span>
+                    <span class="d2-rating">&#11088; 5.0</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d2-card">
+                <div class="d2-accent d2-accent-orange"></div>
+                <div class="d2-thumb d2-thumb-1">&#128296;</div>
+                <div class="d2-card-body">
+                  <div class="d2-card-top">
+                    <div class="d2-card-title">Makita Stichsaege JV0600K</div>
+                    <div class="d2-card-price">4 &euro;</div>
+                  </div>
+                  <div class="d2-card-meta">Peter H. &middot; Koeln-Sued</div>
+                  <div class="d2-card-bottom">
+                    <span class="d2-badge d2-badge-borrowed">Verliehen</span>
+                    <span class="d2-rating">&#11088; 4.5</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d2-card">
+                <div class="d2-accent d2-accent-blue"></div>
+                <div class="d2-thumb d2-thumb-3">&#128268;</div>
+                <div class="d2-card-body">
+                  <div class="d2-card-top">
+                    <div class="d2-card-title">Bosch Winkelschleifer GWS 18</div>
+                    <div class="d2-card-price">5 &euro;</div>
+                  </div>
+                  <div class="d2-card-meta">Frank B. &middot; Koeln-Innenstadt</div>
+                  <div class="d2-card-bottom">
+                    <span class="d2-badge d2-badge-available">Verfuegbar</span>
+                    <span class="d2-rating">&#11088; 4.2</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- FAB -->
+            <div class="d2-fab">+</div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Palette swatches -->
+      <div style="display:flex;flex-direction:column;gap:5px;align-self:flex-start;">
+        <div style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin-bottom:2px;">Farbpalette</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,#E8470A,#F5A623);"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#E8470A &rarr; #F5A623 Header</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#FAFAFA;border:1px solid rgba(255,255,255,0.12);"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#FAFAFA Background</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#E8470A;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#E8470A Preis / FAB</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#16A34A;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#16A34A Verfuegbar</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#1A1A1A;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#1A1A1A Aktiver Chip</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== DESIGN 3: PROFESSIONAL & DENSE ===== -->
+    <div class="design-column">
+      <div>
+        <div class="design-label">Direction 3</div>
+        <div class="design-name">Professional &amp; Dense</div>
+      </div>
+
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="d3-screen">
+
+            <!-- Dark navy header -->
+            <div class="d3-header">
+              <span class="d3-app-name">Wippestoolen</span>
+              <div class="d3-header-icon">&#128276;</div>
+              <div class="d3-header-icon">&#128100;</div>
+            </div>
+
+            <!-- Persistent rectangular search with Filter button -->
+            <div class="d3-search-bar">
+              <div class="d3-search-inner">
+                <span class="d3-search-icon">&#128269;</span>
+                <span class="d3-search-text">Suchen...</span>
+                <span class="d3-filter-btn">Filter</span>
+              </div>
+            </div>
+
+            <!-- Small flat category pills -->
+            <div class="d3-pills-row">
+              <div class="d3-pill">Alle</div>
+              <div class="d3-pill active">Werkzeug</div>
+              <div class="d3-pill">Garten</div>
+              <div class="d3-pill">Haushalt</div>
+              <div class="d3-pill">Sport</div>
+            </div>
+
+            <!-- Result count + sort -->
+            <div class="d3-result-bar">
+              <span class="d3-result-count">12 Werkzeuge gefunden</span>
+              <span class="d3-sort-link">Sortieren &#9662;</span>
+            </div>
+
+            <!-- Dense single-column rows -->
+            <div class="d3-list">
+
+              <div class="d3-row">
+                <div class="d3-thumb d3-thumb-1">&#128296;</div>
+                <div class="d3-row-body">
+                  <div class="d3-row-title-line">
+                    <div class="d3-dot d3-dot-green"></div>
+                    <div class="d3-row-title">Bosch GSR 18V Akkuschrauber</div>
+                  </div>
+                  <div class="d3-row-meta">Werkzeug &middot; Koeln-Nippes &middot; Klaus M.</div>
+                  <div class="d3-row-bottom">
+                    <span class="d3-rating">&#11088; 4.8</span>
+                    <span class="d3-price">3,50 &euro;/Tag</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d3-row">
+                <div class="d3-thumb d3-thumb-2">&#127807;</div>
+                <div class="d3-row-body">
+                  <div class="d3-row-title-line">
+                    <div class="d3-dot d3-dot-green"></div>
+                    <div class="d3-row-title">Stihl Rasenmaeher RM 248 T</div>
+                  </div>
+                  <div class="d3-row-meta">Garten &middot; Koeln-Ehrenfeld &middot; Anna S.</div>
+                  <div class="d3-row-bottom">
+                    <span class="d3-rating">&#11088; 5.0</span>
+                    <span class="d3-price">8,00 &euro;/Tag</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d3-row">
+                <div class="d3-thumb d3-thumb-1">&#128296;</div>
+                <div class="d3-row-body">
+                  <div class="d3-row-title-line">
+                    <div class="d3-dot d3-dot-red"></div>
+                    <div class="d3-row-title">Makita Stichsaege JV0600K</div>
+                  </div>
+                  <div class="d3-row-meta">Werkzeug &middot; Koeln-Sued &middot; Peter H.</div>
+                  <div class="d3-row-bottom">
+                    <span class="d3-rating">&#11088; 4.5</span>
+                    <span class="d3-price">4,00 &euro;/Tag</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d3-row">
+                <div class="d3-thumb d3-thumb-3">&#128218;</div>
+                <div class="d3-row-body">
+                  <div class="d3-row-title-line">
+                    <div class="d3-dot d3-dot-green"></div>
+                    <div class="d3-row-title">Kaercher Hochdruckreiniger</div>
+                  </div>
+                  <div class="d3-row-meta">Garten &middot; Koeln-Kalk &middot; Maria T.</div>
+                  <div class="d3-row-bottom">
+                    <span class="d3-rating">&#11088; 4.9</span>
+                    <span class="d3-price">6,00 &euro;/Tag</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d3-row">
+                <div class="d3-thumb d3-thumb-4">&#128268;</div>
+                <div class="d3-row-body">
+                  <div class="d3-row-title-line">
+                    <div class="d3-dot d3-dot-green"></div>
+                    <div class="d3-row-title">Bosch Winkelschleifer GWS</div>
+                  </div>
+                  <div class="d3-row-meta">Werkzeug &middot; Koeln-Innenstadt &middot; Frank B.</div>
+                  <div class="d3-row-bottom">
+                    <span class="d3-rating">&#11088; 4.2</span>
+                    <span class="d3-price-free">Kostenlos</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d3-row">
+                <div class="d3-thumb d3-thumb-5">&#127968;</div>
+                <div class="d3-row-body">
+                  <div class="d3-row-title-line">
+                    <div class="d3-dot d3-dot-green"></div>
+                    <div class="d3-row-title">Leiter 3-teilig 7m Aluminium</div>
+                  </div>
+                  <div class="d3-row-meta">Haushalt &middot; Koeln-Rodenkirchen &middot; Jens W.</div>
+                  <div class="d3-row-bottom">
+                    <span class="d3-rating">&#11088; 4.7</span>
+                    <span class="d3-price">2,50 &euro;/Tag</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Palette swatches -->
+      <div style="display:flex;flex-direction:column;gap:5px;align-self:flex-start;">
+        <div style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin-bottom:2px;">Farbpalette</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#0F172A;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#0F172A Header / Text</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#F8FAFC;border:1px solid rgba(255,255,255,0.12);"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#F8FAFC Background</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#0369A1;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#0369A1 Aktive Kategorie</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#22C55E;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#22C55E Verfuegbar Dot</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:18px;height:18px;border-radius:4px;background:#EF4444;"></div>
+          <span style="font-size:0.7rem;color:#9ca3af;">#EF4444 Verliehen Dot</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /designs-wrapper -->
+
+
+  <!-- Comparison table -->
+  <div class="comparison-section">
+    <div class="comparison-title">Vergleichsmatrix</div>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Attribut</th>
+          <th>1 &mdash; Clean &amp; Minimal</th>
+          <th>2 &mdash; Bold &amp; Vibrant</th>
+          <th>3 &mdash; Professional &amp; Dense</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ziel-Feeling</td>
+          <td>Premium iOS, ruhig</td>
+          <td>Community, energetisch</td>
+          <td>Utility, effizient</td>
+        </tr>
+        <tr>
+          <td>Layout</td>
+          <td>2-Spalten-Grid</td>
+          <td>1-Spalte, Thumbnail links</td>
+          <td>1-Spalte, dichte Rows</td>
+        </tr>
+        <tr>
+          <td>Card-Hoehe</td>
+          <td>~220 px</td>
+          <td>~80 px</td>
+          <td>~80 px</td>
+        </tr>
+        <tr>
+          <td>Ecken-Radius</td>
+          <td>24 px (rounded-3xl)</td>
+          <td>8 px (rounded-2xl)</td>
+          <td>4 px oder keine</td>
+        </tr>
+        <tr>
+          <td>Schatten</td>
+          <td>Ja, sanft (shadow-md)</td>
+          <td>Keine (flat)</td>
+          <td>Keine (Divider-Linie)</td>
+        </tr>
+        <tr>
+          <td>Header-Stil</td>
+          <td>Transparent / same bg</td>
+          <td>Gradient #E8470A &rarr; #F5A623</td>
+          <td>Solid Dark #0F172A</td>
+        </tr>
+        <tr>
+          <td>Kategorie-Stil</td>
+          <td>Text mit Unterstrich-Indikator</td>
+          <td>Icon + gefuellter Chip</td>
+          <td>Kleiner Text-Pill</td>
+        </tr>
+        <tr>
+          <td>FAB-Button</td>
+          <td>Nein</td>
+          <td>Ja (#E8470A)</td>
+          <td>Nein</td>
+        </tr>
+        <tr>
+          <td>Neue Dependency</td>
+          <td>Keine</td>
+          <td>expo-linear-gradient</td>
+          <td>Keine</td>
+        </tr>
+        <tr>
+          <td>Infos pro Card</td>
+          <td>Minimal (3 Felder)</td>
+          <td>Mittel (5 Felder)</td>
+          <td>Dicht (6+ Felder)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

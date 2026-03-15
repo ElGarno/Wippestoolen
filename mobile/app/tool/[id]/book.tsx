@@ -7,11 +7,14 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTool } from "../../../hooks/useTools";
 import { useCreateBooking } from "../../../hooks/useBookings";
 import { Button } from "../../../components/ui/Button";
+import { colors } from "../../../constants/colors";
 
 function parseDateString(s: string): Date {
   const [y, m, d] = s.split("-").map(Number);
@@ -27,7 +30,11 @@ function formatDate(date: Date): string {
 
 function formatDateDisplay(dateStr: string): string {
   const date = parseDateString(dateStr);
-  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+  return date.toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function daysBetween(start: string, end: string): number {
@@ -36,7 +43,7 @@ function daysBetween(start: string, end: string): number {
   return Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
 }
 
-/** Simple inline date stepper (no native date picker dependency needed). */
+/** Inline date stepper with orange stepper buttons. */
 function DateStepper({
   label,
   value,
@@ -57,17 +64,17 @@ function DateStepper({
   };
 
   return (
-    <View className="mb-4">
-      <Text className="text-sm font-medium text-gray-700 mb-1">{label}</Text>
-      <View className="flex-row items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
-        <TouchableOpacity className="px-4 py-3" onPress={() => step(-1)}>
-          <Text className="text-lg text-primary-600 font-bold">−</Text>
+    <View style={styles.stepperWrapper}>
+      <Text style={styles.stepperLabel}>{label}</Text>
+      <View style={styles.stepperRow}>
+        <TouchableOpacity style={styles.stepperBtn} onPress={() => step(-1)}>
+          <Text style={styles.stepperBtnText}>−</Text>
         </TouchableOpacity>
-        <View className="flex-1 items-center">
-          <Text className="text-base text-gray-900">{formatDateDisplay(value)}</Text>
+        <View style={styles.stepperValueBox}>
+          <Text style={styles.stepperValue}>{formatDateDisplay(value)}</Text>
         </View>
-        <TouchableOpacity className="px-4 py-3" onPress={() => step(1)}>
-          <Text className="text-lg text-primary-600 font-bold">+</Text>
+        <TouchableOpacity style={styles.stepperBtn} onPress={() => step(1)}>
+          <Text style={styles.stepperBtnText}>+</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -91,16 +98,16 @@ export default function BookToolScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary[600]} />
       </View>
     );
   }
 
   if (!tool) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-gray-500">Werkzeug nicht gefunden</Text>
+      <View style={styles.centered}>
+        <Text style={styles.notFoundText}>Werkzeug nicht gefunden</Text>
       </View>
     );
   }
@@ -150,69 +157,102 @@ export default function BookToolScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Jetzt ausleihen", headerBackTitle: "Zurück" }} />
-      <ScrollView className="flex-1 bg-gray-50">
-        <View className="p-4">
-          {/* Tool summary */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Text className="text-lg font-bold text-gray-900">{tool.title}</Text>
-            <Text className="text-sm text-gray-500 mt-0.5">{tool.category.name}</Text>
-            <View className="flex-row justify-between mt-2">
-              <Text className="text-sm text-gray-500">Tagesrate</Text>
-              <Text className="text-sm font-semibold text-gray-900">
+      <Stack.Screen
+        options={{
+          title: "Jetzt ausleihen",
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 8 }}>
+              <Text style={{ fontSize: 17, color: colors.primary[600] }}>‹ Zurück</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <ScrollView style={styles.scrollView}>
+        {/* Gradient header with tool title */}
+        <LinearGradient
+          colors={[colors.gradient.start, colors.gradient.end]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientHeader}
+        >
+          <Text style={styles.gradientTitle}>{tool.title}</Text>
+          <Text style={styles.gradientSubtitle}>{tool.category.name}</Text>
+        </LinearGradient>
+
+        <View style={styles.content}>
+          {/* Tool summary card */}
+          <View style={styles.card}>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Tagesrate</Text>
+              <Text style={styles.summaryValue}>
                 {dailyRate > 0 ? `${dailyRate.toFixed(2)} €` : "Kostenlos"}
               </Text>
             </View>
             {depositAmount > 0 && (
-              <View className="flex-row justify-between mt-1">
-                <Text className="text-sm text-gray-500">Kaution</Text>
-                <Text className="text-sm font-semibold text-gray-900">
-                  {depositAmount.toFixed(2)} €
-                </Text>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Kaution</Text>
+                <Text style={styles.summaryValue}>{depositAmount.toFixed(2)} €</Text>
               </View>
             )}
           </View>
 
-          {/* Dates */}
-          <Text className="text-base font-semibold text-gray-900 mb-3">Zeitraum</Text>
-          <DateStepper label="Von" value={startDate} onChange={(v) => {
-            setStartDate(v);
-            if (endDate < v) setEndDate(v);
-          }} />
-          <DateStepper label="Bis" value={endDate} onChange={setEndDate} minDate={startDate} />
+          {/* Date section */}
+          <Text style={styles.sectionTitle}>Zeitraum</Text>
+          <View style={styles.card}>
+            <DateStepper
+              label="Von"
+              value={startDate}
+              onChange={(v) => {
+                setStartDate(v);
+                if (endDate < v) setEndDate(v);
+              }}
+            />
+            <DateStepper
+              label="Bis"
+              value={endDate}
+              onChange={setEndDate}
+              minDate={startDate}
+            />
+          </View>
 
           {/* Pickup method */}
-          <Text className="text-base font-semibold text-gray-900 mb-3 mt-2">Abholung</Text>
-          <View className="flex-row mb-4 gap-2">
+          <Text style={styles.sectionTitle}>Abholung</Text>
+          <View style={styles.pickupRow}>
             <TouchableOpacity
-              className={`flex-1 py-3 rounded-lg border items-center ${
-                pickupMethod === "pickup"
-                  ? "bg-primary-600 border-primary-600"
-                  : "bg-white border-gray-300"
-              }`}
+              style={[
+                styles.pickupOption,
+                pickupMethod === "pickup" ? styles.pickupOptionActive : styles.pickupOptionInactive,
+              ]}
               onPress={() => setPickupMethod("pickup")}
             >
               <Text
-                className={`font-medium ${
-                  pickupMethod === "pickup" ? "text-white" : "text-gray-700"
-                }`}
+                style={[
+                  styles.pickupOptionText,
+                  pickupMethod === "pickup"
+                    ? styles.pickupOptionTextActive
+                    : styles.pickupOptionTextInactive,
+                ]}
               >
                 Selbst abholen
               </Text>
             </TouchableOpacity>
             {tool.delivery_available && (
               <TouchableOpacity
-                className={`flex-1 py-3 rounded-lg border items-center ${
+                style={[
+                  styles.pickupOption,
                   pickupMethod === "delivery"
-                    ? "bg-primary-600 border-primary-600"
-                    : "bg-white border-gray-300"
-                }`}
+                    ? styles.pickupOptionActive
+                    : styles.pickupOptionInactive,
+                ]}
                 onPress={() => setPickupMethod("delivery")}
               >
                 <Text
-                  className={`font-medium ${
-                    pickupMethod === "delivery" ? "text-white" : "text-gray-700"
-                  }`}
+                  style={[
+                    styles.pickupOptionText,
+                    pickupMethod === "delivery"
+                      ? styles.pickupOptionTextActive
+                      : styles.pickupOptionTextInactive,
+                  ]}
                 >
                   Lieferung
                 </Text>
@@ -221,12 +261,12 @@ export default function BookToolScreen() {
           </View>
 
           {pickupMethod === "delivery" && (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Lieferadresse</Text>
+            <View style={styles.card}>
+              <Text style={styles.inputLabel}>Lieferadresse</Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+                style={styles.textInput}
                 placeholder="Straße, Hausnummer, PLZ Ort"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.gray[400]}
                 value={pickupAddress}
                 onChangeText={setPickupAddress}
                 multiline
@@ -235,13 +275,11 @@ export default function BookToolScreen() {
           )}
 
           {/* Message */}
-          <Text className="text-base font-semibold text-gray-900 mb-1 mt-2">
-            Nachricht (optional)
-          </Text>
+          <Text style={styles.sectionTitle}>Nachricht (optional)</Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white mb-4 min-h-[80px]"
+            style={[styles.textInput, styles.messageInput]}
             placeholder="Stell dich kurz vor oder erkläre den Verwendungszweck..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.gray[400]}
             value={message}
             onChangeText={setMessage}
             multiline
@@ -249,23 +287,23 @@ export default function BookToolScreen() {
           />
 
           {/* Cost summary */}
-          <View className="bg-white rounded-xl p-4 mb-6 border border-gray-100 shadow-sm">
-            <Text className="text-base font-semibold text-gray-900 mb-3">Kostenübersicht</Text>
-            <View className="flex-row justify-between mb-1">
-              <Text className="text-sm text-gray-500">
+          <View style={[styles.card, styles.costCard]}>
+            <Text style={styles.cardTitle}>Kostenübersicht</Text>
+            <View style={styles.costRow}>
+              <Text style={styles.costLabel}>
                 {days} {days === 1 ? "Tag" : "Tage"} × {dailyRate.toFixed(2)} €
               </Text>
-              <Text className="text-sm text-gray-900">{subtotal.toFixed(2)} €</Text>
+              <Text style={styles.costValue}>{subtotal.toFixed(2)} €</Text>
             </View>
             {depositAmount > 0 && (
-              <View className="flex-row justify-between mb-1">
-                <Text className="text-sm text-gray-500">Kaution (rückerstattbar)</Text>
-                <Text className="text-sm text-gray-900">{depositAmount.toFixed(2)} €</Text>
+              <View style={styles.costRow}>
+                <Text style={styles.costLabel}>Kaution (rückerstattbar)</Text>
+                <Text style={styles.costValue}>{depositAmount.toFixed(2)} €</Text>
               </View>
             )}
-            <View className="border-t border-gray-100 mt-2 pt-2 flex-row justify-between">
-              <Text className="text-base font-semibold text-gray-900">Gesamt</Text>
-              <Text className="text-base font-bold text-primary-600">{total.toFixed(2)} €</Text>
+            <View style={styles.costTotalRow}>
+              <Text style={styles.costTotalLabel}>Gesamt</Text>
+              <Text style={styles.costTotalValue}>{total.toFixed(2)} €</Text>
             </View>
           </View>
 
@@ -274,8 +312,208 @@ export default function BookToolScreen() {
             onPress={handleSubmit}
             isLoading={createBooking.isPending}
           />
+          <View style={styles.bottomSpacer} />
         </View>
       </ScrollView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[50],
+  },
+  notFoundText: {
+    color: colors.gray[500],
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.gray[50],
+  },
+  gradientHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+  },
+  gradientTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.white,
+    letterSpacing: -0.3,
+  },
+  gradientSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.8)",
+    marginTop: 3,
+  },
+  content: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+    marginBottom: 12,
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: colors.gray[500],
+  },
+  summaryValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.gray[900],
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  stepperWrapper: {
+    marginBottom: 14,
+  },
+  stepperLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.gray[700],
+    marginBottom: 6,
+  },
+  stepperRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: colors.white,
+  },
+  stepperBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    backgroundColor: colors.primary[50],
+  },
+  stepperBtnText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.primary[600],
+  },
+  stepperValueBox: {
+    flex: 1,
+    alignItems: "center",
+  },
+  stepperValue: {
+    fontSize: 15,
+    color: colors.gray[900],
+    fontWeight: "500",
+  },
+  pickupRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  pickupOption: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1.5,
+  },
+  pickupOptionActive: {
+    backgroundColor: colors.primary[600],
+    borderColor: colors.primary[600],
+  },
+  pickupOptionInactive: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray[300],
+  },
+  pickupOptionText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  pickupOptionTextActive: {
+    color: colors.white,
+  },
+  pickupOptionTextInactive: {
+    color: colors.gray[700],
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.gray[700],
+    marginBottom: 6,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    backgroundColor: colors.white,
+    color: colors.gray[900],
+    marginBottom: 16,
+  },
+  messageInput: {
+    minHeight: 88,
+    textAlignVertical: "top",
+  },
+  costCard: {
+    marginBottom: 20,
+  },
+  costRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  costLabel: {
+    fontSize: 13,
+    color: colors.gray[500],
+  },
+  costValue: {
+    fontSize: 13,
+    color: colors.gray[900],
+  },
+  costTotalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[100],
+    marginTop: 8,
+    paddingTop: 10,
+  },
+  costTotalLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+  },
+  costTotalValue: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.primary[600],
+  },
+  bottomSpacer: {
+    height: 32,
+  },
+});

@@ -9,9 +9,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTool, useUpdateTool, useToolCategories } from "../../../hooks/useTools";
 import { Input } from "../../../components/ui/Input";
 import { Button } from "../../../components/ui/Button";
+import { colors } from "../../../constants/colors";
 
 type Condition = "excellent" | "good" | "fair" | "poor";
 
@@ -23,7 +25,42 @@ const CONDITIONS: { label: string; value: Condition }[] = [
 ];
 
 function SectionTitle({ title }: { title: string }) {
-  return <Text className="text-base font-semibold text-gray-900 mb-3 mt-2">{title}</Text>;
+  return (
+    <Text
+      style={{
+        fontSize: 13,
+        fontWeight: "700",
+        color: colors.gray[500],
+        textTransform: "uppercase",
+        letterSpacing: 0.8,
+        marginBottom: 8,
+        marginTop: 8,
+        paddingHorizontal: 4,
+      }}
+    >
+      {title}
+    </Text>
+  );
+}
+
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <View
+      style={{
+        backgroundColor: colors.white,
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 2,
+      }}
+    >
+      {children}
+    </View>
+  );
 }
 
 export default function EditToolScreen() {
@@ -71,16 +108,16 @@ export default function EditToolScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.gray[50] }}>
+        <ActivityIndicator size="large" color={colors.primary[600]} />
       </View>
     );
   }
 
   if (!tool) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-gray-500">Werkzeug nicht gefunden</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.gray[50] }}>
+        <Text style={{ color: colors.gray[500] }}>Werkzeug nicht gefunden</Text>
       </View>
     );
   }
@@ -119,24 +156,62 @@ export default function EditToolScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Werkzeug bearbeiten", headerBackTitle: "Zurück" }} />
-      <ScrollView className="flex-1 bg-gray-50">
-        <View className="p-4">
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.gray[50] }}>
+        {/* Gradient header */}
+        <LinearGradient
+          colors={[colors.gradient.start, colors.gradient.end]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ paddingHorizontal: 20, paddingTop: 56, paddingBottom: 20 }}
+        >
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ marginBottom: 12 }}
+            activeOpacity={0.7}
+          >
+            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 15, fontWeight: "500" }}>
+              ← Zurück
+            </Text>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 26, fontWeight: "800", color: colors.white }}>
+            Werkzeug bearbeiten
+          </Text>
+          <Text style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", marginTop: 2 }}>
+            {tool.title}
+          </Text>
+        </LinearGradient>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
           {/* Basic info */}
           <SectionTitle title="Grundinformationen" />
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+          <Card>
             <Input
               label="Titel *"
               placeholder="z.B. Bohrmaschine Bosch GSR 18V"
               value={title}
               onChangeText={setTitle}
             />
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Beschreibung *</Text>
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: colors.gray[700], marginBottom: 6 }}
+              >
+                Beschreibung *
+              </Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[80px]"
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.gray[300],
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  fontSize: 15,
+                  backgroundColor: colors.white,
+                  minHeight: 80,
+                  color: colors.gray[900],
+                }}
                 placeholder="Beschreibe das Werkzeug..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.gray[400]}
                 value={description}
                 onChangeText={setDescription}
                 multiline
@@ -144,64 +219,85 @@ export default function EditToolScreen() {
               />
             </View>
             <Input label="Marke" placeholder="z.B. Bosch" value={brand} onChangeText={setBrand} />
-            <Input label="Modell" placeholder="z.B. GSR 18V-55" value={model} onChangeText={setModel} />
-          </View>
+            <Input
+              label="Modell"
+              placeholder="z.B. GSR 18V-55"
+              value={model}
+              onChangeText={setModel}
+            />
+          </Card>
 
           {/* Category */}
           <SectionTitle title="Kategorie" />
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <View className="flex-row flex-wrap gap-2">
+          <Card>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {categories?.map((cat) => (
                 <TouchableOpacity
                   key={cat.id}
-                  className={`px-3 py-2 rounded-lg border ${
-                    categoryId === cat.id
-                      ? "bg-primary-600 border-primary-600"
-                      : "bg-white border-gray-300"
-                  }`}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                    borderRadius: 10,
+                    borderWidth: 1.5,
+                    backgroundColor:
+                      categoryId === cat.id ? colors.primary[600] : colors.white,
+                    borderColor:
+                      categoryId === cat.id ? colors.primary[600] : colors.gray[300],
+                  }}
                   onPress={() => setCategoryId(cat.id)}
+                  activeOpacity={0.7}
                 >
                   <Text
-                    className={`text-sm ${
-                      categoryId === cat.id ? "text-white font-medium" : "text-gray-700"
-                    }`}
+                    style={{
+                      fontSize: 14,
+                      color: categoryId === cat.id ? colors.white : colors.gray[700],
+                      fontWeight: categoryId === cat.id ? "600" : "400",
+                    }}
                   >
                     {cat.name}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+          </Card>
 
           {/* Condition */}
           <SectionTitle title="Zustand" />
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <View className="flex-row flex-wrap gap-2">
+          <Card>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {CONDITIONS.map((c) => (
                 <TouchableOpacity
                   key={c.value}
-                  className={`px-4 py-2 rounded-lg border ${
-                    condition === c.value
-                      ? "bg-primary-600 border-primary-600"
-                      : "bg-white border-gray-300"
-                  }`}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 9,
+                    borderRadius: 10,
+                    borderWidth: 1.5,
+                    backgroundColor:
+                      condition === c.value ? colors.primary[600] : colors.white,
+                    borderColor:
+                      condition === c.value ? colors.primary[600] : colors.gray[300],
+                  }}
                   onPress={() => setCondition(c.value)}
+                  activeOpacity={0.7}
                 >
                   <Text
-                    className={`text-sm ${
-                      condition === c.value ? "text-white font-medium" : "text-gray-700"
-                    }`}
+                    style={{
+                      fontSize: 14,
+                      color: condition === c.value ? colors.white : colors.gray[700],
+                      fontWeight: condition === c.value ? "600" : "400",
+                    }}
                   >
                     {c.label}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+          </Card>
 
           {/* Pricing */}
           <SectionTitle title="Preise & Bedingungen" />
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+          <Card>
             <Input
               label="Tagesrate (€)"
               placeholder="0.00"
@@ -223,12 +319,17 @@ export default function EditToolScreen() {
               onChangeText={setMaxLoanDays}
               keyboardType="number-pad"
             />
-          </View>
+          </Card>
 
           {/* Location */}
           <SectionTitle title="Abholort" />
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Input label="Stadt" placeholder="z.B. Köln" value={pickupCity} onChangeText={setPickupCity} />
+          <Card>
+            <Input
+              label="Stadt"
+              placeholder="z.B. Köln"
+              value={pickupCity}
+              onChangeText={setPickupCity}
+            />
             <Input
               label="Postleitzahl"
               placeholder="z.B. 51147"
@@ -236,27 +337,54 @@ export default function EditToolScreen() {
               onChangeText={setPickupPostalCode}
               keyboardType="number-pad"
             />
+            {/* Delivery toggle */}
             <TouchableOpacity
-              className={`flex-row items-center justify-between p-3 rounded-lg border ${
-                deliveryAvailable ? "bg-primary-50 border-primary-200" : "bg-gray-50 border-gray-200"
-              }`}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 12,
+                borderRadius: 10,
+                borderWidth: 1,
+                backgroundColor: deliveryAvailable ? colors.primary[50] : colors.gray[50],
+                borderColor: deliveryAvailable ? colors.primary[200] : colors.gray[200],
+              }}
               onPress={() => setDeliveryAvailable(!deliveryAvailable)}
+              activeOpacity={0.7}
             >
-              <Text className="text-sm font-medium text-gray-700">Lieferung möglich</Text>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: colors.gray[700] }}
+              >
+                Lieferung möglich
+              </Text>
               <View
-                className={`w-12 h-6 rounded-full ${
-                  deliveryAvailable ? "bg-primary-600" : "bg-gray-300"
-                }`}
+                style={{
+                  width: 48,
+                  height: 26,
+                  borderRadius: 13,
+                  backgroundColor: deliveryAvailable ? colors.primary[600] : colors.gray[300],
+                  justifyContent: "center",
+                  paddingHorizontal: 2,
+                }}
               >
                 <View
-                  className={`w-5 h-5 bg-white rounded-full mt-0.5 shadow-sm ${
-                    deliveryAvailable ? "ml-6" : "ml-0.5"
-                  }`}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    backgroundColor: colors.white,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 2,
+                    elevation: 2,
+                    alignSelf: deliveryAvailable ? "flex-end" : "flex-start",
+                  }}
                 />
               </View>
             </TouchableOpacity>
             {deliveryAvailable && (
-              <View className="mt-3">
+              <View style={{ marginTop: 12 }}>
                 <Input
                   label="Lieferradius (km)"
                   placeholder="10"
@@ -266,17 +394,31 @@ export default function EditToolScreen() {
                 />
               </View>
             )}
-          </View>
+          </Card>
 
           {/* Instructions */}
           <SectionTitle title="Hinweise" />
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Benutzungshinweise</Text>
+          <Card>
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: colors.gray[700], marginBottom: 6 }}
+              >
+                Benutzungshinweise
+              </Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[60px]"
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.gray[300],
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  fontSize: 15,
+                  backgroundColor: colors.white,
+                  minHeight: 60,
+                  color: colors.gray[900],
+                }}
                 placeholder="Tipps zur korrekten Bedienung..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.gray[400]}
                 value={usageInstructions}
                 onChangeText={setUsageInstructions}
                 multiline
@@ -284,27 +426,41 @@ export default function EditToolScreen() {
               />
             </View>
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">Sicherheitshinweise</Text>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: colors.gray[700], marginBottom: 6 }}
+              >
+                Sicherheitshinweise
+              </Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[60px]"
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.gray[300],
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  fontSize: 15,
+                  backgroundColor: colors.white,
+                  minHeight: 60,
+                  color: colors.gray[900],
+                }}
                 placeholder="Wichtige Sicherheitshinweise..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.gray[400]}
                 value={safetyNotes}
                 onChangeText={setSafetyNotes}
                 multiline
                 textAlignVertical="top"
               />
             </View>
-          </View>
+          </Card>
 
           <Button
             title="Änderungen speichern"
             onPress={handleSubmit}
             isLoading={updateTool.isPending}
           />
-          <View className="h-8" />
-        </View>
-      </ScrollView>
+          <View style={{ height: 32 }} />
+        </ScrollView>
+      </View>
     </>
   );
 }

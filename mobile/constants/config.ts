@@ -12,8 +12,22 @@ const ENV = {
 
 const environment = (process.env.EXPO_PUBLIC_ENV || "development") as keyof typeof ENV;
 
+const envConfig = ENV[environment];
+const BASE_URL = envConfig.API_URL.replace("/api/v1", "");
+
 export const config = {
-  ...ENV[environment],
+  ...envConfig,
+  BASE_URL,
   environment,
-  tokenRefreshThreshold: 5 * 60, // Refresh token 5 min before expiry
+  tokenRefreshThreshold: 5 * 60, // Refresh token 5 min before expiry,
 };
+
+/**
+ * Convert a relative photo URL to an absolute URL.
+ * Backend returns paths like "/uploads/photos/..." which need the base URL prepended.
+ */
+export function getPhotoUrl(relativeUrl: string | null | undefined): string | null {
+  if (!relativeUrl) return null;
+  if (relativeUrl.startsWith("http")) return relativeUrl;
+  return `${BASE_URL}${relativeUrl}`;
+}

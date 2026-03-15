@@ -6,24 +6,20 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: colors.primary[600],
         tabBarInactiveTintColor: colors.gray[400],
         tabBarStyle: {
           backgroundColor: colors.white,
           borderTopColor: colors.gray[200],
+          borderTopWidth: 1,
           paddingBottom: 4,
+          paddingTop: 4,
           height: 56,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
-        },
-        headerStyle: {
-          backgroundColor: colors.white,
-        },
-        headerTitleStyle: {
-          fontWeight: "bold",
-          color: colors.gray[900],
         },
       }}
     >
@@ -31,28 +27,44 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🏠</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 20, color: focused ? colors.primary[600] : colors.gray[400] }}>
+              🏠
+            </Text>
+          ),
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: "Suche",
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>🔍</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 20, color: focused ? colors.primary[600] : colors.gray[400] }}>
+              🔍
+            </Text>
+          ),
         }}
       />
       <Tabs.Screen
         name="create"
         options={{
           title: "Anbieten",
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>➕</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 20, color: focused ? colors.primary[600] : colors.gray[400] }}>
+              ➕
+            </Text>
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profil",
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>👤</Text>,
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 20, color: focused ? colors.primary[600] : colors.gray[400] }}>
+              👤
+            </Text>
+          ),
         }}
       />
     </Tabs>

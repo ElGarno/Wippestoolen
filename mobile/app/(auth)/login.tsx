@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Link } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../contexts/AuthContext";
-import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 
 export default function LoginScreen() {
@@ -29,46 +38,98 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
+    <LinearGradient
+      colors={["#E8470A", "#F5A623"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ flex: 1 }}
     >
-      <ScrollView contentContainerClassName="flex-1 justify-center px-6">
-        <View className="mb-8">
-          <Text className="text-3xl font-bold text-gray-900 text-center">Wippestoolen</Text>
-          <Text className="text-base text-gray-500 text-center mt-2">
-            Werkzeuge aus der Nachbarschaft
-          </Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logo area */}
+          <View className="flex-1 justify-center px-6 pt-24 pb-8">
+            <View className="items-center mb-10">
+              <View className="w-20 h-20 bg-white rounded-3xl items-center justify-center mb-4 shadow-lg">
+                <Text style={{ fontSize: 36 }}>🔧</Text>
+              </View>
+              <Text className="text-4xl font-bold text-white text-center tracking-tight">
+                Wippestoolen
+              </Text>
+              <Text className="text-base text-white text-center mt-2 opacity-90">
+                Werkzeug leihen statt kaufen
+              </Text>
+            </View>
 
-        <Input
-          label="E-Mail"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          placeholder="name@beispiel.de"
-        />
+            {/* Floating white card */}
+            <View className="bg-white rounded-3xl p-6 shadow-2xl">
+              <Text className="text-2xl font-bold text-center mb-1" style={{ color: "#1A1A1A" }}>
+                Willkommen zuruck
+              </Text>
+              <Text className="text-sm text-gray-500 text-center mb-6">
+                Melde dich bei deinem Konto an
+              </Text>
 
-        <Input
-          label="Passwort"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-          placeholder="Passwort eingeben"
-        />
+              <Input
+                label="E-Mail"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                placeholder="name@beispiel.de"
+              />
 
-        <Button title="Anmelden" onPress={handleLogin} isLoading={isLoading} />
+              <Input
+                label="Passwort"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoComplete="password"
+                placeholder="Passwort eingeben"
+              />
 
-        <View className="mt-6 flex-row justify-center">
-          <Text className="text-gray-500">Noch kein Konto? </Text>
-          <Link href="/(auth)/register" className="text-primary-600 font-semibold">
-            Registrieren
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+              <TouchableOpacity
+                onPress={handleLogin}
+                disabled={isLoading}
+                activeOpacity={0.85}
+                style={{ marginTop: 8 }}
+              >
+                <LinearGradient
+                  colors={["#E8470A", "#F5A623"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    borderRadius: 12,
+                    paddingVertical: 15,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "row",
+                    opacity: isLoading ? 0.7 : 1,
+                  }}
+                >
+                  {isLoading && <ActivityIndicator color="white" style={{ marginRight: 8 }} />}
+                  <Text className="text-white font-bold text-base">Anmelden</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+
+            {/* Register link */}
+            <View className="mt-6 flex-row justify-center">
+              <Text className="text-white opacity-90">Noch kein Konto? </Text>
+              <Link href="/(auth)/register">
+                <Text className="text-white font-bold underline">Registrieren</Text>
+              </Link>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }

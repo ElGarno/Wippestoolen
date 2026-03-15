@@ -1,50 +1,156 @@
-import { View, Text, FlatList, RefreshControl, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter, Stack } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useMyTools, useDeleteTool } from "../../hooks/useTools";
-import { StatusBadge } from "../../components/bookings/StatusBadge";
+import { colors } from "../../constants/colors";
 import type { Tool } from "../../types";
 
-function ToolListItem({ tool, onEdit, onDelete }: { tool: Tool; onEdit: () => void; onDelete: () => void }) {
+function ToolListItem({
+  tool,
+  onEdit,
+  onDelete,
+}: {
+  tool: Tool;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   return (
-    <View className="bg-white rounded-xl p-4 mb-3 border border-gray-100 shadow-sm">
-      <View className="flex-row justify-between items-start">
-        <View className="flex-1 mr-3">
-          <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
+    <View
+      style={{
+        backgroundColor: colors.white,
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 2,
+      }}
+    >
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <Text
+            style={{ fontSize: 16, fontWeight: "600", color: colors.gray[900] }}
+            numberOfLines={1}
+          >
             {tool.title}
           </Text>
-          <Text className="text-sm text-gray-500 mt-0.5">{tool.category.name}</Text>
+          <Text style={{ fontSize: 13, color: colors.gray[500], marginTop: 2 }}>
+            {tool.category.name}
+          </Text>
         </View>
-        <View className={`px-2 py-1 rounded-full ${tool.is_available ? "bg-green-100" : "bg-red-100"}`}>
-          <Text className={`text-xs font-semibold ${tool.is_available ? "text-green-700" : "text-red-700"}`}>
+
+        {/* Availability indicator */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: tool.is_available ? colors.success : colors.error,
+            }}
+          />
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "600",
+              color: tool.is_available ? colors.success : colors.error,
+            }}
+          >
             {tool.is_available ? "Verfügbar" : "Verliehen"}
           </Text>
         </View>
       </View>
 
-      <View className="flex-row items-center justify-between mt-2">
-        <Text className="text-sm text-gray-500">
+      {/* Stats row */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 10,
+          paddingTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: colors.gray[100],
+        }}
+      >
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.gray[700] }}>
           {Number(tool.daily_rate) > 0
             ? `${Number(tool.daily_rate).toFixed(2)} €/Tag`
             : "Kostenlos"}
         </Text>
-        <Text className="text-xs text-gray-400">{tool.total_bookings} Buchungen</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <Text style={{ fontSize: 18 }}>📦</Text>
+          <Text style={{ fontSize: 12, color: colors.gray[500] }}>
+            {tool.total_bookings} {tool.total_bookings === 1 ? "Buchung" : "Buchungen"}
+          </Text>
+        </View>
       </View>
 
-      <View className="flex-row mt-3 gap-2">
+      {/* Action buttons */}
+      <View style={{ flexDirection: "row", marginTop: 12, gap: 8 }}>
         <TouchableOpacity
-          className="flex-1 border border-primary-600 rounded-lg py-2 items-center"
+          style={{
+            flex: 1,
+            borderWidth: 1.5,
+            borderColor: colors.primary[600],
+            borderRadius: 10,
+            paddingVertical: 9,
+            alignItems: "center",
+          }}
           onPress={onEdit}
+          activeOpacity={0.7}
         >
-          <Text className="text-sm text-primary-600 font-medium">Bearbeiten</Text>
+          <Text style={{ fontSize: 14, color: colors.primary[600], fontWeight: "600" }}>
+            Bearbeiten
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="flex-1 border border-red-400 rounded-lg py-2 items-center"
+          style={{
+            flex: 1,
+            borderWidth: 1.5,
+            borderColor: colors.error,
+            borderRadius: 10,
+            paddingVertical: 9,
+            alignItems: "center",
+          }}
           onPress={onDelete}
+          activeOpacity={0.7}
         >
-          <Text className="text-sm text-red-500 font-medium">Löschen</Text>
+          <Text style={{ fontSize: 14, color: colors.error, fontWeight: "600" }}>Löschen</Text>
         </TouchableOpacity>
       </View>
     </View>
+  );
+}
+
+function GradientHeader({ onBack }: { onBack: () => void }) {
+  return (
+    <LinearGradient
+      colors={[colors.gradient.start, colors.gradient.end]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={{ paddingHorizontal: 20, paddingTop: 56, paddingBottom: 20 }}
+    >
+      <TouchableOpacity onPress={onBack} style={{ marginBottom: 8 }}>
+        <Text style={{ fontSize: 17, color: "rgba(255,255,255,0.9)" }}>‹ Zurück</Text>
+      </TouchableOpacity>
+      <Text style={{ fontSize: 26, fontWeight: "800", color: colors.white }}>
+        Meine Werkzeuge
+      </Text>
+      <Text style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", marginTop: 2 }}>
+        Verwalte deine eingestellten Werkzeuge
+      </Text>
+    </LinearGradient>
   );
 }
 
@@ -75,8 +181,9 @@ export default function MyToolsScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Meine Werkzeuge", headerBackTitle: "Zurück" }} />
-      <View className="flex-1 bg-gray-50">
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.gray[50] }}>
+        <GradientHeader onBack={() => router.back()} />
         <FlatList
           data={tools}
           keyExtractor={(item) => item.id}
@@ -87,22 +194,47 @@ export default function MyToolsScreen() {
               onDelete={() => handleDelete(item.id, item.title)}
             />
           )}
-          contentContainerClassName="p-4"
+          contentContainerStyle={{ padding: 16 }}
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={() => refetch()}
+              tintColor={colors.primary[600]}
+              colors={[colors.primary[600]]}
+            />
           }
           ListEmptyComponent={
             isLoading ? (
-              <View className="items-center justify-center py-20">
-                <ActivityIndicator size="large" />
+              <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
+                <ActivityIndicator size="large" color={colors.primary[600]} />
               </View>
             ) : (
-              <View className="items-center justify-center py-20">
-                <Text className="text-4xl mb-4">🔧</Text>
-                <Text className="text-lg font-medium text-gray-500">
+              <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
+                <View
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: 36,
+                    backgroundColor: colors.primary[50],
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <Text style={{ fontSize: 32 }}>🔧</Text>
+                </View>
+                <Text style={{ fontSize: 17, fontWeight: "600", color: colors.gray[500] }}>
                   Keine Werkzeuge vorhanden
                 </Text>
-                <Text className="text-sm text-gray-400 mt-1">
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: colors.gray[400],
+                    marginTop: 6,
+                    textAlign: "center",
+                    paddingHorizontal: 32,
+                  }}
+                >
                   Stelle dein erstes Werkzeug über den Tab "Einstellen" ein
                 </Text>
               </View>

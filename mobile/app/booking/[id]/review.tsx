@@ -1,11 +1,56 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TextInput, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useBooking } from "../../../hooks/useBookings";
 import { useCreateReview } from "../../../hooks/useReviews";
-import { StarRating } from "../../../components/reviews/StarRating";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
+import { colors } from "../../../constants/colors";
+
+/** Interactive star row rendered with inline TouchableOpacity stars. */
+function StarRow({
+  rating,
+  onRate,
+  size = 36,
+}: {
+  rating: number;
+  onRate: (r: number) => void;
+  size?: number;
+}) {
+  return (
+    <View style={styles.starRow}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <TouchableOpacity
+          key={star}
+          onPress={() => onRate(star)}
+          activeOpacity={0.7}
+          style={styles.starButton}
+        >
+          <Text
+            style={[
+              styles.star,
+              { fontSize: size, color: star <= rating ? colors.accent : colors.gray[300] },
+            ]}
+          >
+            ★
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+const RATING_LABELS = ["", "Sehr schlecht", "Schlecht", "Okay", "Gut", "Ausgezeichnet"];
 
 export default function CreateReviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,16 +65,16 @@ export default function CreateReviewScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary[600]} />
       </View>
     );
   }
 
   if (!booking) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-gray-500">Buchung nicht gefunden</Text>
+      <View style={styles.centered}>
+        <Text style={styles.notFoundText}>Buchung nicht gefunden</Text>
       </View>
     );
   }
@@ -58,50 +103,59 @@ export default function CreateReviewScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Bewertung abgeben", headerBackTitle: "Zurück" }} />
-      <ScrollView className="flex-1 bg-gray-50">
-        <View className="p-4">
+      <Stack.Screen
+        options={{
+          title: "Bewertung abgeben",
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 8 }}>
+              <Text style={{ fontSize: 17, color: colors.primary[600] }}>‹ Zurück</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <ScrollView style={styles.scrollView}>
+        {/* Gradient header */}
+        <LinearGradient
+          colors={[colors.gradient.start, colors.gradient.end]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientHeader}
+        >
+          <Text style={styles.gradientTitle}>Bewertung abgeben</Text>
+          <Text style={styles.gradientSubtitle}>
+            Wie war deine Erfahrung mit {booking.tool.title}?
+          </Text>
+        </LinearGradient>
+
+        <View style={styles.content}>
           {/* Booking summary */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Text className="text-base font-semibold text-gray-900">{booking.tool.title}</Text>
-            <Text className="text-sm text-gray-500 mt-0.5">
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTool}>{booking.tool.title}</Text>
+            <Text style={styles.summaryOwner}>
               Verliehen von {booking.tool.owner.username}
             </Text>
           </View>
 
           {/* Overall rating */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Text className="text-base font-semibold text-gray-900 mb-3">
-              Gesamtbewertung *
-            </Text>
-            <StarRating
-              rating={rating}
-              size="lg"
-              interactive
-              onRate={setRating}
-            />
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Gesamtbewertung *</Text>
+            <StarRow rating={rating} onRate={setRating} size={38} />
             {rating > 0 && (
-              <Text className="text-sm text-gray-500 mt-2">
-                {["", "Sehr schlecht", "Schlecht", "Okay", "Gut", "Ausgezeichnet"][rating]}
-              </Text>
+              <Text style={styles.ratingLabel}>{RATING_LABELS[rating]}</Text>
             )}
           </View>
 
-          {/* Tool condition */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Text className="text-base font-semibold text-gray-900 mb-3">
-              Zustand des Werkzeugs
-            </Text>
-            <StarRating
-              rating={conditionRating}
-              size="lg"
-              interactive
-              onRate={setConditionRating}
-            />
+          {/* Tool condition rating */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Zustand des Werkzeugs</Text>
+            <StarRow rating={conditionRating} onRate={setConditionRating} size={34} />
+            {conditionRating > 0 && (
+              <Text style={styles.ratingLabel}>{RATING_LABELS[conditionRating]}</Text>
+            )}
           </View>
 
-          {/* Title & comment */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+          {/* Title and comment */}
+          <View style={styles.card}>
             <Input
               label="Titel (optional)"
               placeholder="Kurze Zusammenfassung..."
@@ -109,13 +163,11 @@ export default function CreateReviewScreen() {
               onChangeText={setTitle}
             />
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">
-                Kommentar (optional)
-              </Text>
+              <Text style={styles.inputLabel}>Kommentar (optional)</Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[100px]"
+                style={[styles.textInput, styles.commentInput]}
                 placeholder="Teile deine Erfahrungen..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.gray[400]}
                 value={comment}
                 onChangeText={setComment}
                 multiline
@@ -130,8 +182,123 @@ export default function CreateReviewScreen() {
             isLoading={createReview.isPending}
             disabled={rating === 0}
           />
+          <View style={styles.bottomSpacer} />
         </View>
       </ScrollView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[50],
+  },
+  notFoundText: {
+    color: colors.gray[500],
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.gray[50],
+  },
+  gradientHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 28,
+  },
+  gradientTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.white,
+    letterSpacing: -0.3,
+  },
+  gradientSubtitle: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 4,
+    lineHeight: 20,
+  },
+  content: {
+    padding: 16,
+  },
+  summaryCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  summaryTool: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+  },
+  summaryOwner: {
+    fontSize: 13,
+    color: colors.gray[500],
+    marginTop: 3,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+    marginBottom: 14,
+  },
+  starRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  starButton: {
+    marginRight: 6,
+  },
+  star: {
+    lineHeight: 44,
+  },
+  ratingLabel: {
+    marginTop: 8,
+    fontSize: 13,
+    color: colors.gray[500],
+    fontStyle: "italic",
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.gray[700],
+    marginBottom: 6,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    backgroundColor: colors.white,
+    color: colors.gray[900],
+  },
+  commentInput: {
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  bottomSpacer: {
+    height: 32,
+  },
+});

@@ -212,7 +212,7 @@ async def get_my_tools(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve user tools"
+            detail=f"Failed to retrieve user tools: {str(e)}"
         )
 
 

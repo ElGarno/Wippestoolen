@@ -1,33 +1,79 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import type { BookingStatus } from "../../types";
 
 interface StatusBadgeProps {
   status: BookingStatus | string;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bgClass: string; textClass: string }
-> = {
-  pending: { label: "Ausstehend", bgClass: "bg-yellow-100", textClass: "text-yellow-800" },
-  confirmed: { label: "Bestätigt", bgClass: "bg-blue-100", textClass: "text-blue-800" },
-  declined: { label: "Abgelehnt", bgClass: "bg-red-100", textClass: "text-red-800" },
-  cancelled: { label: "Storniert", bgClass: "bg-gray-100", textClass: "text-gray-600" },
-  active: { label: "Aktiv", bgClass: "bg-green-100", textClass: "text-green-800" },
-  returned: { label: "Zurückgegeben", bgClass: "bg-purple-100", textClass: "text-purple-800" },
-  completed: { label: "Abgeschlossen", bgClass: "bg-emerald-100", textClass: "text-emerald-800" },
+interface StatusConfig {
+  label: string;
+  backgroundColor: string;
+  textColor: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfig> = {
+  pending: {
+    label: "Ausstehend",
+    backgroundColor: "#FEF3C7",
+    textColor: "#92400E",
+  },
+  confirmed: {
+    label: "Bestätigt",
+    backgroundColor: "#DBEAFE",
+    textColor: "#1E40AF",
+  },
+  active: {
+    label: "Aktiv",
+    backgroundColor: "#FFEDD5",
+    textColor: "#9A3412",
+  },
+  completed: {
+    label: "Abgeschlossen",
+    backgroundColor: "#DCFCE7",
+    textColor: "#14532D",
+  },
+  declined: {
+    label: "Abgelehnt",
+    backgroundColor: "#FEE2E2",
+    textColor: "#991B1B",
+  },
+  cancelled: {
+    label: "Storniert",
+    backgroundColor: "#FEE2E2",
+    textColor: "#991B1B",
+  },
+  returned: {
+    label: "Zurückgegeben",
+    backgroundColor: "#CCFBF1",
+    textColor: "#134E4A",
+  },
+};
+
+const FALLBACK: StatusConfig = {
+  label: "",
+  backgroundColor: "#F5F5F5",
+  textColor: "#525252",
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = STATUS_CONFIG[status] ?? {
-    label: status,
-    bgClass: "bg-gray-100",
-    textClass: "text-gray-600",
-  };
+  const config = STATUS_CONFIG[status] ?? { ...FALLBACK, label: status };
 
   return (
-    <View className={`px-2 py-1 rounded-full ${config.bgClass}`}>
-      <Text className={`text-xs font-semibold ${config.textClass}`}>{config.label}</Text>
+    <View style={[styles.badge, { backgroundColor: config.backgroundColor }]}>
+      <Text style={[styles.label, { color: config.textColor }]}>{config.label}</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+});

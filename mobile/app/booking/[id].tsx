@@ -1,21 +1,41 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { useBooking, useConfirmBooking, useDeclineBooking, useCancelBooking, usePickupBooking, useReturnBooking } from "../../hooks/useBookings";
+import {
+  useBooking,
+  useConfirmBooking,
+  useDeclineBooking,
+  useCancelBooking,
+  usePickupBooking,
+  useReturnBooking,
+} from "../../hooks/useBookings";
 import { StatusBadge } from "../../components/bookings/StatusBadge";
 import { Button } from "../../components/ui/Button";
 import { useAuth } from "../../contexts/AuthContext";
+import { colors } from "../../constants/colors";
 
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+  return date.toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <View className="flex-row justify-between py-2 border-b border-gray-50">
-      <Text className="text-sm text-gray-500">{label}</Text>
-      <Text className="text-sm text-gray-900 font-medium">{value}</Text>
+    <View style={styles.detailRow}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue}>{value}</Text>
     </View>
   );
 }
@@ -34,16 +54,16 @@ export default function BookingDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary[600]} />
       </View>
     );
   }
 
   if (!booking) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-gray-500">Buchung nicht gefunden</Text>
+      <View style={styles.centered}>
+        <Text style={styles.notFoundText}>Buchung nicht gefunden</Text>
       </View>
     );
   }
@@ -56,9 +76,10 @@ export default function BookingDetailScreen() {
       { text: "Abbrechen", style: "cancel" },
       {
         text: "Bestätigen",
-        onPress: () => confirm.mutate(undefined, {
-          onError: () => Alert.alert("Fehler", "Buchung konnte nicht bestätigt werden."),
-        }),
+        onPress: () =>
+          confirm.mutate(undefined, {
+            onError: () => Alert.alert("Fehler", "Buchung konnte nicht bestätigt werden."),
+          }),
       },
     ]);
   };
@@ -69,9 +90,10 @@ export default function BookingDetailScreen() {
       {
         text: "Ablehnen",
         style: "destructive",
-        onPress: () => decline.mutate(undefined, {
-          onError: () => Alert.alert("Fehler", "Buchung konnte nicht abgelehnt werden."),
-        }),
+        onPress: () =>
+          decline.mutate(undefined, {
+            onError: () => Alert.alert("Fehler", "Buchung konnte nicht abgelehnt werden."),
+          }),
       },
     ]);
   };
@@ -82,9 +104,10 @@ export default function BookingDetailScreen() {
       {
         text: "Stornieren",
         style: "destructive",
-        onPress: () => cancel.mutate(undefined, {
-          onError: () => Alert.alert("Fehler", "Buchung konnte nicht storniert werden."),
-        }),
+        onPress: () =>
+          cancel.mutate(undefined, {
+            onError: () => Alert.alert("Fehler", "Buchung konnte nicht storniert werden."),
+          }),
       },
     ]);
   };
@@ -100,10 +123,11 @@ export default function BookingDetailScreen() {
       { text: "Abbrechen", style: "cancel" },
       {
         text: "Bestätigen",
-        onPress: () => returnBooking.mutate(undefined, {
-          onSuccess: () => router.push(`/booking/${id}/review`),
-          onError: () => Alert.alert("Fehler", "Rückgabe konnte nicht bestätigt werden."),
-        }),
+        onPress: () =>
+          returnBooking.mutate(undefined, {
+            onSuccess: () => router.push(`/booking/${id}/review`),
+            onError: () => Alert.alert("Fehler", "Rückgabe konnte nicht bestätigt werden."),
+          }),
       },
     ]);
   };
@@ -117,58 +141,76 @@ export default function BookingDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Buchungsdetails", headerBackTitle: "Zurück" }} />
-      <ScrollView className="flex-1 bg-gray-50">
-        <View className="p-4">
-          {/* Status header */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-lg font-bold text-gray-900" numberOfLines={1}>
+      <Stack.Screen
+        options={{
+          title: "Buchungsdetails",
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 8 }}>
+              <Text style={{ fontSize: 17, color: colors.primary[600] }}>‹ Zurück</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          {/* Status header card */}
+          <View style={styles.statusCard}>
+            <View style={styles.statusCardHeader}>
+              <Text style={styles.toolTitle} numberOfLines={1}>
                 {booking.tool.title}
               </Text>
               <StatusBadge status={booking.status} />
             </View>
-            <Text className="text-sm text-gray-500 mt-1">{booking.tool.category}</Text>
+            <Text style={styles.toolCategory}>{booking.tool.category}</Text>
           </View>
 
           {/* Dates & amounts */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Text className="text-base font-semibold text-gray-900 mb-2">Details</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Details</Text>
             <DetailRow label="Von" value={formatDate(booking.requested_start_date)} />
             <DetailRow label="Bis" value={formatDate(booking.requested_end_date)} />
-            <DetailRow label="Abholung" value={booking.pickup_method === "delivery" ? "Lieferung" : "Selbst abholen"} />
+            <DetailRow
+              label="Abholung"
+              value={booking.pickup_method === "delivery" ? "Lieferung" : "Selbst abholen"}
+            />
             {Number(booking.total_amount) > 0 && (
-              <DetailRow label="Gesamtbetrag" value={`${Number(booking.total_amount).toFixed(2)} €`} />
+              <DetailRow
+                label="Gesamtbetrag"
+                value={`${Number(booking.total_amount).toFixed(2)} €`}
+              />
             )}
             {Number(booking.deposit_amount) > 0 && (
-              <DetailRow label="Kaution" value={`${Number(booking.deposit_amount).toFixed(2)} €`} />
+              <DetailRow
+                label="Kaution"
+                value={`${Number(booking.deposit_amount).toFixed(2)} €`}
+              />
             )}
           </View>
 
           {/* Parties */}
-          <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-            <Text className="text-base font-semibold text-gray-900 mb-2">Beteiligte</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Beteiligte</Text>
             <DetailRow label="Ausleiher" value={booking.borrower.username} />
             <DetailRow label="Verleiher" value={booking.tool.owner.username} />
           </View>
 
           {/* Messages */}
           {booking.borrower_message && (
-            <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-              <Text className="text-sm font-semibold text-gray-700 mb-1">Nachricht des Ausleihers</Text>
-              <Text className="text-sm text-gray-600">{booking.borrower_message}</Text>
+            <View style={styles.messageCard}>
+              <Text style={styles.messageSender}>Nachricht des Ausleihers</Text>
+              <Text style={styles.messageText}>{booking.borrower_message}</Text>
             </View>
           )}
           {booking.owner_response && (
-            <View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
-              <Text className="text-sm font-semibold text-gray-700 mb-1">Antwort des Verleihers</Text>
-              <Text className="text-sm text-gray-600">{booking.owner_response}</Text>
+            <View style={styles.messageCard}>
+              <Text style={styles.messageSender}>Antwort des Verleihers</Text>
+              <Text style={styles.messageText}>{booking.owner_response}</Text>
             </View>
           )}
 
           {/* Action buttons */}
-          <View className="gap-2 mb-8">
-            {/* Owner actions */}
+          <View style={styles.actionsContainer}>
+            {/* Owner actions: pending */}
             {isOwner && booking.status === "pending" && (
               <>
                 <Button
@@ -177,50 +219,77 @@ export default function BookingDetailScreen() {
                   isLoading={confirm.isPending}
                   disabled={isActionLoading}
                 />
-                <Button
-                  title="Anfrage ablehnen"
+                <View style={styles.actionGap} />
+                {/* Decline as red outline */}
+                <TouchableOpacity
+                  style={[
+                    styles.declineButton,
+                    isActionLoading && styles.disabledButton,
+                  ]}
                   onPress={handleDecline}
-                  variant="outline"
-                  isLoading={decline.isPending}
-                  disabled={isActionLoading}
-                />
+                  disabled={isActionLoading || decline.isPending}
+                  activeOpacity={0.75}
+                >
+                  <Text style={styles.declineButtonText}>Anfrage ablehnen</Text>
+                </TouchableOpacity>
               </>
             )}
+
+            {/* Owner actions: confirmed */}
             {isOwner && booking.status === "confirmed" && (
-              <Button
-                title="Abholung bestätigen"
-                onPress={handlePickup}
-                isLoading={pickup.isPending}
-                disabled={isActionLoading}
-              />
+              <>
+                <Button
+                  title="Abholung bestätigen"
+                  onPress={handlePickup}
+                  isLoading={pickup.isPending}
+                  disabled={isActionLoading}
+                />
+                <View style={styles.actionGap} />
+              </>
             )}
+
+            {/* Owner actions: active */}
             {isOwner && booking.status === "active" && (
-              <Button
-                title="Rückgabe bestätigen"
-                onPress={handleReturn}
-                isLoading={returnBooking.isPending}
-                disabled={isActionLoading}
-              />
+              <>
+                <Button
+                  title="Rückgabe bestätigen"
+                  onPress={handleReturn}
+                  isLoading={returnBooking.isPending}
+                  disabled={isActionLoading}
+                />
+                <View style={styles.actionGap} />
+              </>
             )}
 
             {/* Borrower actions */}
-            {isBorrower && (booking.status === "pending" || booking.status === "confirmed") && (
-              <Button
-                title="Buchung stornieren"
-                onPress={handleCancel}
-                variant="outline"
-                isLoading={cancel.isPending}
-                disabled={isActionLoading}
-              />
-            )}
+            {isBorrower &&
+              (booking.status === "pending" || booking.status === "confirmed") && (
+                <>
+                  {/* Cancel as gray outline */}
+                  <TouchableOpacity
+                    style={[
+                      styles.cancelButton,
+                      isActionLoading && styles.disabledButton,
+                    ]}
+                    onPress={handleCancel}
+                    disabled={isActionLoading || cancel.isPending}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={styles.cancelButtonText}>Buchung stornieren</Text>
+                  </TouchableOpacity>
+                  <View style={styles.actionGap} />
+                </>
+              )}
 
             {/* Review after completion */}
             {(booking.status === "returned" || booking.status === "completed") && (
-              <Button
-                title="Bewertung abgeben"
-                onPress={() => router.push(`/booking/${id}/review`)}
-                variant="secondary"
-              />
+              <>
+                <Button
+                  title="Bewertung abgeben"
+                  onPress={() => router.push(`/booking/${id}/review`)}
+                />
+                <View style={styles.actionGap} />
+              </>
             )}
 
             {/* Link to tool */}
@@ -235,3 +304,149 @@ export default function BookingDetailScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[50],
+  },
+  notFoundText: {
+    color: colors.gray[500],
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.gray[50],
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  statusCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statusCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  toolTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.gray[900],
+    marginRight: 10,
+    letterSpacing: -0.2,
+  },
+  toolCategory: {
+    fontSize: 13,
+    color: colors.gray[500],
+    marginTop: 4,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray[900],
+    marginBottom: 10,
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[50],
+  },
+  detailLabel: {
+    fontSize: 13,
+    color: colors.gray[500],
+  },
+  detailValue: {
+    fontSize: 13,
+    color: colors.gray[900],
+    fontWeight: "500",
+  },
+  messageCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary[300],
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  messageSender: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.gray[700],
+    marginBottom: 4,
+  },
+  messageText: {
+    fontSize: 14,
+    color: colors.gray[600],
+    lineHeight: 20,
+  },
+  actionsContainer: {
+    marginTop: 8,
+  },
+  actionGap: {
+    height: 10,
+  },
+  declineButton: {
+    minHeight: 48,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: colors.error,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  declineButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.error,
+  },
+  cancelButton: {
+    minHeight: 48,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: colors.gray[400],
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.gray[600],
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+});
