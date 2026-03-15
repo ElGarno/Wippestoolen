@@ -3,7 +3,7 @@ version: "3.8"
 # Wippestoolen NAS Deployment (Portainer Stack)
 #
 # Required environment variables in Portainer:
-#   POSTGRES_PASSWORD, SECRET_KEY, CLOUDFLARE_TUNNEL_TOKEN
+#   POSTGRES_PASSWORD, SECRET_KEY, CLOUDFLARE_TUNNEL_TOKEN, ANTHROPIC_API_KEY
 
 services:
   db:
@@ -50,6 +50,7 @@ services:
       - ALLOWED_ORIGINS=["https://wippestoolen.de","https://www.wippestoolen.de","http://localhost:3000"]
       - RATE_LIMIT_ENABLED=true
       - RUN_MIGRATIONS=true
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     volumes:
       - wippestoolen_uploads:/app/uploads
 
