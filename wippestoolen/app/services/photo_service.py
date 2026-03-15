@@ -46,12 +46,23 @@ class PhotoService:
                 detail="You do not own this tool",
             )
 
-        # Validate content type
-        if file.content_type not in settings.ALLOWED_IMAGE_TYPES:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"File type not allowed. Allowed types: {', '.join(settings.ALLOWED_IMAGE_TYPES)}",
-            )
+        # Validate content type — fall back to extension-based detection
+        content_type = file.content_type or ""
+        if content_type not in settings.ALLOWED_IMAGE_TYPES:
+            filename = (file.filename or "").lower()
+            if filename.endswith(".png"):
+                content_type = "image/png"
+            elif filename.endswith(".webp"):
+                content_type = "image/webp"
+            elif filename.endswith((".jpg", ".jpeg", ".heic")):
+                content_type = "image/jpeg"
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"File type not allowed. Allowed types: {', '.join(settings.ALLOWED_IMAGE_TYPES)}",
+                )
+        # Update file content_type for downstream use
+        file.content_type = content_type
 
         # Read file and validate size
         content = await file.read()
