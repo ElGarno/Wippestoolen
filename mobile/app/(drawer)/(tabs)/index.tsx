@@ -19,6 +19,7 @@ import { useToolCategories } from "../../../hooks/useTools";
 import { queryKeys } from "../../../constants/queryKeys";
 import { colors } from "../../../constants/colors";
 import { getPhotoUrl } from "../../../constants/config";
+import ToolMap from "../../../components/tools/ToolMap";
 import type { ToolListItem } from "../../../types";
 import type { PaginatedToolResponse } from "../../../types/api";
 
@@ -185,10 +186,13 @@ function ToolCardInline({ tool, onPress }: CardProps) {
 
 // ─── Home Screen ─────────────────────────────────────────────────────────────
 
+type ViewMode = "list" | "map";
+
 export default function HomeScreen() {
 
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   const { data: categories } = useToolCategories();
 
@@ -273,17 +277,60 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* ── Section title ── */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          {selectedCategory
-            ? (categories?.find((c) => c.slug === selectedCategory)?.name ?? "Werkzeuge")
-            : "Alle Werkzeuge"}
-        </Text>
-        {data?.pages[0]?.total != null && (
-          <Text style={styles.sectionCount}>{data.pages[0].total} verfügbar</Text>
-        )}
+      {/* ── View toggle (Liste / Karte) ── */}
+      <View style={styles.toggleRow}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setViewMode("list")}
+          style={[
+            styles.toggleBtn,
+            styles.toggleBtnLeft,
+            viewMode === "list" && styles.toggleBtnActive,
+          ]}
+        >
+          <Text
+            style={[
+              styles.toggleBtnText,
+              viewMode === "list" && styles.toggleBtnTextActive,
+            ]}
+          >
+            Liste
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setViewMode("map")}
+          style={[
+            styles.toggleBtn,
+            styles.toggleBtnRight,
+            viewMode === "map" && styles.toggleBtnActive,
+          ]}
+        >
+          <Text
+            style={[
+              styles.toggleBtnText,
+              viewMode === "map" && styles.toggleBtnTextActive,
+            ]}
+          >
+            Karte
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {/* ── Section title (list mode only) ── */}
+      {viewMode === "list" && (
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {selectedCategory
+              ? (categories?.find((c) => c.slug === selectedCategory)?.name ?? "Werkzeuge")
+              : "Alle Werkzeuge"}
+          </Text>
+          {data?.pages[0]?.total != null && (
+            <Text style={styles.sectionCount}>{data.pages[0].total} verfügbar</Text>
+          )}
+        </View>
+      )}
     </>
   );
 
@@ -291,54 +338,65 @@ export default function HomeScreen() {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <FlatList
-        data={allTools}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ToolCardInline
-            tool={item}
-            onPress={() => router.push(`/tool/${item.id}`)}
+      {viewMode === "map" ? (
+        <>
+          {/* Render header elements outside FlatList for map mode */}
+          {ListHeader}
+          <ToolMap
+            tools={allTools}
+            onToolPress={(toolId) => router.push(`/tool/${toolId}`)}
           />
-        )}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={ListHeader}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={() => refetch()}
-            tintColor={colors.primary[600]}
-            colors={[colors.primary[600]]}
-          />
-        }
-        ListEmptyComponent={
-          isLoading ? (
-            <View style={styles.emptyContainer}>
-              <ActivityIndicator size="large" color={colors.primary[600]} />
-            </View>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>🔍</Text>
-              <Text style={styles.emptyTitle}>Keine Werkzeuge gefunden</Text>
-              <Text style={styles.emptySubtitle}>
-                Probiere eine andere Kategorie
-              </Text>
-            </View>
-          )
-        }
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
+        </>
+      ) : (
+        <FlatList
+          data={allTools}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ToolCardInline
+              tool={item}
+              onPress={() => router.push(`/tool/${item.id}`)}
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={ListHeader}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={() => refetch()}
+              tintColor={colors.primary[600]}
+              colors={[colors.primary[600]]}
+            />
           }
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <View style={styles.footerLoader}>
-              <ActivityIndicator color={colors.primary[600]} />
-            </View>
-          ) : null
-        }
-      />
+          ListEmptyComponent={
+            isLoading ? (
+              <View style={styles.emptyContainer}>
+                <ActivityIndicator size="large" color={colors.primary[600]} />
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyIcon}>🔍</Text>
+                <Text style={styles.emptyTitle}>Keine Werkzeuge gefunden</Text>
+                <Text style={styles.emptySubtitle}>
+                  Probiere eine andere Kategorie
+                </Text>
+              </View>
+            )
+          }
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator color={colors.primary[600]} />
+              </View>
+            ) : null
+          }
+        />
+      )}
 
       {/* ── FAB ── */}
       <TouchableOpacity
@@ -456,6 +514,49 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     marginLeft: 2,
+  },
+
+  // View toggle
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 4,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  toggleBtn: {
+    paddingHorizontal: 28,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: colors.gray[300],
+    backgroundColor: colors.white,
+  },
+  toggleBtnLeft: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+    borderRightWidth: 0,
+  },
+  toggleBtnRight: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.gray[300],
+  },
+  toggleBtnActive: {
+    backgroundColor: colors.gray[900],
+    borderColor: colors.gray[900],
+  },
+  toggleBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.gray[600],
+  },
+  toggleBtnTextActive: {
+    color: colors.white,
   },
 
   // Section header

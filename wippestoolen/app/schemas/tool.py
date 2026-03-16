@@ -189,6 +189,8 @@ class ToolListResponse(BaseModel):
     daily_rate: Decimal
     pickup_city: Optional[str]
     pickup_postal_code: Optional[str]
+    pickup_latitude: Optional[Decimal] = None
+    pickup_longitude: Optional[Decimal] = None
     delivery_available: bool
     average_rating: Optional[Decimal]
     total_ratings: int

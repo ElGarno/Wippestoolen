@@ -45,6 +45,8 @@ export interface ToolListItem {
   daily_rate: number;
   pickup_city?: string;
   pickup_postal_code?: string;
+  pickup_latitude?: number | null;
+  pickup_longitude?: number | null;
   delivery_available: boolean;
   average_rating?: number;
   total_ratings: number;

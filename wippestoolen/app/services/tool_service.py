@@ -20,6 +20,7 @@ from wippestoolen.app.schemas.tool import (
     ToolSearchRequest,
     ToolUpdateRequest,
 )
+from wippestoolen.app.utils.geocoding import geocode_postal_code
 
 
 class ToolNotFoundError(Exception):
@@ -55,6 +56,21 @@ class ToolService:
         if not category:
             raise ToolCategoryNotFoundError("Tool category not found or inactive")
         
+        # Resolve coordinates: prefer explicitly supplied values, fall back to
+        # geocoding from postal code when only the address text is known.
+        pickup_latitude = tool_data.pickup_latitude
+        pickup_longitude = tool_data.pickup_longitude
+        if (
+            pickup_latitude is None
+            and tool_data.pickup_postal_code
+        ):
+            coords = geocode_postal_code(
+                tool_data.pickup_postal_code,
+                tool_data.pickup_city or "",
+            )
+            if coords:
+                pickup_latitude, pickup_longitude = coords
+
         # Create tool instance
         tool = Tool(
             owner_id=user_id,
@@ -71,8 +87,8 @@ class ToolService:
             pickup_address=tool_data.pickup_address,
             pickup_city=tool_data.pickup_city,
             pickup_postal_code=tool_data.pickup_postal_code,
-            pickup_latitude=tool_data.pickup_latitude,
-            pickup_longitude=tool_data.pickup_longitude,
+            pickup_latitude=pickup_latitude,
+            pickup_longitude=pickup_longitude,
             delivery_available=tool_data.delivery_available,
             delivery_radius_km=tool_data.delivery_radius_km,
             usage_instructions=tool_data.usage_instructions,
@@ -82,7 +98,7 @@ class ToolService:
             average_rating=Decimal("0.00"),
             total_ratings=0,
         )
-        
+
         self.db.add(tool)
         await self.db.commit()
         await self.db.refresh(tool)
@@ -223,10 +239,10 @@ class ToolService:
         
         # Get tools with pagination
         main_query = f"""
-            SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate, 
-                   t.pickup_city, t.pickup_postal_code, t.delivery_available,
-                   t.average_rating, t.total_ratings,
-                   tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug, 
+            SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate,
+                   t.pickup_city, t.pickup_postal_code, t.pickup_latitude, t.pickup_longitude,
+                   t.delivery_available, t.average_rating, t.total_ratings,
+                   tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug,
                    tc.description as cat_desc, tc.icon_name as cat_icon,
                    u.id as owner_id, u.display_name, u.first_name, u.last_name,
                    u.avatar_url, u.average_rating as owner_rating, u.total_ratings as owner_ratings, u.is_verified,
@@ -258,39 +274,41 @@ class ToolService:
                 "title": row[1],
                 "description": row[2],
                 "category": {
-                    "id": row[11],
-                    "name": row[12],
-                    "slug": row[13],
-                    "description": row[14],
-                    "icon_name": row[15]
+                    "id": row[13],
+                    "name": row[14],
+                    "slug": row[15],
+                    "description": row[16],
+                    "icon_name": row[17]
                 },
                 "condition": row[3],
                 "is_available": row[4],
                 "daily_rate": row[5],
                 "pickup_city": row[6],
                 "pickup_postal_code": row[7],
-                "delivery_available": row[8],
-                "average_rating": row[9],
-                "total_ratings": row[10],
+                "pickup_latitude": row[8],
+                "pickup_longitude": row[9],
+                "delivery_available": row[10],
+                "average_rating": row[11],
+                "total_ratings": row[12],
                 "owner": {
-                    "id": row[16],
-                    "display_name": row[17],
-                    "first_name": row[18],
-                    "last_name": row[19],
-                    "avatar_url": row[20],
-                    "average_rating": row[21],
-                    "total_ratings": row[22],
-                    "is_verified": row[23]
+                    "id": row[18],
+                    "display_name": row[19],
+                    "first_name": row[20],
+                    "last_name": row[21],
+                    "avatar_url": row[22],
+                    "average_rating": row[23],
+                    "total_ratings": row[24],
+                    "is_verified": row[25]
                 },
                 "primary_photo": {
-                    "id": row[24],
-                    "original_url": row[25],
-                    "thumbnail_url": row[26],
-                    "medium_url": row[27],
-                    "large_url": row[28],
-                    "display_order": row[29],
-                    "is_primary": row[30]
-                } if row[24] else None
+                    "id": row[26],
+                    "original_url": row[27],
+                    "thumbnail_url": row[28],
+                    "medium_url": row[29],
+                    "large_url": row[30],
+                    "display_order": row[31],
+                    "is_primary": row[32]
+                } if row[26] else None
             }
             tools.append(ToolListResponse(**tool_data))
         
@@ -340,8 +358,8 @@ class ToolService:
         result = await self.db.execute(
             text(f"""
                 SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate,
-                       t.pickup_city, t.pickup_postal_code, t.delivery_available,
-                       t.average_rating, t.total_ratings,
+                       t.pickup_city, t.pickup_postal_code, t.pickup_latitude, t.pickup_longitude,
+                       t.delivery_available, t.average_rating, t.total_ratings,
                        tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug,
                        tc.description as cat_desc, tc.icon_name as cat_icon,
                        u.id as owner_id, u.display_name, u.first_name, u.last_name,
@@ -370,39 +388,41 @@ class ToolService:
                 "title": row[1],
                 "description": row[2],
                 "category": {
-                    "id": row[11] if row[11] else 0,
-                    "name": row[12] if row[12] else "Unbekannt",
-                    "slug": row[13] if row[13] else "unknown",
-                    "description": row[14] if row[14] else None,
-                    "icon_name": row[15] if row[15] else None
+                    "id": row[13] if row[13] else 0,
+                    "name": row[14] if row[14] else "Unbekannt",
+                    "slug": row[15] if row[15] else "unknown",
+                    "description": row[16] if row[16] else None,
+                    "icon_name": row[17] if row[17] else None
                 },
                 "condition": row[3],
                 "is_available": row[4],
                 "daily_rate": row[5],
                 "pickup_city": row[6],
                 "pickup_postal_code": row[7],
-                "delivery_available": row[8],
-                "average_rating": row[9],
-                "total_ratings": row[10],
+                "pickup_latitude": row[8],
+                "pickup_longitude": row[9],
+                "delivery_available": row[10],
+                "average_rating": row[11],
+                "total_ratings": row[12],
                 "owner": {
-                    "id": row[16],
-                    "display_name": row[17],
-                    "first_name": row[18],
-                    "last_name": row[19],
-                    "avatar_url": row[20],
-                    "average_rating": row[21],
-                    "total_ratings": row[22],
-                    "is_verified": row[23]
+                    "id": row[18],
+                    "display_name": row[19],
+                    "first_name": row[20],
+                    "last_name": row[21],
+                    "avatar_url": row[22],
+                    "average_rating": row[23],
+                    "total_ratings": row[24],
+                    "is_verified": row[25]
                 },
                 "primary_photo": {
-                    "id": row[24],
-                    "original_url": row[25],
-                    "thumbnail_url": row[26],
-                    "medium_url": row[27],
-                    "large_url": row[28],
-                    "display_order": row[29],
-                    "is_primary": row[30]
-                } if row[24] else None
+                    "id": row[26],
+                    "original_url": row[27],
+                    "thumbnail_url": row[28],
+                    "medium_url": row[29],
+                    "large_url": row[30],
+                    "display_order": row[31],
+                    "is_primary": row[32]
+                } if row[26] else None
             }
             tools.append(ToolListResponse(**tool_data))
         
@@ -462,10 +482,29 @@ class ToolService:
             update_fields.append(f"{field} = :{field}")
             params[field] = value
         
+        # Auto-geocode when the location changes but no explicit coordinates are
+        # supplied.  Re-geocode whenever postal code or city is updated.
+        location_changed = bool(
+            {"pickup_postal_code", "pickup_city"} & set(update_dict.keys())
+        )
+        explicit_coords = bool(
+            {"pickup_latitude", "pickup_longitude"} & set(update_dict.keys())
+        )
+        if location_changed and not explicit_coords:
+            postal_code = update_dict.get("pickup_postal_code") or params.get("pickup_postal_code")
+            city = update_dict.get("pickup_city") or params.get("pickup_city") or ""
+            if postal_code:
+                coords = geocode_postal_code(postal_code, city)
+                if coords:
+                    update_fields.append("pickup_latitude = :pickup_latitude")
+                    update_fields.append("pickup_longitude = :pickup_longitude")
+                    params["pickup_latitude"] = coords[0]
+                    params["pickup_longitude"] = coords[1]
+
         if update_fields:
             update_fields.append("updated_at = :updated_at")
             params["updated_at"] = datetime.utcnow()
-            
+
             await self.db.execute(
                 text(f"""
                     UPDATE tools 
@@ -634,8 +673,8 @@ class ToolService:
         result = await self.db.execute(
             text(f"""
                 SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate,
-                       t.pickup_city, t.pickup_postal_code, t.delivery_available,
-                       t.average_rating, t.total_ratings,
+                       t.pickup_city, t.pickup_postal_code, t.pickup_latitude, t.pickup_longitude,
+                       t.delivery_available, t.average_rating, t.total_ratings,
                        tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug,
                        tc.description as cat_desc, tc.icon_name as cat_icon,
                        u.id as owner_id, u.display_name, u.first_name, u.last_name,
@@ -665,39 +704,41 @@ class ToolService:
                 "title": row[1],
                 "description": row[2],
                 "category": {
-                    "id": row[11] if row[11] else 0,
-                    "name": row[12] if row[12] else "Unbekannt",
-                    "slug": row[13] if row[13] else "unknown",
-                    "description": row[14] if row[14] else None,
-                    "icon_name": row[15] if row[15] else None
+                    "id": row[13] if row[13] else 0,
+                    "name": row[14] if row[14] else "Unbekannt",
+                    "slug": row[15] if row[15] else "unknown",
+                    "description": row[16] if row[16] else None,
+                    "icon_name": row[17] if row[17] else None
                 },
                 "condition": row[3],
                 "is_available": row[4],
                 "daily_rate": row[5],
                 "pickup_city": row[6],
                 "pickup_postal_code": row[7],
-                "delivery_available": row[8],
-                "average_rating": row[9],
-                "total_ratings": row[10],
+                "pickup_latitude": row[8],
+                "pickup_longitude": row[9],
+                "delivery_available": row[10],
+                "average_rating": row[11],
+                "total_ratings": row[12],
                 "owner": {
-                    "id": row[16],
-                    "display_name": row[17],
-                    "first_name": row[18],
-                    "last_name": row[19],
-                    "avatar_url": row[20],
-                    "average_rating": row[21],
-                    "total_ratings": row[22],
-                    "is_verified": row[23]
+                    "id": row[18],
+                    "display_name": row[19],
+                    "first_name": row[20],
+                    "last_name": row[21],
+                    "avatar_url": row[22],
+                    "average_rating": row[23],
+                    "total_ratings": row[24],
+                    "is_verified": row[25]
                 },
                 "primary_photo": {
-                    "id": row[24],
-                    "original_url": row[25],
-                    "thumbnail_url": row[26],
-                    "medium_url": row[27],
-                    "large_url": row[28],
-                    "display_order": row[29],
-                    "is_primary": row[30]
-                } if row[24] else None
+                    "id": row[26],
+                    "original_url": row[27],
+                    "thumbnail_url": row[28],
+                    "medium_url": row[29],
+                    "large_url": row[30],
+                    "display_order": row[31],
+                    "is_primary": row[32]
+                } if row[26] else None
             }
             tools.append(ToolListResponse(**tool_data))
         
