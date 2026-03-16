@@ -369,7 +369,7 @@ async def update_booking_status(
                 NotificationPriority.HIGH,
                 {
                     "tool_title": tool_title,
-                    "owner_name": tool_info.owner.username,
+                    "owner_name": tool_info.owner.display_name,
                     "booking_id": str(booking_id),
                     "tool_id": str(tool_info.id),
                 },
@@ -390,7 +390,7 @@ async def update_booking_status(
                 NotificationPriority.HIGH,
                 {
                     "tool_title": tool_title,
-                    "borrower_name": booking.borrower.username,
+                    "borrower_name": booking.borrower.display_name,
                     "booking_id": str(booking_id),
                     "tool_id": str(tool_info.id),
                 },
@@ -466,7 +466,7 @@ async def confirm_booking(
             tool_title=tool_info.title,
             context={
                 "tool_title": tool_info.title,
-                "owner_name": tool_info.owner.username,
+                "owner_name": tool_info.owner.display_name,
                 "booking_id": str(booking_id),
                 "tool_id": str(tool_info.id),
             },
@@ -587,7 +587,7 @@ async def cancel_booking(
             tool_title=tool_info.title,
             context={
                 "tool_title": tool_info.title,
-                "borrower_name": booking.borrower.username,
+                "borrower_name": booking.borrower.display_name,
                 "booking_id": str(booking_id),
                 "tool_id": str(tool_info.id),
             },
@@ -667,20 +667,31 @@ async def mark_booking_return(
     Updates booking status to 'returned' when the tool has been returned.
     Can be done by either the borrower or tool owner.
     """
-    status_update = BookingStatusUpdateSchema(
-        status='returned',
-        return_notes=return_notes
-    )
-    
     booking_service = BookingService(db)
-    
+
     try:
+        # First transition to returned
+        status_update = BookingStatusUpdateSchema(
+            status='returned',
+            return_notes=return_notes
+        )
         booking = await booking_service.update_booking_status(
             booking_id=booking_id,
             user_id=current_user.id,
             status_update=status_update
         )
-        
+
+        # Auto-complete: transition returned → completed for MVP
+        try:
+            complete_update = BookingStatusUpdateSchema(status='completed')
+            booking = await booking_service.update_booking_status(
+                booking_id=booking_id,
+                user_id=current_user.id,
+                status_update=complete_update
+            )
+        except Exception:
+            pass  # If auto-complete fails, stay in returned state
+
         return BookingUpdatedResponse(
             booking=booking,
             message="Tool marked as returned"
