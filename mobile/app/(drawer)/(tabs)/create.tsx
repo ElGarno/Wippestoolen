@@ -51,8 +51,8 @@ export default function CreateToolScreen() {
   const [maxLoanDays, setMaxLoanDays] = useState("7");
   const [dailyRate, setDailyRate] = useState("0");
   const [depositAmount, setDepositAmount] = useState("0");
-  const [pickupCity, setPickupCity] = useState("");
-  const [pickupPostalCode, setPickupPostalCode] = useState("");
+  const [pickupCity, setPickupCity] = useState("Attendorn");
+  const [pickupPostalCode, setPickupPostalCode] = useState("57439");
   const [deliveryAvailable, setDeliveryAvailable] = useState(false);
   const [deliveryRadiusKm, setDeliveryRadiusKm] = useState("10");
   const [usageInstructions, setUsageInstructions] = useState("");
