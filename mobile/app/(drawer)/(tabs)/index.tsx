@@ -4,6 +4,7 @@ import {
   Text,
   FlatList,
   RefreshControl,
+  ScrollView,
   TouchableOpacity,
   Image,
   ActivityIndicator,
@@ -339,14 +340,13 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       {viewMode === "map" ? (
-        <>
-          {/* Render header elements outside FlatList for map mode */}
-          {ListHeader}
+        <View style={{ flex: 1 }}>
+          <ScrollView style={{ flexGrow: 0 }}>{ListHeader}</ScrollView>
           <ToolMap
             tools={allTools}
             onToolPress={(toolId) => router.push(`/tool/${toolId}`)}
           />
-        </>
+        </View>
       ) : (
         <FlatList
           data={allTools}

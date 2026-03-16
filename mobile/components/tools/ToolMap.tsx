@@ -26,19 +26,15 @@ interface ToolMapProps {
 function buildMapHtml(tools: ToolListItem[]): string {
   // Only include tools with valid coordinates
   const geoTools = tools.filter(
-    (t) =>
-      t.pickup_latitude != null &&
-      t.pickup_longitude != null &&
-      typeof t.pickup_latitude === "number" &&
-      typeof t.pickup_longitude === "number"
+    (t) => t.pickup_latitude != null && t.pickup_longitude != null
   );
 
   // Serialize marker data — escape strings to prevent XSS inside the HTML string
   const markersJson = JSON.stringify(
     geoTools.map((t) => ({
       id: t.id,
-      lat: t.pickup_latitude,
-      lng: t.pickup_longitude,
+      lat: Number(t.pickup_latitude),
+      lng: Number(t.pickup_longitude),
       title: t.title,
       price:
         Number(t.daily_rate) === 0
