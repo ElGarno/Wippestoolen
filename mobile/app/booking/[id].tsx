@@ -64,6 +64,9 @@ export default function BookingDetailScreen() {
     return (
       <View style={styles.centered}>
         <Text style={styles.notFoundText}>Buchung nicht gefunden</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+          <Text style={{ fontSize: 16, color: colors.primary[600], fontWeight: "600" }}>‹ Zurück</Text>
+        </TouchableOpacity>
       </View>
     );
   }

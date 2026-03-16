@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -275,6 +277,7 @@ export default function CreateToolScreen() {
   }
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
     <ScrollView style={styles.scrollView}>
       {/* Gradient header */}
       <LinearGradient
@@ -574,6 +577,7 @@ export default function CreateToolScreen() {
         <View style={styles.bottomSpacer} />
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

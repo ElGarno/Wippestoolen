@@ -8,6 +8,8 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -167,6 +169,7 @@ export default function BookToolScreen() {
           ),
         }}
       />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={90}>
       <ScrollView style={styles.scrollView}>
         {/* Gradient header with tool title */}
         <LinearGradient
@@ -315,6 +318,7 @@ export default function BookToolScreen() {
           <View style={styles.bottomSpacer} />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </>
   );
 }
