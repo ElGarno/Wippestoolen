@@ -1,0 +1,1 @@
+"""Wippestoolen FastAPI application."""

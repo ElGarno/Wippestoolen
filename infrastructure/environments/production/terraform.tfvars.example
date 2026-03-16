@@ -1,0 +1,32 @@
+# Wippestoolen Production Configuration
+# Copy this file to terraform.tfvars and customize the values
+
+# AWS Configuration
+aws_region  = "eu-central-1"
+aws_profile = "private-account"
+
+# Domain Configuration (optional for initial deployment)
+domain_name = ""  # Leave empty for initial deployment, set to "wippestoolen.de" when you have a domain
+enable_ssl  = false
+
+# Database Configuration
+db_instance_class     = "db.t3.micro"  # Free tier eligible
+db_allocated_storage  = 20             # Free tier eligible (20 GB)
+
+# ECS Configuration (cost-optimized for MVP)
+ecs_cpu           = 512   # 0.5 vCPU
+ecs_memory        = 1024  # 1 GB
+ecs_desired_count = 1     # Single instance for MVP
+
+# Application Configuration
+app_environment = "production"
+
+# CORS Configuration
+cors_origins = [
+  "https://wippestoolen.de",
+  "https://www.wippestoolen.de",
+  "http://localhost:3000"  # Remove this for production
+]
+
+# Security
+jwt_secret_key = ""  # Leave empty to auto-generate

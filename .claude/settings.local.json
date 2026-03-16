@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(python manage.py:*)",
+      "Bash(mkdir:*)",
+      "Bash(uv sync:*)",
+      "mcp__memory__create_entities",
+      "Bash(curl:*)",
+      "Bash(python test:*)",
+      "Bash(python:*)",
+      "Bash(source:*)",
+      "Bash(pytest:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(aws ecs update-service:*)",
+      "Bash(aws logs tail:*)",
+      "Bash(aws ecs describe-services:*)",
+      "Bash(docker build:*)",
+      "Bash(docker tag:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "memory",
+    "sequential-thinking",
+    "git",
+    "mcp-obsidian",
+    "context7",
+    "time"
+  ]
+}

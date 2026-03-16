@@ -1,0 +1,173 @@
+<h2>Wippestoolen Mobile App — Design Overview</h2>
+<p class="subtitle">React Native / Expo — Komplettes Architektur-Design</p>
+
+<div class="section">
+  <h3>Tech Stack</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Framework</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">Expo (Prebuild)</div>
+      <div style="font-size:12px;color:var(--text-muted);">React Native mit vollem nativen Zugriff + Expo Tooling</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Plattformen</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">iOS + Android</div>
+      <div style="font-size:12px;color:var(--text-muted);">Beide Plattformen von Anfang an</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Styling</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">NativeWind (Tailwind)</div>
+      <div style="font-size:12px;color:var(--text-muted);">Gleiche Tailwind-Klassen wie im Web-Frontend</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Navigation</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">Hybrid (Tabs + Drawer)</div>
+      <div style="font-size:12px;color:var(--text-muted);">4 Bottom Tabs + Drawer für sekundäre Features</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Server State</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">TanStack Query + Axios</div>
+      <div style="font-size:12px;color:var(--text-muted);">Caching, Background-Refetch, Optimistic Updates</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Auth</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">SecureStore + Bearer Token</div>
+      <div style="font-size:12px;color:var(--text-muted);">Backend akzeptiert Cookie (Web) + Bearer (Mobile)</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Push Notifications</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">Expo Notifications</div>
+      <div style="font-size:12px;color:var(--text-muted);">Kostenlos, APNs + FCM via Expo Proxy</div>
+    </div>
+    <div style="background:var(--surface);padding:14px;border-radius:8px;border:1px solid var(--border);">
+      <div class="label">Branch</div>
+      <div style="font-size:15px;font-weight:600;margin:4px 0;">feature/react-native-app</div>
+      <div style="font-size:12px;color:var(--text-muted);">Neuer Branch, unabhängig vom Web-Frontend</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>App-Struktur & Navigation</h3>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;">
+    <!-- Phone mockup -->
+    <div style="background:#1a1a2e;border-radius:16px;width:260px;padding:16px;flex-shrink:0;">
+      <div style="background:#16213e;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;border:2px solid #333;height:420px;">
+        <!-- Status bar -->
+        <div style="background:#0f3460;padding:6px 12px;display:flex;justify-content:space-between;font-size:10px;color:#999;">
+          <span>9:41</span><span>100%</span>
+        </div>
+        <!-- Header -->
+        <div style="background:#0f3460;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#ccc;font-size:14px;">☰</span>
+          <span style="color:#e94560;font-weight:bold;font-size:13px;">Wippestoolen</span>
+          <span style="color:#ccc;font-size:14px;">🔔</span>
+        </div>
+        <!-- Search bar -->
+        <div style="padding:8px;background:#1a1a2e;">
+          <div style="background:#16213e;border-radius:8px;padding:8px 10px;font-size:11px;color:#666;border:1px solid #333;">🔍 Werkzeug suchen...</div>
+        </div>
+        <!-- Categories -->
+        <div style="padding:0 8px;display:flex;gap:6px;overflow:hidden;background:#1a1a2e;">
+          <div style="background:#e94560;border-radius:12px;padding:4px 10px;font-size:9px;color:white;white-space:nowrap;">Alle</div>
+          <div style="background:#16213e;border-radius:12px;padding:4px 10px;font-size:9px;color:#ccc;white-space:nowrap;">Bohren</div>
+          <div style="background:#16213e;border-radius:12px;padding:4px 10px;font-size:9px;color:#ccc;white-space:nowrap;">Sägen</div>
+          <div style="background:#16213e;border-radius:12px;padding:4px 10px;font-size:9px;color:#ccc;white-space:nowrap;">Garten</div>
+        </div>
+        <!-- Tool cards -->
+        <div style="flex:1;padding:8px;background:#1a1a2e;overflow:hidden;">
+          <div style="background:#16213e;border-radius:8px;margin-bottom:6px;overflow:hidden;">
+            <div style="height:60px;background:linear-gradient(135deg,#0f3460,#e94560);display:flex;align-items:center;justify-content:center;font-size:24px;">🔧</div>
+            <div style="padding:8px;">
+              <div style="color:#fff;font-size:11px;font-weight:600;">Bohrmaschine Bosch</div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px;">
+                <span style="color:#666;font-size:9px;">Max M. · 500m</span>
+                <span style="color:#e94560;font-size:9px;">⭐ 4.8</span>
+              </div>
+            </div>
+          </div>
+          <div style="background:#16213e;border-radius:8px;overflow:hidden;">
+            <div style="height:60px;background:linear-gradient(135deg,#16213e,#0f3460);display:flex;align-items:center;justify-content:center;font-size:24px;">🪚</div>
+            <div style="padding:8px;">
+              <div style="color:#fff;font-size:11px;font-weight:600;">Stichsäge Makita</div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px;">
+                <span style="color:#666;font-size:9px;">Anna K. · 1.2km</span>
+                <span style="color:#e94560;font-size:9px;">⭐ 4.5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Tab Bar -->
+        <div style="background:#16213e;padding:8px 4px;display:flex;justify-content:space-around;border-top:1px solid #333;">
+          <div style="text-align:center;"><div style="font-size:16px;">🏠</div><div style="font-size:8px;color:#e94560;">Home</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">🔍</div><div style="font-size:8px;color:#666;">Suche</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">➕</div><div style="font-size:8px;color:#666;">Anbieten</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">👤</div><div style="font-size:8px;color:#666;">Profil</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation tree -->
+    <div style="flex:1;min-width:280px;">
+      <div style="background:var(--surface);border-radius:8px;padding:16px;border:1px solid var(--border);font-size:13px;line-height:2;">
+        <div style="font-weight:600;margin-bottom:8px;">Screen-Hierarchie:</div>
+        <div style="font-family:monospace;font-size:12px;color:var(--text-muted);line-height:1.8;">
+          <div><span style="color:#e94560;">Tab: Home</span></div>
+          <div>&nbsp;&nbsp;├── Tool-Liste (Feed)</div>
+          <div>&nbsp;&nbsp;├── Tool-Detail → Buchung erstellen</div>
+          <div>&nbsp;&nbsp;└── Bewertung abgeben</div>
+          <div style="margin-top:4px;"><span style="color:#e94560;">Tab: Suche</span></div>
+          <div>&nbsp;&nbsp;├── Suche + Filter</div>
+          <div>&nbsp;&nbsp;└── Kategorien-Übersicht</div>
+          <div style="margin-top:4px;"><span style="color:#e94560;">Tab: Anbieten (+)</span></div>
+          <div>&nbsp;&nbsp;├── Werkzeug erstellen</div>
+          <div>&nbsp;&nbsp;└── Foto aufnehmen (Kamera)</div>
+          <div style="margin-top:4px;"><span style="color:#e94560;">Tab: Profil</span></div>
+          <div>&nbsp;&nbsp;├── Mein Profil</div>
+          <div>&nbsp;&nbsp;├── Meine Werkzeuge</div>
+          <div>&nbsp;&nbsp;└── Meine Buchungen</div>
+          <div style="margin-top:8px;"><span style="color:#999;">Drawer (☰):</span></div>
+          <div>&nbsp;&nbsp;├── Benachrichtigungen</div>
+          <div>&nbsp;&nbsp;├── Einstellungen</div>
+          <div>&nbsp;&nbsp;├── Hilfe / FAQ</div>
+          <div>&nbsp;&nbsp;└── Abmelden</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border-radius:8px;padding:16px;border:1px solid var(--border);margin-top:12px;">
+        <div style="font-weight:600;margin-bottom:8px;font-size:13px;">Backend-Änderung (minimal):</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">
+          <div>1. Auth-Middleware: Bearer Token als Alternative zu Cookie</div>
+          <div>2. Neuer Endpoint: <code>POST /api/v1/notifications/push-token</code></div>
+          <div>3. Push-Notification Service (Expo Push API)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Projekt-Struktur (neuer Ordner: mobile/)</h3>
+  <div style="background:var(--surface);border-radius:8px;padding:16px;border:1px solid var(--border);font-family:monospace;font-size:12px;line-height:1.8;color:var(--text-muted);">
+    <div><span style="color:var(--text);">mobile/</span></div>
+    <div>├── app/                    <span style="color:#666;"># Expo Router (file-based routing)</span></div>
+    <div>│   ├── (tabs)/             <span style="color:#666;"># Tab-Layout</span></div>
+    <div>│   │   ├── index.tsx       <span style="color:#666;"># Home (Tool-Feed)</span></div>
+    <div>│   │   ├── search.tsx      <span style="color:#666;"># Suche</span></div>
+    <div>│   │   ├── create.tsx      <span style="color:#666;"># Werkzeug anbieten</span></div>
+    <div>│   │   └── profile.tsx     <span style="color:#666;"># Profil</span></div>
+    <div>│   ├── tool/[id].tsx       <span style="color:#666;"># Tool-Detail</span></div>
+    <div>│   ├── booking/[id].tsx    <span style="color:#666;"># Buchungs-Detail</span></div>
+    <div>│   ├── (auth)/             <span style="color:#666;"># Auth-Screens</span></div>
+    <div>│   │   ├── login.tsx</div>
+    <div>│   │   └── register.tsx</div>
+    <div>│   └── _layout.tsx         <span style="color:#666;"># Root Layout (Drawer)</span></div>
+    <div>├── components/             <span style="color:#666;"># Wiederverwendbare Komponenten</span></div>
+    <div>├── hooks/                  <span style="color:#666;"># Custom Hooks (useAuth, useTools...)</span></div>
+    <div>├── lib/                    <span style="color:#666;"># API Client, Query Keys, Utils</span></div>
+    <div>├── types/                  <span style="color:#666;"># TypeScript Typen (shared mit Web?)</span></div>
+    <div>├── app.json                <span style="color:#666;"># Expo Config</span></div>
+    <div>├── tailwind.config.js      <span style="color:#666;"># NativeWind Config</span></div>
+    <div>└── package.json</div>
+  </div>
+</div>
