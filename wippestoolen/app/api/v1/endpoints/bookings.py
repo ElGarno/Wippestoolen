@@ -1,5 +1,6 @@
 """Booking endpoints for the API."""
 
+import logging
 from datetime import date
 from typing import Optional
 from uuid import UUID
@@ -22,6 +23,12 @@ from wippestoolen.app.schemas.booking import (
     BookingCreatedResponse,
     BookingUpdatedResponse
 )
+from wippestoolen.app.schemas.notification import (
+    BookingNotificationEvent,
+    NotificationType,
+    NotificationPriority,
+    NotificationChannel,
+)
 from wippestoolen.app.services.booking_service import (
     BookingService,
     BookingConflictError,
@@ -29,8 +36,45 @@ from wippestoolen.app.services.booking_service import (
     BookingPermissionError,
     ToolUnavailableError
 )
+from wippestoolen.app.services.notification_service import NotificationService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
+
+
+async def _notify_booking_event(
+    db: AsyncSession,
+    recipient_id: UUID,
+    notification_type: NotificationType,
+    priority: NotificationPriority,
+    booking_id: UUID,
+    booking_status: str,
+    tool_title: str,
+    context: dict,
+    channels: Optional[list] = None,
+) -> None:
+    """Send a booking event notification, swallowing errors to avoid disrupting the main flow."""
+    try:
+        notification_service = NotificationService(db)
+        event = BookingNotificationEvent(
+            type=notification_type,
+            recipient_id=recipient_id,
+            context=context,
+            priority=priority,
+            channels=channels or [NotificationChannel.IN_APP],
+            booking_id=booking_id,
+            booking_status=booking_status,
+            tool_title=tool_title,
+        )
+        await notification_service.create_booking_notification(event)
+    except Exception:
+        logger.warning(
+            "Failed to create booking notification type=%s booking_id=%s",
+            notification_type,
+            booking_id,
+            exc_info=True,
+        )
 
 
 @router.post("", response_model=BookingCreatedResponse, status_code=status.HTTP_201_CREATED)
@@ -58,6 +102,33 @@ async def create_booking(
         booking = await booking_service.create_booking_request(
             borrower_id=current_user.id,
             booking_data=booking_data
+        )
+
+        # Notify the tool owner that someone wants to borrow their tool
+        tool_info = booking.tool
+        owner_id = tool_info.owner.id
+        tool_title = tool_info.title
+        borrower_name = (
+            current_user.display_name
+            or f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+            or current_user.email
+        )
+        await _notify_booking_event(
+            db=db,
+            recipient_id=owner_id,
+            notification_type=NotificationType.BOOKING_REQUEST,
+            priority=NotificationPriority.HIGH,
+            booking_id=booking.id,
+            booking_status="pending",
+            tool_title=tool_title,
+            context={
+                "booking_id": str(booking.id),
+                "tool_id": str(tool_info.id),
+                "borrower_name": borrower_name,
+                "tool_title": tool_title,
+                "start_date": str(booking.requested_start_date),
+                "end_date": str(booking.requested_end_date),
+            },
         )
 
         return BookingCreatedResponse(
@@ -285,6 +356,60 @@ async def update_booking_status(
             status_update=status_update
         )
 
+        # Send in-app notification based on new status
+        tool_info = booking.tool
+        tool_title = tool_info.title
+        owner_id = tool_info.owner.id
+        borrower_id = booking.borrower.id
+
+        _NOTIFY_MAP = {
+            "confirmed": (
+                borrower_id,
+                NotificationType.BOOKING_CONFIRMED,
+                NotificationPriority.HIGH,
+                {
+                    "tool_title": tool_title,
+                    "owner_name": tool_info.owner.username,
+                    "booking_id": str(booking_id),
+                    "tool_id": str(tool_info.id),
+                },
+            ),
+            "declined": (
+                borrower_id,
+                NotificationType.BOOKING_DECLINED,
+                NotificationPriority.NORMAL,
+                {
+                    "tool_title": tool_title,
+                    "booking_id": str(booking_id),
+                    "tool_id": str(tool_info.id),
+                },
+            ),
+            "cancelled": (
+                owner_id,
+                NotificationType.BOOKING_CANCELLED,
+                NotificationPriority.HIGH,
+                {
+                    "tool_title": tool_title,
+                    "borrower_name": booking.borrower.username,
+                    "booking_id": str(booking_id),
+                    "tool_id": str(tool_info.id),
+                },
+            ),
+        }
+
+        if status_update.status in _NOTIFY_MAP:
+            recipient_id, n_type, n_priority, context = _NOTIFY_MAP[status_update.status]
+            await _notify_booking_event(
+                db=db,
+                recipient_id=recipient_id,
+                notification_type=n_type,
+                priority=n_priority,
+                booking_id=booking_id,
+                booking_status=status_update.status,
+                tool_title=tool_title,
+                context=context,
+            )
+
         return BookingUpdatedResponse(
             booking=booking,
             message=f"Booking status updated to {status_update.status}"
@@ -322,19 +447,36 @@ async def confirm_booking(
     )
     
     booking_service = BookingService(db)
-    
+
     try:
         booking = await booking_service.update_booking_status(
             booking_id=booking_id,
             user_id=current_user.id,
             status_update=status_update
         )
-        
+
+        tool_info = booking.tool
+        await _notify_booking_event(
+            db=db,
+            recipient_id=booking.borrower.id,
+            notification_type=NotificationType.BOOKING_CONFIRMED,
+            priority=NotificationPriority.HIGH,
+            booking_id=booking_id,
+            booking_status="confirmed",
+            tool_title=tool_info.title,
+            context={
+                "tool_title": tool_info.title,
+                "owner_name": tool_info.owner.username,
+                "booking_id": str(booking_id),
+                "tool_id": str(tool_info.id),
+            },
+        )
+
         return BookingUpdatedResponse(
             booking=booking,
             message="Booking confirmed successfully"
         )
-        
+
     except InvalidStatusTransitionError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -356,7 +498,7 @@ async def decline_booking(
 ):
     """
     Decline a pending booking request.
-    
+
     Convenience endpoint for tool owners to decline booking requests.
     Equivalent to updating status to 'declined'.
     """
@@ -364,21 +506,37 @@ async def decline_booking(
         status='declined',
         owner_response=owner_response
     )
-    
+
     booking_service = BookingService(db)
-    
+
     try:
         booking = await booking_service.update_booking_status(
             booking_id=booking_id,
             user_id=current_user.id,
             status_update=status_update
         )
-        
+
+        tool_info = booking.tool
+        await _notify_booking_event(
+            db=db,
+            recipient_id=booking.borrower.id,
+            notification_type=NotificationType.BOOKING_DECLINED,
+            priority=NotificationPriority.NORMAL,
+            booking_id=booking_id,
+            booking_status="declined",
+            tool_title=tool_info.title,
+            context={
+                "tool_title": tool_info.title,
+                "booking_id": str(booking_id),
+                "tool_id": str(tool_info.id),
+            },
+        )
+
         return BookingUpdatedResponse(
             booking=booking,
             message="Booking declined"
         )
-        
+
     except InvalidStatusTransitionError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -400,7 +558,7 @@ async def cancel_booking(
 ):
     """
     Cancel a booking.
-    
+
     Allows borrowers to cancel pending bookings or either party to cancel confirmed bookings.
     Equivalent to updating status to 'cancelled'.
     """
@@ -408,21 +566,38 @@ async def cancel_booking(
         status='cancelled',
         cancellation_reason=cancellation_reason
     )
-    
+
     booking_service = BookingService(db)
-    
+
     try:
         booking = await booking_service.update_booking_status(
             booking_id=booking_id,
             user_id=current_user.id,
             status_update=status_update
         )
-        
+
+        tool_info = booking.tool
+        await _notify_booking_event(
+            db=db,
+            recipient_id=tool_info.owner.id,
+            notification_type=NotificationType.BOOKING_CANCELLED,
+            priority=NotificationPriority.HIGH,
+            booking_id=booking_id,
+            booking_status="cancelled",
+            tool_title=tool_info.title,
+            context={
+                "tool_title": tool_info.title,
+                "borrower_name": booking.borrower.username,
+                "booking_id": str(booking_id),
+                "tool_id": str(tool_info.id),
+            },
+        )
+
         return BookingUpdatedResponse(
             booking=booking,
             message="Booking cancelled"
         )
-        
+
     except InvalidStatusTransitionError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

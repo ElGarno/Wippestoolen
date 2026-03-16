@@ -7,6 +7,9 @@ export interface User {
   phone_number?: string;
   bio?: string;
   avatar_url?: string;
+  street_address?: string;
+  city?: string;
+  postal_code?: string;
   average_rating: number;
   total_ratings: number;
   is_active: boolean;
@@ -30,6 +33,9 @@ export interface RegisterRequest {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
+  street_address?: string;
+  city?: string;
+  postal_code?: string;
 }
 
 export interface AuthResponse {
@@ -53,6 +59,9 @@ export interface UpdateProfileRequest {
   last_name?: string;
   phone_number?: string;
   bio?: string;
+  street_address?: string;
+  city?: string;
+  postal_code?: string;
   location_visible?: boolean;
   profile_visible?: boolean;
 }

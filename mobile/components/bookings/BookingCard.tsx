@@ -22,7 +22,7 @@ function formatDate(dateStr: string): string {
 export function BookingCard({ booking, role }: BookingCardProps) {
   const router = useRouter();
   const otherParty =
-    role === "borrower" ? booking.tool.owner.username : booking.borrower.username;
+    role === "borrower" ? booking.tool.owner.display_name : booking.borrower.display_name;
 
   return (
     <TouchableOpacity

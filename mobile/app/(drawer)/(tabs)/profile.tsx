@@ -74,6 +74,9 @@ export default function ProfileScreen() {
   const [lastName, setLastName] = useState(user?.last_name ?? "");
   const [phoneNumber, setPhoneNumber] = useState(user?.phone_number ?? "");
   const [bio, setBio] = useState(user?.bio ?? "");
+  const [streetAddress, setStreetAddress] = useState(user?.street_address ?? "");
+  const [city, setCity] = useState(user?.city ?? "");
+  const [postalCode, setPostalCode] = useState(user?.postal_code ?? "");
   const [isSaving, setIsSaving] = useState(false);
 
   if (authLoading || !user) {
@@ -94,6 +97,9 @@ export default function ProfileScreen() {
     setLastName(user.last_name ?? "");
     setPhoneNumber(user.phone_number ?? "");
     setBio(user.bio ?? "");
+    setStreetAddress(user.street_address ?? "");
+    setCity(user.city ?? "");
+    setPostalCode(user.postal_code ?? "");
     setShowEditModal(true);
   };
 
@@ -110,6 +116,9 @@ export default function ProfileScreen() {
         last_name: lastName.trim() || undefined,
         phone_number: phoneNumber.trim() || undefined,
         bio: bio.trim() || undefined,
+        street_address: streetAddress.trim() || undefined,
+        city: city.trim() || undefined,
+        postal_code: postalCode.trim() || undefined,
       };
       await updateProfile(payload);
       setShowEditModal(false);
@@ -323,6 +332,34 @@ export default function ProfileScreen() {
                   textAlignVertical="top"
                 />
               </View>
+            </View>
+
+            {/* Address section */}
+            <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+              <Text className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">
+                Adresse (optional)
+              </Text>
+              <Input
+                label="Straße"
+                value={streetAddress}
+                onChangeText={setStreetAddress}
+                autoCapitalize="words"
+                placeholder="Musterstraße 12"
+              />
+              <Input
+                label="PLZ"
+                value={postalCode}
+                onChangeText={setPostalCode}
+                keyboardType="numeric"
+                placeholder="57439"
+              />
+              <Input
+                label="Stadt"
+                value={city}
+                onChangeText={setCity}
+                autoCapitalize="words"
+                placeholder="Attendorn"
+              />
             </View>
 
             <TouchableOpacity

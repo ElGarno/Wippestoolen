@@ -35,6 +35,7 @@ class User(Base):
 
     # Location data
     address: Mapped[Optional[str]] = mapped_column(Text)
+    street_address: Mapped[Optional[str]] = mapped_column(String(200))
     city: Mapped[Optional[str]] = mapped_column(String(100))
     postal_code: Mapped[Optional[str]] = mapped_column(String(20))
     country: Mapped[str] = mapped_column(String(2), default="DE")

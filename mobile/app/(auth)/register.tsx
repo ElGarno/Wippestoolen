@@ -20,6 +20,9 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("Attendorn");
+  const [postalCode, setPostalCode] = useState("57439");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleRegister() {
@@ -41,6 +44,9 @@ export default function RegisterScreen() {
         email: email.trim(),
         password,
         display_name: displayName.trim(),
+        street_address: streetAddress.trim() || undefined,
+        city: city.trim() || undefined,
+        postal_code: postalCode.trim() || undefined,
       });
     } catch (error: unknown) {
       const message =
@@ -137,6 +143,35 @@ export default function RegisterScreen() {
                   Passwörter stimmen nicht überein
                 </Text>
               )}
+
+              {/* Address section */}
+              <Text className="text-sm font-semibold text-gray-500 mt-2 mb-3">
+                Adresse (optional)
+              </Text>
+
+              <Input
+                label="Straße"
+                value={streetAddress}
+                onChangeText={setStreetAddress}
+                autoCapitalize="words"
+                placeholder="Musterstraße 12"
+              />
+
+              <Input
+                label="PLZ"
+                value={postalCode}
+                onChangeText={setPostalCode}
+                keyboardType="numeric"
+                placeholder="57439"
+              />
+
+              <Input
+                label="Stadt"
+                value={city}
+                onChangeText={setCity}
+                autoCapitalize="words"
+                placeholder="Attendorn"
+              />
 
               <TouchableOpacity
                 onPress={handleRegister}

@@ -197,8 +197,30 @@ export default function BookingDetailScreen() {
           {/* Parties */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Beteiligte</Text>
-            <DetailRow label="Ausleiher" value={booking.borrower.username} />
-            <DetailRow label="Verleiher" value={booking.tool.owner.username} />
+            {isOwner && (
+              <View style={styles.highlightRow}>
+                <Text style={styles.highlightLabel}>Ausleiher</Text>
+                <Text style={styles.highlightValue}>{booking.borrower.display_name}</Text>
+              </View>
+            )}
+            {isBorrower && (
+              <View style={styles.highlightRow}>
+                <Text style={styles.highlightLabel}>Verleiher</Text>
+                <Text style={styles.highlightValue}>{booking.tool.owner.display_name}</Text>
+              </View>
+            )}
+            {!isOwner && !isBorrower && (
+              <>
+                <DetailRow label="Ausleiher" value={booking.borrower.display_name} />
+                <DetailRow label="Verleiher" value={booking.tool.owner.display_name} />
+              </>
+            )}
+            {booking.borrower.phone_number && isOwner && (
+              <DetailRow label="Telefon" value={booking.borrower.phone_number} />
+            )}
+            {booking.tool.owner.phone_number && isBorrower && (
+              <DetailRow label="Telefon" value={booking.tool.owner.phone_number} />
+            )}
           </View>
 
           {/* Messages */}
@@ -455,5 +477,23 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.5,
+  },
+  highlightRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[50],
+  },
+  highlightLabel: {
+    fontSize: 13,
+    color: colors.gray[500],
+    fontWeight: "500",
+  },
+  highlightValue: {
+    fontSize: 15,
+    color: colors.primary[600],
+    fontWeight: "700",
   },
 });

@@ -132,7 +132,7 @@ export default function CreateReviewScreen() {
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTool}>{booking.tool.title}</Text>
             <Text style={styles.summaryOwner}>
-              Verliehen von {booking.tool.owner.username}
+              Verliehen von {booking.tool.owner.display_name}
             </Text>
           </View>
 

@@ -7,13 +7,13 @@ export type BookingStatus =
   | "returned"
   | "completed";
 
-/** Matches backend UserBasic schema (booking responses use aliased fields). */
+/** Matches backend UserBasic schema. */
 export interface BookingUser {
   id: string;
-  username: string; // aliased from display_name
-  full_name?: string;
-  rating: number; // aliased from average_rating
-  phone?: string; // aliased from phone_number
+  display_name: string;
+  full_name?: string | null;
+  average_rating: number;
+  phone_number?: string | null;
 }
 
 /** Matches backend ToolBasic schema. */
