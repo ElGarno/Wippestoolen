@@ -1,15 +1,16 @@
-# Context Session 03 - React Native Mobile App
+# Context Session 03 - React Native Mobile App + Full Platform
 
 ## Project Goal
-Build a complete React Native (Expo) mobile app for Wippestoolen with full feature parity to the existing Next.js web frontend.
+Build a complete React Native (Expo) mobile app for Wippestoolen with full feature parity, Bold & Vibrant design, AI features, and production-ready backend.
 
 ## Current Status
-- **Phase**: Feature-complete MVP, polish & new features
-- **Last Updated**: 2026-03-15
-- **Branch**: `feature/react-native-app`
-- **Backend**: Live on NAS at `https://api.wippestoolen.de/health`
-- **Mobile App**: Running in Expo Go on physical device
+- **Phase**: Feature-rich MVP, testing & polish
+- **Last Updated**: 2026-03-17 01:00
+- **Branch**: `feature/react-native-app` (synced with `master`)
+- **Backend**: Live on NAS at `https://api.wippestoolen.de` (deploy from `master`)
+- **Mobile App**: Running in Expo Go on physical iPhone
 - **Design**: Bold & Vibrant (orange-amber gradient, community-oriented)
+- **Blockers**: None critical
 
 ## Design & Plan Documents
 - **Spec**: `docs/superpowers/specs/2026-03-13-react-native-mobile-app-design.md`
@@ -19,115 +20,103 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - **Security Audit**: `.claude/doc/security/2026-03-15_public_repo_audit.md`
 - **Backend Audit**: `.claude/doc/backend/2026-03-15_backend_audit.md`
 
-## Tech Stack (Mobile)
-- Expo SDK 54 (prebuild workflow)
-- React Native with Expo Router (file-based routing)
-- NativeWind v4 (Tailwind CSS for React Native) — design uses StyleSheet.create throughout
+## Tech Stack
+### Mobile
+- Expo SDK 54, React Native, Expo Router (file-based routing)
+- StyleSheet.create throughout (no NativeWind className strings)
 - TanStack Query v5 + Axios
+- expo-linear-gradient, expo-image-picker, react-native-maps
 - Expo SecureStore for auth tokens
-- Expo Notifications for push (limited in Expo Go, needs dev build)
-- expo-linear-gradient for gradient headers
-- expo-image-picker for camera + gallery
 
-## Tasks - Completed
-- [x] Chunk 1-8: Full app implementation (auth, tools, bookings, reviews, notifications, profile)
+### Backend
+- FastAPI + SQLAlchemy (async) + PostgreSQL
+- Anthropic Claude API (Sonnet 4) for AI photo analysis
+- Jinja2 for notification templates
+- Pillow + pillow-heif for image processing
+- Deployed on Synology NAS via Portainer + Cloudflare Tunnel
+
+## Completed Tasks
+- [x] Full app implementation (auth, tools, bookings, reviews, notifications, profile)
 - [x] NAS deployment (docker-compose, Cloudflare Tunnel, PostgreSQL)
 - [x] Domain migration (Route53 → Cloudflare DNS)
-- [x] Back navigation (root Stack + manual back buttons on all sub-screens)
+- [x] Back navigation on all sub-screens (manual back buttons)
 - [x] Photo upload (gallery + camera, up to 5 per tool)
 - [x] Photo URL fix (getPhotoUrl helper for relative → absolute URL conversion)
-- [x] Bold & Vibrant redesign (23 screens + 8 components, orange-amber theme)
-- [x] Security: Git history cleaned (bfg), .gitignore hardened
-- [x] Security: JWT secret rotated
-- [x] Backend audit: 35 findings identified and fixed
-  - Critical: admin broadcast check, DDL endpoint removed, review stats restricted
-  - High: SQL injection prevention (sort/update allowlists), exception logging
-  - High: Missing description column in SQL queries, cross-join fix
-  - Medium: float/Decimal fix, route ordering, transaction consistency
-- [x] is_admin field added to User model + Alembic migration
-- [x] My Tools endpoint working (description column fix + deploy)
+- [x] Bold & Vibrant redesign (23 screens + 8 components)
+- [x] Security: Git history cleaned (bfg), .gitignore hardened, JWT rotated
+- [x] Backend audit: 35 findings fixed (SQL injection, auth, logging, etc.)
+- [x] is_admin field + migration
+- [x] AI Foto-Analyse with Claude Vision (Sonnet 4)
+- [x] Map view with react-native-maps + OpenStreetMap
+- [x] Geocoding for Attendorn area postal codes
+- [x] Booking notifications (in-app, German templates)
+- [x] Address fields in registration + profile edit
+- [x] BookingUser type fix (username → display_name)
+- [x] Borrower/Owner info display in booking detail
+- [x] Availability calendar on tool detail screen
+- [x] Booking creation fix (response parsing)
+- [x] KeyboardAvoidingView on form screens
+- [x] Booking action success alerts (confirm/decline/cancel/pickup)
+- [x] Auto-complete returned → completed for reviews
+- [x] Default pickup location Attendorn 57439
+- [x] Pickup method: info text when no delivery option
+- [x] notification_preferences table + migration
+- [x] Notification model field fixes (data → action_data, channels → sent_in_app)
+- [x] Notification templates translated to German
+- [x] Mark-all-read endpoint URL fix (POST → PATCH /read-all)
+- [x] related_booking_id in notifications for navigation
+- [x] Merged feature branch into master
 
 ## Known Issues / Remaining
-- [ ] **Drawer disabled**: Temporarily replaced with `<Slot>` due to Worklets version mismatch in Expo Go
 - [ ] **Push notifications**: Not functional in Expo Go — needs dev build
-- [ ] **expo-image removed**: Replaced with React Native `Image` due to Node 25 incompatibility
-- [ ] **Tool deletion from app**: Delete functionality exists in My Tools screen but needs testing
-- [ ] **AI Foto-Analyse**: Planned feature — analyze tool photo to auto-fill form fields
+- [ ] **Drawer disabled**: Temporarily replaced with Slot due to Worklets mismatch
+- [ ] **Doppelbuchung**: Two pending bookings for same dates are both accepted (owner must decline one)
+- [ ] **Profile reviews endpoint**: GET /reviews/user/{id} returns 404 (endpoint path mismatch)
 
-## Next Up
-- [ ] AI Foto-Analyse: Use Claude Vision API to analyze tool photos and auto-fill title, brand, model, category, condition
+## Next Session Tasks
+- [ ] Test full booking lifecycle after latest deploy (notifications, confirm, review)
+- [ ] Fix profile reviews endpoint (404)
+- [ ] Add race condition protection for booking creation (SELECT FOR UPDATE)
+- [ ] Map: show tool locations from user addresses
+- [ ] Consider dev build for push notifications
+- [ ] Edit tool: add photo management (add/remove photos for existing tools)
+- [ ] Clean up old test bookings from DB
+- [ ] Consider Pushover integration for real-time alerts
 
 ## Progress Log
 ### 2026-03-14
-- Created design spec through collaborative brainstorming (with visual companion)
-- Spec reviewed and corrected (auth already uses Bearer tokens, photo upload endpoint missing, etc.)
-- Implementation plan written and reviewed (7 blocking issues fixed)
-- Executed Chunks 1-8 via subagent-driven development
-- 23 screen files created in mobile/app/
-- All core features implemented: auth, tool browsing, search, bookings, reviews, notifications, profile
-- Backend migrated from AWS ECS (~40 EUR/month) to Synology NAS (0 EUR/month)
-- Domain wippestoolen.de moved from AWS Route53 to Cloudflare DNS
-- Cloudflare Tunnel configured for api.wippestoolen.de
-- Photo storage changed from S3 to local filesystem
-- Alembic migration chain fixed (duplicate tool_photos migration removed)
-- httpx dependency added for push notification service
-- Expo SDK downgraded from 55 to 54 for Expo Go compatibility
-- expo-image replaced with React Native Image (Node 25 type-stripping issue)
-- react-native-worklets pinned to 0.5.1 for Expo Go compatibility
-- App successfully running on physical iPhone via Expo Go tunnel
+- Full app implementation (Chunks 1-8), NAS deployment, domain migration
 
-### 2026-03-15 — Milestone: Design Overhaul + Security + Backend Hardening
-- Fixed back navigation: Root layout → Stack, manual back buttons on all sub-screens
-- Added photo upload to Create Tool screen (gallery + camera via expo-image-picker)
-- Security audit: scanned repo for leaked secrets in git history
-  - Cleaned git history with bfg (terraform.tfstate, task-def.json, add_prod_categories.py)
-  - Force-pushed all branches
-  - Hardened .gitignore (.env.* glob pattern)
-  - JWT secret rotated on NAS
-- Complete Bold & Vibrant redesign:
-  - Color system changed from blue to orange/amber (#E8470A / #F5A623)
-  - expo-linear-gradient installed for gradient headers
-  - All 23 screens + 8 components rewritten with new design
-  - Category-colored accent stripes on tool cards
-  - FAB button on home screen
-  - Consistent warm community-oriented aesthetic
-- Fixed photo URL display (getPhotoUrl helper for relative paths)
-- Fixed route typo (/tools/ → /tool/)
-- Fixed daily_rate.toFixed() crash (Number() wrapping)
-- Backend audit with 35 findings:
-  - 4 CRITICAL, 11 HIGH, 12 MEDIUM, 2 LOW issues fixed
-  - SQL injection vectors closed (sort/update allowlists)
-  - Silent exception swallowing replaced with proper logging
-  - Admin checks added (broadcast, statistics, DDL endpoint removed)
-  - SQL query fixes (missing description column, cross-join)
-  - Review route ordering fixed (static paths before {review_id})
-  - is_admin field + idempotent Alembic migration
-  - Entrypoint made resilient (alembic stamp fallback)
-- My Tools endpoint working after deploy with all fixes
-- Repo is now public — all secrets cleaned from history
+### 2026-03-15 — Milestone: Design + Security + Backend Hardening
+- Bold & Vibrant redesign (23 screens, 8 components)
+- Security audit + git history cleanup + JWT rotation
+- Backend audit: 35 findings fixed
+- Photo upload + URL fix, Back navigation on all screens
+
+### 2026-03-16/17 — Milestone: AI Features + Booking Flow + Notifications
+- AI Foto-Analyse with Claude Vision (Sonnet 4)
+- Map view with react-native-maps
+- Geocoding, Availability calendar
+- Booking flow fixes (response parsing, keyboard, success alerts, auto-complete)
+- Address fields in registration + profile
+- Notification system fully operational (German templates, mark-all-read, navigation)
+- Multiple NAS deploys to fix production issues
+- Merged all changes into master branch
 
 ## Infrastructure
-- **Backend**: Synology NAS via Portainer stack
-  - `wippestoolen_postgres` (port 5435, user: wippestoolen)
-  - `wippestoolen_api` (port 8092)
-  - `wippestoolen_cloudflared` (Cloudflare Tunnel)
-- **Redis**: Reusing dsrunde_redis (DB 1)
-- **DNS**: Cloudflare (wippestoolen.de)
-  - `api.wippestoolen.de` → Tunnel → NAS
-  - `www.wippestoolen.de` → Vercel (frontend, not yet deployed)
-- **Domain Registrar**: AWS Route53 (renewal Aug 2026)
-- **Env vars in Portainer**: POSTGRES_PASSWORD, SECRET_KEY, CLOUDFLARE_TUNNEL_TOKEN
-- **DB user**: wippestoolen (not wippestoolen_user)
+- **Backend**: Synology NAS via Portainer (deploy from `master`)
+  - wippestoolen_postgres (port 5435, user: wippestoolen)
+  - wippestoolen_api (port 8092)
+  - wippestoolen_cloudflared (Cloudflare Tunnel)
+- **Env vars**: POSTGRES_PASSWORD, SECRET_KEY, CLOUDFLARE_TUNNEL_TOKEN, ANTHROPIC_API_KEY
 - **Admin user**: faffi@gmx.de (is_admin = true)
+- **Test user**: viviwoe@gmx.de (ViviFee)
 
 ## Architecture Decisions
-- Backend already supports Bearer tokens (no auth changes needed)
-- Distance-based search deferred to post-MVP
-- Offline mutation queueing deferred to post-MVP
-- Deep linking deferred to post-MVP
-- Photos stored locally on NAS (not S3) — sufficient for low-traffic MVP
-- Photos use primary_photo for list views, photos[] array for detail views
-- Photo URLs are relative paths — getPhotoUrl() converts to absolute
-- Booking pagination uses different shape than tools (bookings + nested pagination object)
-- Bold & Vibrant design chosen over Clean & Minimal and Professional & Dense
-- StyleSheet.create used throughout instead of NativeWind className strings
+- Photos stored locally on NAS, relative URLs converted by getPhotoUrl()
+- react-native-maps instead of WebView/Leaflet (Expo Go compatible)
+- Claude Sonnet 4 for AI analysis (Haiku too inaccurate)
+- Jinja2 for notification templates
+- Booking auto-completes on return (no separate completed step)
+- Default location: Attendorn 57439
+- Both branches kept in sync (feature/react-native-app + master)
