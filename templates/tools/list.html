@@ -1,0 +1,82 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Browse Tools - Wippestoolen{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Browse Available Tools</h1>
+    
+    <!-- Search and Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="search" placeholder="Search tools..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.slug }}" {% if category.slug == selected_category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tools Grid -->
+    <div class="row g-4">
+        {% for tool in tools %}
+        <div class="col-md-4">
+            <div class="card tool-card h-100">
+                {% if tool.main_photo %}
+                <img src="{{ tool.main_photo.image.url }}" class="card-img-top" alt="{{ tool.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="bi bi-tools text-white display-1"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ tool.title }}</h5>
+                        <span class="status-badge status-{% if tool.is_available %}available{% else %}unavailable{% endif %}">
+                            {% if tool.is_available %}Available{% else %}In Use{% endif %}
+                        </span>
+                    </div>
+                    {% if tool.category %}
+                    <span class="category-badge">{{ tool.category.name }}</span>
+                    {% endif %}
+                    <p class="text-muted small mt-2 mb-2">
+                        <i class="bi bi-geo-alt"></i> {{ tool.address|default:"Location not specified" }}
+                    </p>
+                    <p class="card-text">{{ tool.get_description_text|truncatewords:15|default:"No description available" }}</p>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-person"></i> {{ tool.owner.username }}
+                            <span class="rating ms-2">
+                                <i class="bi bi-star-fill"></i> {{ tool.owner.profile.average_rating|default:"New" }}
+                            </span>
+                        </small>
+                    </div>
+                    <a href="{% url 'tools:detail' tool.id %}" class="btn btn-outline-primary btn-sm mt-3">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No tools found. Try adjusting your search criteria.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

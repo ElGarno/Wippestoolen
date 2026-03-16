@@ -1,0 +1,268 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">Share Tools, Build Community</h1>
+        <p class="lead mb-4">Borrow and lend tools with your neighbors. Save money, reduce waste, strengthen connections.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'tools:list' %}" class="btn btn-light btn-lg">
+                <i class="bi bi-search"></i> Find Tools
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'tools:create' %}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-plus-circle"></i> List Your Tools
+            </a>
+            {% else %}
+            <a href="{% url 'signup' %}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-person-plus"></i> Join Now
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container mb-5">
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <i class="bi bi-people-fill text-primary display-4"></i>
+                    <h3 class="mt-3">{{ stats.users|default:"150+" }}</h3>
+                    <p class="text-muted">Active Members</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <i class="bi bi-tools text-success display-4"></i>
+                    <h3 class="mt-3">{{ stats.tools|default:"300+" }}</h3>
+                    <p class="text-muted">Tools Available</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <i class="bi bi-calendar-check text-info display-4"></i>
+                    <h3 class="mt-3">{{ stats.bookings|default:"500+" }}</h3>
+                    <p class="text-muted">Successful Shares</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <i class="bi bi-star-fill text-warning display-4"></i>
+                    <h3 class="mt-3">{{ stats.rating|default:"4.8" }}</h3>
+                    <p class="text-muted">Average Rating</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Tools -->
+<div class="container mb-5">
+    <h2 class="mb-4">Featured Tools Near You</h2>
+    <div class="row g-4">
+        {% for tool in featured_tools %}
+        <div class="col-md-4">
+            <div class="card tool-card">
+                {% if tool.main_photo %}
+                <img src="{{ tool.main_photo.image.url }}" class="card-img-top" alt="{{ tool.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="bi bi-tools text-white display-1"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ tool.title }}</h5>
+                        <span class="status-badge status-{% if tool.is_available %}available{% else %}unavailable{% endif %}">
+                            {% if tool.is_available %}Available{% else %}In Use{% endif %}
+                        </span>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i> {{ tool.address|default:"2 km away" }}
+                    </p>
+                    <p class="card-text">{{ tool.get_description_text|truncatewords:20 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <span>{{ tool.owner.profile.average_rating|default:"4.5" }}</span>
+                            <span class="text-muted">({{ tool.owner.profile.total_ratings|default:"12" }})</span>
+                        </div>
+                        <a href="{% url 'tools:detail' tool.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Sample tools for demo -->
+        <div class="col-md-4">
+            <div class="card tool-card">
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="bi bi-drill text-white display-1"></i>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">DeWalt Cordless Drill</h5>
+                        <span class="status-badge status-available">Available</span>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i> 0.5 km away
+                    </p>
+                    <p class="card-text">18V cordless drill with 2 batteries and charger. Perfect for home projects.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <span>4.8</span>
+                            <span class="text-muted">(24)</span>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card tool-card">
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="bi bi-ladder text-white display-1"></i>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">Extension Ladder 24ft</h5>
+                        <span class="status-badge status-available">Available</span>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i> 1.2 km away
+                    </p>
+                    <p class="card-text">Aluminum extension ladder, extends up to 24 feet. Great for gutter cleaning.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <span>4.6</span>
+                            <span class="text-muted">(18)</span>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card tool-card">
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="bi bi-tree text-white display-1"></i>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">Chainsaw - Stihl MS 170</h5>
+                        <span class="status-badge status-unavailable">In Use</span>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i> 2.3 km away
+                    </p>
+                    <p class="card-text">Gas-powered chainsaw, 16" bar. Safety gear included. Experience required.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="rating">
+                            <i class="bi bi-star-fill"></i>
+                            <span>5.0</span>
+                            <span class="text-muted">(8)</span>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row">
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-search display-3 text-primary"></i>
+                </div>
+                <h4>1. Find</h4>
+                <p>Search for tools in your neighborhood by category or location</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-calendar-plus display-3 text-success"></i>
+                </div>
+                <h4>2. Request</h4>
+                <p>Choose your dates and send a booking request to the owner</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-handshake display-3 text-info"></i>
+                </div>
+                <h4>3. Collect</h4>
+                <p>Meet your neighbor and pick up the tool at the agreed time</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-star display-3 text-warning"></i>
+                </div>
+                <h4>4. Return & Rate</h4>
+                <p>Return the tool and leave a review to build trust</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories -->
+<div class="container my-5">
+    <h2 class="mb-4">Browse by Category</h2>
+    <div class="row g-3">
+        <div class="col-6 col-md-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-lightning-charge display-4 text-primary"></i>
+                        <h5 class="mt-2">Power Tools</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-hammer display-4 text-success"></i>
+                        <h5 class="mt-2">Hand Tools</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-tree display-4 text-info"></i>
+                        <h5 class="mt-2">Garden Tools</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-wrench display-4 text-warning"></i>
+                        <h5 class="mt-2">Specialty</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

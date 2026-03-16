@@ -1,0 +1,117 @@
+<h2>Navigation & App-Struktur</h2>
+<p class="subtitle">Wie soll die App aufgebaut sein? Wähle den Navigations-Stil.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:20px;display:flex;flex-direction:column;height:320px;">
+      <!-- Phone mockup A: Tab Bar -->
+      <div style="background:#16213e;border-radius:12px;flex:1;display:flex;flex-direction:column;overflow:hidden;border:2px solid #333;">
+        <!-- Status bar -->
+        <div style="background:#0f3460;padding:6px 12px;display:flex;justify-content:space-between;font-size:10px;color:#999;">
+          <span>9:41</span><span>⚡ 100%</span>
+        </div>
+        <!-- Header -->
+        <div style="background:#0f3460;padding:10px 12px;text-align:center;">
+          <span style="color:#e94560;font-weight:bold;font-size:14px;">Wippestoolen</span>
+        </div>
+        <!-- Content -->
+        <div style="flex:1;padding:8px;background:#1a1a2e;">
+          <div style="background:#16213e;border-radius:8px;padding:8px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+            <div style="width:40px;height:40px;background:#0f3460;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div>
+            <div><div style="color:#fff;font-size:11px;">Bohrmaschine</div><div style="color:#666;font-size:9px;">Max · 500m entfernt</div></div>
+          </div>
+          <div style="background:#16213e;border-radius:8px;padding:8px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+            <div style="width:40px;height:40px;background:#0f3460;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🪚</div>
+            <div><div style="color:#fff;font-size:11px;">Stichsäge</div><div style="color:#666;font-size:9px;">Anna · 1.2km</div></div>
+          </div>
+        </div>
+        <!-- Tab Bar -->
+        <div style="background:#16213e;padding:8px 4px;display:flex;justify-content:space-around;border-top:1px solid #333;">
+          <div style="text-align:center;"><div style="font-size:16px;">🏠</div><div style="font-size:8px;color:#e94560;">Home</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">🔍</div><div style="font-size:8px;color:#666;">Suche</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">➕</div><div style="font-size:8px;color:#666;">Anbieten</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">📋</div><div style="font-size:8px;color:#666;">Buchungen</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">👤</div><div style="font-size:8px;color:#666;">Profil</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Bottom Tab Bar</h3>
+      <p>Klassisches Tab-Layout (wie Instagram, Airbnb). 5 Tabs: Home, Suche, Anbieten, Buchungen, Profil. Schneller Wechsel zwischen Bereichen. Standard-Pattern, sofort verständlich.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:20px;display:flex;flex-direction:column;height:320px;">
+      <!-- Phone mockup B: Drawer -->
+      <div style="background:#16213e;border-radius:12px;flex:1;display:flex;overflow:hidden;border:2px solid #333;">
+        <!-- Drawer open -->
+        <div style="width:55%;background:#0f3460;display:flex;flex-direction:column;padding:12px;border-right:1px solid #333;">
+          <div style="margin-bottom:16px;">
+            <div style="width:36px;height:36px;background:#e94560;border-radius:50%;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;">W</div>
+            <div style="color:#fff;font-size:11px;">Wolfgang</div>
+            <div style="color:#666;font-size:9px;">⭐ 4.8</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="color:#e94560;font-size:11px;">🏠 Home</div>
+            <div style="color:#ccc;font-size:11px;">🔍 Werkzeuge suchen</div>
+            <div style="color:#ccc;font-size:11px;">➕ Werkzeug anbieten</div>
+            <div style="color:#ccc;font-size:11px;">📋 Meine Buchungen</div>
+            <div style="color:#ccc;font-size:11px;">🔧 Meine Werkzeuge</div>
+            <div style="color:#ccc;font-size:11px;">🔔 Benachrichtigungen</div>
+            <div style="border-top:1px solid #333;padding-top:10px;color:#999;font-size:11px;">⚙️ Einstellungen</div>
+          </div>
+        </div>
+        <!-- Content behind -->
+        <div style="flex:1;background:#1a1a2e;opacity:0.4;padding:8px;">
+          <div style="background:#16213e;border-radius:6px;height:40px;margin-bottom:6px;"></div>
+          <div style="background:#16213e;border-radius:6px;height:40px;margin-bottom:6px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Hamburger / Drawer</h3>
+      <p>Seitliches Menü mit Profil-Header. Mehr Platz für Inhalte, alle Menüpunkte auf einen Blick. Weniger sofortige Sichtbarkeit der Navigation, ein Tap mehr nötig.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:20px;display:flex;flex-direction:column;height:320px;">
+      <!-- Phone mockup C: Hybrid -->
+      <div style="background:#16213e;border-radius:12px;flex:1;display:flex;flex-direction:column;overflow:hidden;border:2px solid #333;">
+        <!-- Status bar -->
+        <div style="background:#0f3460;padding:6px 12px;display:flex;justify-content:space-between;font-size:10px;color:#999;">
+          <span>9:41</span><span>⚡ 100%</span>
+        </div>
+        <!-- Header with hamburger -->
+        <div style="background:#0f3460;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#ccc;font-size:16px;">☰</span>
+          <span style="color:#e94560;font-weight:bold;font-size:14px;">Wippestoolen</span>
+          <span style="color:#ccc;font-size:16px;">🔔</span>
+        </div>
+        <!-- Content -->
+        <div style="flex:1;padding:8px;background:#1a1a2e;">
+          <div style="background:#16213e;border-radius:8px;padding:8px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+            <div style="width:40px;height:40px;background:#0f3460;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🔧</div>
+            <div><div style="color:#fff;font-size:11px;">Bohrmaschine</div><div style="color:#666;font-size:9px;">Max · 500m</div></div>
+          </div>
+          <div style="background:#16213e;border-radius:8px;padding:8px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+            <div style="width:40px;height:40px;background:#0f3460;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🪚</div>
+            <div><div style="color:#fff;font-size:11px;">Stichsäge</div><div style="color:#666;font-size:9px;">Anna · 1.2km</div></div>
+          </div>
+        </div>
+        <!-- Bottom Tabs (fewer) -->
+        <div style="background:#16213e;padding:8px 4px;display:flex;justify-content:space-around;border-top:1px solid #333;">
+          <div style="text-align:center;"><div style="font-size:16px;">🏠</div><div style="font-size:8px;color:#e94560;">Home</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">🔍</div><div style="font-size:8px;color:#666;">Suche</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">➕</div><div style="font-size:8px;color:#666;">Anbieten</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;">👤</div><div style="font-size:8px;color:#666;">Profil</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Hybrid (Tab Bar + Drawer)</h3>
+      <p>4 Haupt-Tabs unten + Drawer für sekundäre Funktionen (Einstellungen, Benachrichtigungen, Meine Werkzeuge). Wie viele moderne Apps (Gmail, Maps). Best of both worlds.</p>
+    </div>
+  </div>
+</div>
