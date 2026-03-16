@@ -161,10 +161,10 @@ class NotificationService:
             type=notification_data.type.value,
             title=notification_data.title,
             message=notification_data.message,
-            data=notification_data.data,
-            channels=",".join([ch.value for ch in notification_data.channels]),
+            action_data=notification_data.data if notification_data.data else None,
             priority=notification_data.priority.value,
-            expires_at=notification_data.expires_at
+            expires_at=notification_data.expires_at,
+            sent_in_app=True,
         )
         
         self.db.add(notification)
@@ -274,7 +274,7 @@ class NotificationService:
                 priority=NotificationPriority(notification.priority),
                 is_read=notification.is_read,
                 created_at=notification.created_at,
-                data=notification.data
+                data=notification.action_data
             )
             for notification in notifications
         ]
@@ -636,8 +636,8 @@ class NotificationService:
             type=NotificationType(notification.type),
             title=notification.title,
             message=notification.message,
-            data=notification.data,
-            channels=[NotificationChannel(ch) for ch in notification.channels.split(',')],
+            data=notification.action_data,
+            channels=[NotificationChannel(ch) for ch in (notification.channels or "in_app").split(',')],
             priority=NotificationPriority(notification.priority),
             is_read=notification.is_read,
             read_at=notification.read_at,
