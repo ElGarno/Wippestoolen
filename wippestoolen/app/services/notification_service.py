@@ -62,71 +62,71 @@ class NotificationService:
     TEMPLATES = {
         NotificationType.BOOKING_REQUEST: NotificationTemplate(
             type=NotificationType.BOOKING_REQUEST,
-            title_template="New booking request for {{ tool_title }}",
-            message_template="{{ borrower_name }} wants to borrow your {{ tool_title }} from {{ start_date }} to {{ end_date }}",
-            channels=[NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+            title_template="Neue Leihanfrage: {{ tool_title }}",
+            message_template="{{ borrower_name }} moechte dein Werkzeug {{ tool_title }} ausleihen ({{ start_date }} bis {{ end_date }})",
+            channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.HIGH
         ),
         NotificationType.BOOKING_CONFIRMED: NotificationTemplate(
             type=NotificationType.BOOKING_CONFIRMED,
-            title_template="Booking confirmed: {{ tool_title }}",
-            message_template="Your booking request for {{ tool_title }} has been confirmed by {{ owner_name }}",
-            channels=[NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+            title_template="Anfrage bestaetigt: {{ tool_title }}",
+            message_template="Deine Leihanfrage fuer {{ tool_title }} wurde von {{ owner_name }} bestaetigt",
+            channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.HIGH
         ),
         NotificationType.BOOKING_DECLINED: NotificationTemplate(
             type=NotificationType.BOOKING_DECLINED,
-            title_template="Booking declined: {{ tool_title }}",
-            message_template="Your booking request for {{ tool_title }} has been declined",
+            title_template="Anfrage abgelehnt: {{ tool_title }}",
+            message_template="Deine Leihanfrage fuer {{ tool_title }} wurde leider abgelehnt",
             channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.NORMAL
         ),
         NotificationType.BOOKING_CANCELLED: NotificationTemplate(
             type=NotificationType.BOOKING_CANCELLED,
-            title_template="Booking cancelled: {{ tool_title }}",
-            message_template="The booking for {{ tool_title }} has been cancelled",
-            channels=[NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+            title_template="Buchung storniert: {{ tool_title }}",
+            message_template="Die Buchung fuer {{ tool_title }} wurde storniert",
+            channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.HIGH
         ),
         NotificationType.BOOKING_ACTIVE: NotificationTemplate(
             type=NotificationType.BOOKING_ACTIVE,
-            title_template="Tool picked up: {{ tool_title }}",
-            message_template="{{ tool_title }} has been picked up and is now active",
+            title_template="Werkzeug abgeholt: {{ tool_title }}",
+            message_template="{{ tool_title }} wurde abgeholt und ist jetzt aktiv ausgeliehen",
             channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.NORMAL
         ),
         NotificationType.BOOKING_RETURNED: NotificationTemplate(
             type=NotificationType.BOOKING_RETURNED,
-            title_template="Tool returned: {{ tool_title }}",
-            message_template="{{ tool_title }} has been returned",
+            title_template="Werkzeug zurueckgegeben: {{ tool_title }}",
+            message_template="{{ tool_title }} wurde zurueckgegeben",
             channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.NORMAL
         ),
         NotificationType.BOOKING_COMPLETED: NotificationTemplate(
             type=NotificationType.BOOKING_COMPLETED,
-            title_template="Booking completed: {{ tool_title }}",
-            message_template="Your booking for {{ tool_title }} is now complete. You can leave a review!",
+            title_template="Buchung abgeschlossen: {{ tool_title }}",
+            message_template="Deine Buchung fuer {{ tool_title }} ist abgeschlossen. Du kannst jetzt eine Bewertung abgeben!",
             channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.LOW
         ),
         NotificationType.REVIEW_AVAILABLE: NotificationTemplate(
             type=NotificationType.REVIEW_AVAILABLE,
-            title_template="Review available: {{ tool_title }}",
-            message_template="You can now review your experience with {{ tool_title }}",
+            title_template="Bewertung moeglich: {{ tool_title }}",
+            message_template="Du kannst jetzt deine Erfahrung mit {{ tool_title }} bewerten",
             channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.LOW
         ),
         NotificationType.REVIEW_RECEIVED: NotificationTemplate(
             type=NotificationType.REVIEW_RECEIVED,
-            title_template="New review received",
-            message_template="{{ reviewer_name }} left you a {{ rating }}-star review",
-            channels=[NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+            title_template="Neue Bewertung erhalten",
+            message_template="{{ reviewer_name }} hat dir eine {{ rating }}-Sterne Bewertung gegeben",
+            channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.NORMAL
         ),
         NotificationType.WELCOME: NotificationTemplate(
             type=NotificationType.WELCOME,
-            title_template="Welcome to Wippestoolen!",
-            message_template="Welcome {{ user_name }}! Start by adding your first tool or browsing available tools in your area.",
+            title_template="Willkommen bei Wippestoolen!",
+            message_template="Hallo {{ user_name }}! Stell dein erstes Werkzeug ein oder stoebere durch die verfuegbaren Werkzeuge in deiner Nachbarschaft.",
             channels=[NotificationChannel.IN_APP],
             priority=NotificationPriority.NORMAL
         )
