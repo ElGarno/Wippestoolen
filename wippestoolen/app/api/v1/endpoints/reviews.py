@@ -1,8 +1,11 @@
 """Review endpoints for the API."""
 
+import logging
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -93,6 +96,73 @@ async def create_review(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except ReviewError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.get("/my-reviews", response_model=PaginatedReviewResponse)
+async def get_my_reviews(
+    as_reviewer: bool = Query(True, description="Get reviews given (true) or received (false)"),
+    rating: Optional[int] = Query(None, ge=1, le=5, description="Filter by rating"),
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(20, ge=1, le=100, description="Page size"),
+    sort: str = Query("created_at", pattern="^(created_at|rating|updated_at)$"),
+    order: str = Query("desc", pattern="^(asc|desc)$"),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get current user's reviews.
+
+    Returns paginated reviews either given by the user (as reviewer)
+    or received by the user (as reviewee).
+    """
+    review_service = ReviewService(db)
+
+    filters = ReviewFilters(
+        rating=rating,
+        page=page,
+        size=size,
+        sort=sort,
+        order=order
+    )
+
+    try:
+        return await review_service.get_user_reviews(
+            user_id=current_user.id,
+            filters=filters,
+            as_reviewer=as_reviewer
+        )
+
+    except ReviewError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.get("/statistics", response_model=ReviewStatistics)
+async def get_review_statistics(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get platform-wide review statistics (admin only).
+    """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin permissions required"
+        )
+
+    review_service = ReviewService(db)
+
+    try:
+        return await review_service.get_review_statistics()
+
     except ReviewError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -411,80 +481,6 @@ async def get_tool_reviews(
         )
 
 
-@router.get("/my-reviews", response_model=PaginatedReviewResponse)
-async def get_my_reviews(
-    as_reviewer: bool = Query(True, description="Get reviews given (true) or received (false)"),
-    rating: Optional[int] = Query(None, ge=1, le=5, description="Filter by rating"),
-    page: int = Query(1, ge=1, description="Page number"),
-    size: int = Query(20, ge=1, le=100, description="Page size"),
-    sort: str = Query("created_at", pattern="^(created_at|rating|updated_at)$"),
-    order: str = Query("desc", pattern="^(asc|desc)$"),
-    current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get current user's reviews.
-    
-    Convenience endpoint for getting the authenticated user's reviews
-    without specifying user ID.
-    
-    Returns paginated reviews either given by the user (as reviewer)
-    or received by the user (as reviewee).
-    """
-    review_service = ReviewService(db)
-    
-    filters = ReviewFilters(
-        rating=rating,
-        page=page,
-        size=size,
-        sort=sort,
-        order=order
-    )
-    
-    try:
-        return await review_service.get_user_reviews(
-            user_id=current_user.id,
-            filters=filters,
-            as_reviewer=as_reviewer
-        )
-        
-    except ReviewError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-
-@router.get("/statistics", response_model=ReviewStatistics)
-async def get_review_statistics(
-    current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get platform-wide review statistics.
-    
-    Returns comprehensive review analytics including:
-    - Total review counts and averages
-    - Rating distribution across all reviews
-    - Tool vs user review breakdown
-    - Moderation statistics
-    
-    Useful for admin dashboards and platform insights.
-    """
-    review_service = ReviewService(db)
-    
-    try:
-        return await review_service.get_review_statistics()
-        
-    except ReviewError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-
-# Convenience endpoints for common actions
-
 @router.delete("/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_review(
     review_id: UUID,
@@ -526,16 +522,15 @@ async def delete_review(
         )
     
     try:
-        # Delete review
+        # Delete review and update ratings in the same transaction
         await db.delete(review)
-        await db.commit()
-        
-        # Update aggregated ratings
         await review_service._update_user_rating(review.reviewee_id)
         if review.review_type == "borrower_to_owner":
             await review_service._update_tool_rating(review.booking.tool_id)
-        
-    except Exception as e:
+        await db.commit()
+
+    except Exception:
+        logger.exception("Unexpected error in delete_review for review_id=%s", review_id)
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

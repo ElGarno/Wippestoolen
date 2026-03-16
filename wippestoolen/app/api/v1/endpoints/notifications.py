@@ -1,10 +1,14 @@
 """Notification endpoints for the API."""
 
+import logging
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+logger = logging.getLogger(__name__)
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wippestoolen.app.api.v1.dependencies import get_current_active_user
@@ -34,6 +38,7 @@ from wippestoolen.app.services.notification_service import (
     NotificationPermissionError,
     InvalidNotificationError
 )
+from wippestoolen.app.services.push_service import PushService
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
@@ -372,13 +377,12 @@ async def broadcast_notification(
     
     **Admin permissions required.**
     """
-    # TODO: Add admin permission check
-    # if not current_user.is_admin:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Admin permissions required"
-    #     )
-    
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin permissions required"
+        )
+
     notification_service = NotificationService(db)
     
     try:
@@ -437,6 +441,7 @@ async def websocket_notifications(
                 return
                 
         except Exception:
+            logger.exception("WebSocket authentication failed")
             await websocket.close(code=4001, reason="Invalid token")
             return
         
@@ -470,10 +475,11 @@ async def websocket_notifications(
         except WebSocketDisconnect:
             manager.disconnect(user_id)
             
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error in websocket_notifications")
         try:
             await websocket.close(code=4000, reason="Server error")
-        except:
+        except Exception:
             pass
 
 
@@ -507,7 +513,7 @@ async def send_unread_count_update(user_id: UUID, unread_count: UnreadCountRespo
 async def notification_health():
     """
     Health check for notification service.
-    
+
     Returns service status and connection information.
     """
     return {
@@ -515,3 +521,89 @@ async def notification_health():
         "active_connections": len(manager.active_connections),
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+# ---------------------------------------------------------------------------
+# Push notification token endpoints
+# ---------------------------------------------------------------------------
+
+
+class PushTokenRequest(BaseModel):
+    """Request body for registering a push token."""
+
+    token: str
+    platform: str  # "ios" or "android"
+    device_name: Optional[str] = None
+
+
+class PushTokenDeleteRequest(BaseModel):
+    """Request body for unregistering a push token."""
+
+    token: str
+
+
+@router.post(
+    "/push-token",
+    status_code=status.HTTP_201_CREATED,
+)
+async def register_push_token(
+    payload: PushTokenRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Register a device push token for the authenticated user.
+
+    Registers an Expo push token so the user can receive push notifications on
+    their device. If the token already exists it will be reactivated and
+    associated with the current user.
+
+    Args:
+        payload: Token registration data (token, platform, optional device_name)
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        dict: Confirmation with the token id
+    """
+    if payload.platform not in ("ios", "android"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="platform must be 'ios' or 'android'",
+        )
+
+    push_service = PushService(db)
+    push_token = await push_service.register_push_token(
+        user_id=current_user.id,
+        token=payload.token,
+        platform=payload.platform,
+        device_name=payload.device_name,
+    )
+    return {"id": str(push_token.id), "token": push_token.token, "platform": push_token.platform}
+
+
+@router.delete(
+    "/push-token",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def unregister_push_token(
+    payload: PushTokenDeleteRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Unregister a device push token for the authenticated user.
+
+    Deactivates the given push token so the user no longer receives push
+    notifications on that device. The record is soft-deleted, not removed.
+
+    Args:
+        payload: Token to deactivate
+        current_user: Current authenticated user
+        db: Database session
+    """
+    push_service = PushService(db)
+    await push_service.unregister_push_token(
+        user_id=current_user.id,
+        token=payload.token,
+    )

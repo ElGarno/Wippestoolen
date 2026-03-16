@@ -1,0 +1,70 @@
+version: "3.8"
+
+# Wippestoolen NAS Deployment (Portainer Stack)
+#
+# Required environment variables in Portainer:
+#   POSTGRES_PASSWORD, SECRET_KEY, CLOUDFLARE_TUNNEL_TOKEN, ANTHROPIC_API_KEY
+
+services:
+  db:
+    image: postgres:15-alpine
+    platform: linux/amd64
+    container_name: wippestoolen_postgres
+    restart: unless-stopped
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_USER=wippestoolen
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=wippestoolen
+    volumes:
+      - wippestoolen_pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: wippestoolen_api
+    restart: unless-stopped
+    ports:
+      - "8092:8000"
+    depends_on:
+      - db
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - SECRET_KEY=${SECRET_KEY}
+      - LOG_LEVEL=INFO
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=wippestoolen
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=wippestoolen
+      - REDIS_URL=redis://host.docker.internal:6379/1
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_DAYS=30
+      - PHOTO_STORAGE_DIR=/app/uploads/photos
+      - PHOTO_BASE_URL=/uploads/photos
+      - ALLOWED_HOSTS=["api.wippestoolen.de","wippestoolen.de","localhost","127.0.0.1"]
+      - ALLOWED_ORIGINS=["https://wippestoolen.de","https://www.wippestoolen.de","http://localhost:3000"]
+      - RATE_LIMIT_ENABLED=true
+      - RUN_MIGRATIONS=true
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - wippestoolen_uploads:/app/uploads
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    platform: linux/amd64
+    container_name: wippestoolen_cloudflared
+    restart: unless-stopped
+    depends_on:
+      - api
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+
+volumes:
+  wippestoolen_pgdata:
+  wippestoolen_uploads:

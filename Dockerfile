@@ -56,8 +56,8 @@ COPY alembic/ ./alembic/
 COPY alembic.ini ./
 COPY entrypoint.sh ./
 
-# Create directory for logs and make wippestoolen user own the app directory
-RUN mkdir -p /app/logs && \
+# Create directories for logs and uploads, make wippestoolen user own the app directory
+RUN mkdir -p /app/logs /app/uploads/photos && \
     chmod +x /app/entrypoint.sh && \
     chown -R wippestoolen:wippestoolen /app
 

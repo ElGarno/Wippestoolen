@@ -35,6 +35,7 @@ class User(Base):
 
     # Location data
     address: Mapped[Optional[str]] = mapped_column(Text)
+    street_address: Mapped[Optional[str]] = mapped_column(String(200))
     city: Mapped[Optional[str]] = mapped_column(String(100))
     postal_code: Mapped[Optional[str]] = mapped_column(String(20))
     country: Mapped[str] = mapped_column(String(2), default="DE")
@@ -53,6 +54,7 @@ class User(Base):
     # Account status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Privacy settings
@@ -106,6 +108,11 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
         uselist=False
+    )
+    push_tokens: Mapped[list["PushToken"]] = relationship(
+        "PushToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     # Constraints

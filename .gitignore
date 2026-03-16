@@ -3,10 +3,12 @@
 
 # Environment files
 .env
+.env.*
 .env.local
 .env.development
 .env.production
 .env.deploy
+.env.nas
 
 # Python
 __pycache__/
@@ -22,6 +24,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Allow mobile/lib/ (React Native library code, not Python venv)
+!mobile/lib/
 parts/
 sdist/
 var/
@@ -87,3 +91,4 @@ entrypoint.sh
 .DS_Store
 Thumbs.db
 .env.production.backup
+.superpowers/

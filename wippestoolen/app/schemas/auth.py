@@ -16,13 +16,16 @@ class UserLogin(BaseModel):
 
 class UserCreate(BaseModel):
     """User registration schema."""
-    
+
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     display_name: str = Field(..., min_length=2, max_length=100)
     first_name: Optional[str] = Field(None, max_length=50)
     last_name: Optional[str] = Field(None, max_length=50)
     phone_number: Optional[str] = Field(None, max_length=20)
+    street_address: Optional[str] = Field(None, max_length=200)
+    city: Optional[str] = Field(None, max_length=100)
+    postal_code: Optional[str] = Field(None, max_length=20)
     
     @validator("password")
     def validate_password(cls, v):
@@ -47,7 +50,7 @@ class UserCreate(BaseModel):
 
 class UserResponse(BaseModel):
     """User response schema."""
-    
+
     id: UUID
     email: EmailStr
     display_name: str
@@ -63,9 +66,12 @@ class UserResponse(BaseModel):
     email_verified_at: Optional[datetime]
     location_visible: bool
     profile_visible: bool
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
     created_at: datetime
     last_login_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
@@ -167,7 +173,7 @@ class ChangePasswordRequest(BaseModel):
 
 class UpdateProfileRequest(BaseModel):
     """Update user profile schema."""
-    
+
     display_name: Optional[str] = Field(None, min_length=2, max_length=100)
     first_name: Optional[str] = Field(None, max_length=50)
     last_name: Optional[str] = Field(None, max_length=50)
@@ -175,6 +181,9 @@ class UpdateProfileRequest(BaseModel):
     bio: Optional[str] = Field(None, max_length=500)
     location_visible: Optional[bool] = None
     profile_visible: Optional[bool] = None
+    street_address: Optional[str] = Field(None, max_length=200)
+    city: Optional[str] = Field(None, max_length=100)
+    postal_code: Optional[str] = Field(None, max_length=20)
     
     @validator("display_name")
     def validate_display_name(cls, v):
