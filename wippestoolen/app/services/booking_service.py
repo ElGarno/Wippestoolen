@@ -328,10 +328,10 @@ class BookingService:
             query = query.join(Tool).where(Tool.owner_id == user_id)
         else:
             # Both roles
-            query = query.where(
+            query = query.join(Tool, Booking.tool_id == Tool.id).where(
                 or_(
                     Booking.borrower_id == user_id,
-                    and_(Booking.tool_id == Tool.id, Tool.owner_id == user_id)
+                    Tool.owner_id == user_id
                 )
             )
         

@@ -108,6 +108,11 @@ class Settings(BaseSettings):
         description="Allowed image MIME types",
     )
 
+    # AI / Anthropic
+    ANTHROPIC_API_KEY: Optional[str] = Field(
+        default=None, description="Anthropic API key for tool photo analysis"
+    )
+
     # Rate limiting
     RATE_LIMIT_ENABLED: bool = Field(
         default=True, description="Enable rate limiting"

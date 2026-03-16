@@ -2,7 +2,7 @@
 Review-related Pydantic schemas for request/response serialization.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Optional, List
@@ -142,8 +142,8 @@ class ToolBasicInfo(BaseModel):
 class BookingBasicInfo(BaseModel):
     """Basic booking information for reviews."""
     id: UUID
-    requested_start_date: datetime
-    requested_end_date: datetime
+    requested_start_date: date
+    requested_end_date: date
 
     class Config:
         from_attributes = True

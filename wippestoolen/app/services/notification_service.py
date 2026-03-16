@@ -2,9 +2,12 @@
 Notification service layer for business logic and database operations.
 """
 
+import logging
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import text, and_, or_, desc, asc, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -136,7 +139,7 @@ class NotificationService:
         self,
         recipient_id: UUID,
         notification_data: NotificationCreateRequest
-    ) -> NotificationResponse:
+    ) -> Optional[NotificationResponse]:
         """Create a new notification."""
         
         # Verify recipient exists
@@ -528,6 +531,7 @@ class NotificationService:
                     notifications.append(notification)
                     sent_count += 1
             except Exception:
+                logger.warning("Failed to send broadcast notification to user_id=%s", user_id, exc_info=True)
                 failed_count += 1
         
         # Generate broadcast ID
