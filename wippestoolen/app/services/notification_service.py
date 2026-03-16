@@ -162,6 +162,8 @@ class NotificationService:
             title=notification_data.title,
             message=notification_data.message,
             action_data=notification_data.data if notification_data.data else None,
+            related_booking_id=notification_data.data.get("booking_id") if notification_data.data else None,
+            related_tool_id=notification_data.data.get("tool_id") if notification_data.data else None,
             priority=notification_data.priority.value,
             expires_at=notification_data.expires_at,
             sent_in_app=True,
