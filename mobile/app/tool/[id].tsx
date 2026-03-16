@@ -15,6 +15,7 @@ import { Button } from "../../components/ui/Button";
 import { useAuth } from "../../contexts/AuthContext";
 import { colors } from "../../constants/colors";
 import { getPhotoUrl } from "../../constants/config";
+import AvailabilityCalendar from "../../components/tools/AvailabilityCalendar";
 
 export default function ToolDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -123,6 +124,12 @@ export default function ToolDetailScreen() {
             >
               {tool.is_available ? "Verfügbar" : "Derzeit verliehen"}
             </Text>
+          </View>
+
+          {/* Availability calendar */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Verfügbarkeit</Text>
+            <AvailabilityCalendar toolId={id} />
           </View>
 
           {/* Description */}

@@ -32,6 +32,12 @@ interface AvailabilityResponse {
   }>;
 }
 
+export interface CalendarAvailabilityResponse {
+  tool_id: string;
+  is_available: boolean;
+  calendar: Array<{ date: string; available: boolean; booking_id: string | null }>;
+}
+
 export function useBookings(params: BookingListParams = {}) {
   return useQuery({
     queryKey: queryKeys.bookings.list(params as Record<string, unknown>),
@@ -64,6 +70,23 @@ export function useToolAvailability(toolId: string, params: AvailabilityParams =
         { params }
       );
       return data;
+    },
+    enabled: !!toolId,
+  });
+}
+
+export function useToolAvailabilityCalendar(
+  toolId: string,
+  startDate: string,
+  endDate: string
+) {
+  return useQuery({
+    queryKey: ["tool-availability", toolId, startDate, endDate],
+    queryFn: async () => {
+      const { data } = await api.get(`/bookings/tools/${toolId}/availability`, {
+        params: { start_date: startDate, end_date: endDate },
+      });
+      return data as CalendarAvailabilityResponse;
     },
     enabled: !!toolId,
   });
