@@ -220,26 +220,26 @@ export default function BookToolScreen() {
 
           {/* Pickup method */}
           <Text style={styles.sectionTitle}>Abholung</Text>
-          <View style={styles.pickupRow}>
-            <TouchableOpacity
-              style={[
-                styles.pickupOption,
-                pickupMethod === "pickup" ? styles.pickupOptionActive : styles.pickupOptionInactive,
-              ]}
-              onPress={() => setPickupMethod("pickup")}
-            >
-              <Text
+          {tool.delivery_available ? (
+            <View style={styles.pickupRow}>
+              <TouchableOpacity
                 style={[
-                  styles.pickupOptionText,
-                  pickupMethod === "pickup"
-                    ? styles.pickupOptionTextActive
-                    : styles.pickupOptionTextInactive,
+                  styles.pickupOption,
+                  pickupMethod === "pickup" ? styles.pickupOptionActive : styles.pickupOptionInactive,
                 ]}
+                onPress={() => setPickupMethod("pickup")}
               >
-                Selbst abholen
-              </Text>
-            </TouchableOpacity>
-            {tool.delivery_available && (
+                <Text
+                  style={[
+                    styles.pickupOptionText,
+                    pickupMethod === "pickup"
+                      ? styles.pickupOptionTextActive
+                      : styles.pickupOptionTextInactive,
+                  ]}
+                >
+                  Selbst abholen
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.pickupOption,
@@ -260,8 +260,12 @@ export default function BookToolScreen() {
                   Lieferung
                 </Text>
               </TouchableOpacity>
-            )}
-          </View>
+            </View>
+          ) : (
+            <View style={styles.card}>
+              <Text style={{ fontSize: 14, color: colors.gray[600] }}>📍 Selbst abholen in {tool.pickup_city || "Attendorn"}</Text>
+            </View>
+          )}
 
           {pickupMethod === "delivery" && (
             <View style={styles.card}>
