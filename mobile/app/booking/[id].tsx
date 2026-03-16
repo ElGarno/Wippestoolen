@@ -81,6 +81,7 @@ export default function BookingDetailScreen() {
         text: "Bestätigen",
         onPress: () =>
           confirm.mutate(undefined, {
+            onSuccess: () => Alert.alert("Bestätigt", "Die Buchung wurde bestätigt."),
             onError: () => Alert.alert("Fehler", "Buchung konnte nicht bestätigt werden."),
           }),
       },
@@ -95,6 +96,7 @@ export default function BookingDetailScreen() {
         style: "destructive",
         onPress: () =>
           decline.mutate(undefined, {
+            onSuccess: () => Alert.alert("Abgelehnt", "Die Buchung wurde abgelehnt."),
             onError: () => Alert.alert("Fehler", "Buchung konnte nicht abgelehnt werden."),
           }),
       },
@@ -109,6 +111,7 @@ export default function BookingDetailScreen() {
         style: "destructive",
         onPress: () =>
           cancel.mutate(undefined, {
+            onSuccess: () => Alert.alert("Storniert", "Die Buchung wurde erfolgreich storniert."),
             onError: () => Alert.alert("Fehler", "Buchung konnte nicht storniert werden."),
           }),
       },
@@ -117,6 +120,7 @@ export default function BookingDetailScreen() {
 
   const handlePickup = () => {
     pickup.mutate(undefined, {
+      onSuccess: () => Alert.alert("Abgeholt", "Die Abholung wurde bestätigt."),
       onError: () => Alert.alert("Fehler", "Abholung konnte nicht bestätigt werden."),
     });
   };
