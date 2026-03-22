@@ -1,12 +1,8 @@
 """Main FastAPI application."""
 
-import os
-from pathlib import Path
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -60,11 +56,6 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router)
-
-# Serve uploaded photos as static files
-_photo_dir = Path(os.getenv("PHOTO_STORAGE_DIR", "/app/uploads/photos"))
-_photo_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads/photos", StaticFiles(directory=str(_photo_dir)), name="photos")
 
 
 @app.on_event("startup")
