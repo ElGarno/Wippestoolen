@@ -1,9 +1,7 @@
 """Photo service for tool photo uploads and management."""
 
-import os
+import logging
 import uuid
-from pathlib import Path
-from typing import Optional
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
@@ -11,14 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from wippestoolen.app.core.config import settings
 from wippestoolen.app.models.tool import Tool, ToolPhoto
+from wippestoolen.app.services.storage import storage
 
-# Local storage directory (configurable via PHOTO_STORAGE_DIR env var)
-PHOTO_STORAGE_DIR = Path(os.getenv("PHOTO_STORAGE_DIR", "/app/uploads/photos"))
-PHOTO_BASE_URL = os.getenv("PHOTO_BASE_URL", "/uploads/photos")
+logger = logging.getLogger(__name__)
 
 
 class PhotoService:
-    """Service for managing tool photos with local file storage."""
+    """Service for managing tool photos with R2 cloud storage."""
 
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -29,7 +26,7 @@ class PhotoService:
         file: UploadFile,
         user_id: uuid.UUID,
     ) -> ToolPhoto:
-        """Upload a photo for a tool to local storage."""
+        """Upload a photo for a tool to R2 storage."""
         # Check tool exists and user owns it
         result = await self.db.execute(select(Tool).where(Tool.id == tool_id))
         tool = result.scalar_one_or_none()
@@ -61,7 +58,6 @@ class PhotoService:
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"File type not allowed. Allowed types: {', '.join(settings.ALLOWED_IMAGE_TYPES)}",
                 )
-        # content_type variable is used below instead of file.content_type
 
         # Read file and validate size
         content = await file.read()
@@ -71,18 +67,11 @@ class PhotoService:
                 detail=f"File too large. Maximum size is {settings.MAX_FILE_SIZE // (1024 * 1024)}MB",
             )
 
-        # Generate unique filename and ensure directory exists
+        # Generate unique key and upload to R2
         extension = (file.filename or "photo").rsplit(".", 1)[-1].lower()
         photo_id = uuid.uuid4()
-        relative_path = f"{tool_id}/{photo_id}.{extension}"
-        full_path = PHOTO_STORAGE_DIR / relative_path
-        full_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Write file to disk
-        full_path.write_bytes(content)
-
-        # Build URL (served by FastAPI static files or reverse proxy)
-        original_url = f"{PHOTO_BASE_URL}/{relative_path}"
+        key = f"photos/{tool_id}/{photo_id}.{extension}"
+        original_url = storage.upload(content, key, content_type)
 
         # Count existing photos for display_order
         existing_count_result = await self.db.execute(
@@ -118,7 +107,7 @@ class PhotoService:
         user_id: uuid.UUID,
         tool_id: uuid.UUID,
     ) -> None:
-        """Delete a photo by soft-deleting it and removing the file."""
+        """Delete a photo by soft-deleting it and removing from R2."""
         result = await self.db.execute(
             select(ToolPhoto).where(
                 ToolPhoto.id == photo_id,
@@ -144,13 +133,13 @@ class PhotoService:
                 detail="You do not own this tool",
             )
 
-        # Delete file from disk (best-effort)
-        relative_path = photo.original_url.removeprefix(f"{PHOTO_BASE_URL}/")
-        file_path = PHOTO_STORAGE_DIR / relative_path
-        try:
-            file_path.unlink(missing_ok=True)
-        except OSError:
-            pass
+        # Delete from R2 (best-effort)
+        key = storage.key_from_url(photo.original_url)
+        if key:
+            try:
+                storage.delete(key)
+            except Exception:
+                logger.warning("Failed to delete photo from R2: %s", key, exc_info=True)
 
         # Soft-delete the record
         photo.is_active = False
