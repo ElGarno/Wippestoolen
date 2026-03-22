@@ -5,9 +5,9 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 
 ## Current Status
 - **Phase**: Feature-rich MVP, testing & polish
-- **Last Updated**: 2026-03-22 14:00
-- **Branch**: `feature/react-native-app` (synced with `master`)
-- **Backend**: Live on NAS at `https://api.wippestoolen.de` (deploy from `master`)
+- **Last Updated**: 2026-03-22 16:00
+- **Branch**: `feature/react-native-app`
+- **Backend**: Migration to Railway in progress (code done, manual setup pending)
 - **Mobile App**: Running in Expo Go on physical iPhone
 - **Design**: Bold & Vibrant (orange-amber gradient, community-oriented)
 - **Blockers**: None critical
@@ -66,6 +66,13 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] Mark-all-read endpoint URL fix (POST → PATCH /read-all)
 - [x] related_booking_id in notifications for navigation
 - [x] Merged feature branch into master
+- [x] Railway + R2 migration: R2StorageService, photo_service refactored, config updated
+- [x] railway.toml + Dockerfile + entrypoint updated for Railway deployment
+- [x] docker-compose simplified for local dev, .env.railway.example created
+- [x] StaticFiles mount removed, photos served from R2 CDN
+- [x] Edit tool: photo management UI (add/remove photos for existing tools)
+- [x] Reviews endpoint 404 fixed (frontend URL corrected)
+- [x] Double-booking prevented (pending in conflict check + SELECT FOR UPDATE)
 
 ## Known Issues / Remaining
 - [ ] **Push notifications**: Not functional in Expo Go — needs dev build (works with Apple Developer Account + production build)
@@ -78,6 +85,10 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [ ] Consider dev build / Apple Developer Account for push notifications + drawer
 - [ ] Clean up old test bookings from DB
 - [ ] Consider Pushover integration for real-time alerts
+- [ ] Manual: Create R2 bucket + API token in Cloudflare dashboard
+- [ ] Manual: Create Railway project, add PostgreSQL, connect GitHub repo
+- [ ] Manual: Set Railway env vars, deploy, verify /health
+- [ ] Manual: DNS cutover (api.wippestoolen.de → Railway, assets.wippestoolen.de → R2)
 
 ## Progress Log
 ### 2026-03-14
@@ -110,6 +121,14 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - Edit tool: full photo management (add from gallery/camera, delete with confirmation)
 - Added `useDeleteToolPhoto` hook
 - Photo section shows existing photos with primary badge and X-to-delete buttons
+- Railway + R2 migration implemented (7 commits)
+- R2StorageService created (boto3 S3-compatible, same pattern as whisky-api)
+- Photo service refactored: filesystem → R2 cloud storage
+- railway.toml, Dockerfile, entrypoint updated for Railway deployment
+- docker-compose simplified for local dev only
+- Old AWS/email config fields removed, NAS env example deleted
+- Spec: docs/superpowers/specs/2026-03-22-railway-r2-migration-design.md
+- Plan: docs/superpowers/plans/2026-03-22-railway-r2-migration.md
 
 ## Infrastructure
 - **Backend**: Synology NAS via Portainer (deploy from `master`)
@@ -128,3 +147,6 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - Booking auto-completes on return (no separate completed step)
 - Default location: Attendorn 57439
 - Both branches kept in sync (feature/react-native-app + master)
+- Photos stored in Cloudflare R2 (S3-compatible via boto3), public URL via R2 Custom Domain
+- Backend deployed on Railway (auto-deploy from GitHub, Dockerfile builder)
+- Railway PostgreSQL plugin for managed database
