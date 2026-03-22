@@ -46,4 +46,4 @@ else
 fi
 
 echo "🚀 Starting FastAPI application..."
-exec uvicorn wippestoolen.app.main:app --host 0.0.0.0 --port 8000
+exec uvicorn wippestoolen.app.main:app --host 0.0.0.0 --port ${PORT:-8000}

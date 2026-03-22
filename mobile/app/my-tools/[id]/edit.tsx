@@ -7,13 +7,18 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Image,
+  StyleSheet,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { useTool, useUpdateTool, useToolCategories } from "../../../hooks/useTools";
+import { useTool, useUpdateTool, useToolCategories, useUploadToolPhoto, useDeleteToolPhoto } from "../../../hooks/useTools";
 import { Input } from "../../../components/ui/Input";
 import { Button } from "../../../components/ui/Button";
 import { colors } from "../../../constants/colors";
+import { getPhotoUrl } from "../../../constants/config";
+import type { ToolPhoto } from "../../../types";
 
 type Condition = "excellent" | "good" | "fair" | "poor";
 
@@ -26,41 +31,14 @@ const CONDITIONS: { label: string; value: Condition }[] = [
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <Text
-      style={{
-        fontSize: 13,
-        fontWeight: "700",
-        color: colors.gray[500],
-        textTransform: "uppercase",
-        letterSpacing: 0.8,
-        marginBottom: 8,
-        marginTop: 8,
-        paddingHorizontal: 4,
-      }}
-    >
+    <Text style={styles.sectionTitle}>
       {title}
     </Text>
   );
 }
 
 function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <View
-      style={{
-        backgroundColor: colors.white,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 2,
-      }}
-    >
-      {children}
-    </View>
-  );
+  return <View style={styles.card}>{children}</View>;
 }
 
 export default function EditToolScreen() {
@@ -69,6 +47,8 @@ export default function EditToolScreen() {
   const { data: tool, isLoading } = useTool(id);
   const { data: categories } = useToolCategories();
   const updateTool = useUpdateTool(id);
+  const uploadPhoto = useUploadToolPhoto(id);
+  const deletePhoto = useDeleteToolPhoto(id);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -106,9 +86,76 @@ export default function EditToolScreen() {
     setSafetyNotes(tool.safety_notes ?? "");
   }, [tool]);
 
+  const pickFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf deine Fotos.");
+      return;
+    }
+    const currentCount = tool?.photos?.length ?? 0;
+    if (currentCount >= 5) {
+      Alert.alert("Maximum erreicht", "Du kannst maximal 5 Fotos hochladen.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5 - currentCount,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      for (const asset of result.assets) {
+        try {
+          await uploadPhoto.mutateAsync(asset.uri);
+        } catch {
+          Alert.alert("Fehler", "Ein Foto konnte nicht hochgeladen werden.");
+          break;
+        }
+      }
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Berechtigung fehlt", "Bitte erlaube den Zugriff auf die Kamera.");
+      return;
+    }
+    const currentCount = tool?.photos?.length ?? 0;
+    if (currentCount >= 5) {
+      Alert.alert("Maximum erreicht", "Du kannst maximal 5 Fotos hochladen.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+    if (!result.canceled) {
+      try {
+        await uploadPhoto.mutateAsync(result.assets[0].uri);
+      } catch {
+        Alert.alert("Fehler", "Das Foto konnte nicht hochgeladen werden.");
+      }
+    }
+  };
+
+  const handleDeletePhoto = (photo: ToolPhoto) => {
+    Alert.alert("Foto entfernen?", "Dieses Foto wird unwiderruflich geloescht.", [
+      { text: "Abbrechen", style: "cancel" },
+      {
+        text: "Entfernen",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deletePhoto.mutateAsync(photo.id);
+          } catch {
+            Alert.alert("Fehler", "Das Foto konnte nicht entfernt werden.");
+          }
+        },
+      },
+    ]);
+  };
+
   if (isLoading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.gray[50] }}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary[600]} />
       </View>
     );
@@ -116,7 +163,7 @@ export default function EditToolScreen() {
 
   if (!tool) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.gray[50] }}>
+      <View style={styles.centered}>
         <Text style={{ color: colors.gray[500] }}>Werkzeug nicht gefunden</Text>
       </View>
     );
@@ -154,6 +201,8 @@ export default function EditToolScreen() {
     }
   };
 
+  const photoCount = tool.photos?.length ?? 0;
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -171,7 +220,7 @@ export default function EditToolScreen() {
             activeOpacity={0.7}
           >
             <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 15, fontWeight: "500" }}>
-              ← Zurück
+              ← Zurueck
             </Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 26, fontWeight: "800", color: colors.white }}>
@@ -183,6 +232,55 @@ export default function EditToolScreen() {
         </LinearGradient>
 
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+          {/* Photos */}
+          <SectionTitle title="Fotos" />
+          <Card>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.photoRow}>
+                {tool.photos?.map((photo) => (
+                  <View key={photo.id} style={styles.photoWrapper}>
+                    <Image
+                      source={{ uri: getPhotoUrl(photo.medium_url || photo.original_url)! }}
+                      style={styles.photoThumb}
+                      resizeMode="cover"
+                    />
+                    {photo.is_primary && (
+                      <View style={styles.primaryBadge}>
+                        <Text style={styles.primaryBadgeText}>Haupt</Text>
+                      </View>
+                    )}
+                    <TouchableOpacity
+                      style={styles.removePhotoBtn}
+                      onPress={() => handleDeletePhoto(photo)}
+                      disabled={deletePhoto.isPending}
+                    >
+                      <Text style={styles.removePhotoBtnText}>X</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {photoCount < 5 && (
+                  <View style={styles.photoActions}>
+                    <TouchableOpacity style={styles.photoPickerBtn} onPress={pickFromGallery} disabled={uploadPhoto.isPending}>
+                      {uploadPhoto.isPending ? (
+                        <ActivityIndicator size="small" color={colors.primary[600]} />
+                      ) : (
+                        <>
+                          <Text style={styles.photoPickerIcon}>+</Text>
+                          <Text style={styles.photoPickerLabel}>Galerie</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.photoPickerBtn} onPress={takePhoto} disabled={uploadPhoto.isPending}>
+                      <Text style={styles.photoPickerIcon}>+</Text>
+                      <Text style={styles.photoPickerLabel}>Kamera</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+            <Text style={styles.photoHint}>{photoCount}/5 Fotos</Text>
+          </Card>
+
           {/* Basic info */}
           <SectionTitle title="Grundinformationen" />
           <Card>
@@ -326,7 +424,7 @@ export default function EditToolScreen() {
           <Card>
             <Input
               label="Stadt"
-              placeholder="z.B. Köln"
+              placeholder="z.B. Koeln"
               value={pickupCity}
               onChangeText={setPickupCity}
             />
@@ -355,7 +453,7 @@ export default function EditToolScreen() {
               <Text
                 style={{ fontSize: 14, fontWeight: "500", color: colors.gray[700] }}
               >
-                Lieferung möglich
+                Lieferung moeglich
               </Text>
               <View
                 style={{
@@ -454,7 +552,7 @@ export default function EditToolScreen() {
           </Card>
 
           <Button
-            title="Änderungen speichern"
+            title="Aenderungen speichern"
             onPress={handleSubmit}
             isLoading={updateTool.isPending}
           />
@@ -464,3 +562,107 @@ export default function EditToolScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[50],
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.gray[500],
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  photoRow: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  photoWrapper: {
+    position: "relative",
+  },
+  photoThumb: {
+    width: 88,
+    height: 88,
+    borderRadius: 12,
+  },
+  primaryBadge: {
+    position: "absolute",
+    bottom: 4,
+    left: 4,
+    backgroundColor: colors.primary[600],
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  primaryBadgeText: {
+    color: colors.white,
+    fontSize: 9,
+    fontWeight: "700",
+  },
+  removePhotoBtn: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: colors.error,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removePhotoBtnText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  photoActions: {
+    gap: 8,
+  },
+  photoPickerBtn: {
+    width: 88,
+    height: 38,
+    backgroundColor: colors.primary[50],
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: colors.primary[200],
+    borderStyle: "dashed",
+    flexDirection: "row",
+    gap: 4,
+  },
+  photoPickerIcon: {
+    fontSize: 16,
+    color: colors.primary[600],
+    fontWeight: "700",
+  },
+  photoPickerLabel: {
+    fontSize: 11,
+    color: colors.primary[600],
+    fontWeight: "500",
+  },
+  photoHint: {
+    fontSize: 11,
+    color: colors.gray[400],
+    marginTop: 10,
+  },
+});

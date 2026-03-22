@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Wippestoolen FastAPI Backend
-# Optimized for production deployment on AWS ECS
+# Optimized for production deployment on Railway
 
 # Build stage
 FROM python:3.13-slim as builder
@@ -57,16 +57,12 @@ COPY alembic.ini ./
 COPY entrypoint.sh ./
 
 # Create directories for logs and uploads, make wippestoolen user own the app directory
-RUN mkdir -p /app/logs /app/uploads/photos && \
+RUN mkdir -p /app/logs && \
     chmod +x /app/entrypoint.sh && \
     chown -R wippestoolen:wippestoolen /app
 
 # Switch to non-root user
 USER wippestoolen
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
 
 # Expose port
 EXPOSE 8000

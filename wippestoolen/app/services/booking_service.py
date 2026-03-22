@@ -411,11 +411,11 @@ class BookingService:
     ) -> AvailabilityResult:
         """Check if tool is available for given date range."""
         
-        # Query for conflicting bookings
+        # Query for conflicting bookings (including pending to prevent double-booking)
         query = select(Booking).where(
             and_(
                 Booking.tool_id == tool_id,
-                Booking.status.in_(['confirmed', 'active', 'returned']),
+                Booking.status.in_(['pending', 'confirmed', 'active', 'returned']),
                 or_(
                     and_(
                         Booking.requested_start_date <= end_date,
@@ -423,7 +423,7 @@ class BookingService:
                     )
                 )
             )
-        )
+        ).with_for_update()
         
         if exclude_booking_id:
             query = query.where(Booking.id != exclude_booking_id)
@@ -478,7 +478,7 @@ class BookingService:
             joinedload(Booking.borrower)
         ).where(
             and_(
-                Booking.status.in_(['confirmed', 'active', 'returned']),
+                Booking.status.in_(['pending', 'confirmed', 'active', 'returned']),
                 or_(
                     and_(
                         Booking.requested_start_date <= end_date,
@@ -487,7 +487,7 @@ class BookingService:
                 )
             )
         )
-        
+
         if role == 'borrower':
             query = query.where(Booking.borrower_id == user_id)
         elif role == 'owner':

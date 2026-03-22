@@ -14,7 +14,7 @@ export function useUserReviews(userId: string, params: ReviewListParams = {}) {
     queryKey: queryKeys.reviews.forUser(userId),
     queryFn: async () => {
       const { data } = await api.get<PaginatedReviewResponse<ReviewListItem>>(
-        `/reviews/user/${userId}`,
+        `/reviews/users/${userId}/reviews`,
         { params }
       );
       return data;
@@ -28,7 +28,7 @@ export function useToolReviews(toolId: string, params: ReviewListParams = {}) {
     queryKey: queryKeys.reviews.forTool(toolId),
     queryFn: async () => {
       const { data } = await api.get<PaginatedReviewResponse<ReviewListItem>>(
-        `/reviews/tool/${toolId}`,
+        `/reviews/tools/${toolId}/reviews`,
         { params }
       );
       return data;

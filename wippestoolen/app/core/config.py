@@ -79,26 +79,6 @@ class Settings(BaseSettings):
         default="redis://localhost:6379", description="Redis connection URL"
     )
 
-    # AWS settings
-    AWS_REGION: str = Field(default="us-east-1", description="AWS region")
-    AWS_ACCESS_KEY_ID: Optional[str] = Field(
-        default=None, description="AWS access key ID"
-    )
-    AWS_SECRET_ACCESS_KEY: Optional[str] = Field(
-        default=None, description="AWS secret access key"
-    )
-    S3_BUCKET_NAME: str = Field(
-        default="wippestoolen-photos", description="S3 bucket for photos"
-    )
-
-    # Email settings (AWS SES)
-    EMAIL_FROM: str = Field(
-        default="noreply@wippestoolen.com", description="From email address"
-    )
-    EMAIL_FROM_NAME: str = Field(
-        default="Wippestoolen", description="From name for emails"
-    )
-
     # File upload settings
     MAX_FILE_SIZE: int = Field(
         default=5 * 1024 * 1024, description="Max file size in bytes (5MB)"
@@ -112,6 +92,13 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = Field(
         default=None, description="Anthropic API key for tool photo analysis"
     )
+
+    # Cloudflare R2 Storage
+    R2_ACCOUNT_ID: str = Field(default="", description="Cloudflare account ID")
+    R2_ACCESS_KEY_ID: str = Field(default="", description="R2 access key ID")
+    R2_SECRET_ACCESS_KEY: str = Field(default="", description="R2 secret access key")
+    R2_BUCKET_NAME: str = Field(default="wippestoolen-photos", description="R2 bucket name")
+    R2_PUBLIC_URL: str = Field(default="", description="R2 public URL for assets")
 
     # Rate limiting
     RATE_LIMIT_ENABLED: bool = Field(

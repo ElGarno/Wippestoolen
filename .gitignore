@@ -4,6 +4,7 @@
 # Environment files
 .env
 .env.*
+!.env.railway.example
 .env.local
 .env.development
 .env.production
