@@ -5,7 +5,7 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 
 ## Current Status
 - **Phase**: Feature-rich MVP, testing & polish
-- **Last Updated**: 2026-03-17 01:00
+- **Last Updated**: 2026-03-22 14:00
 - **Branch**: `feature/react-native-app` (synced with `master`)
 - **Backend**: Live on NAS at `https://api.wippestoolen.de` (deploy from `master`)
 - **Mobile App**: Running in Expo Go on physical iPhone
@@ -68,18 +68,14 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] Merged feature branch into master
 
 ## Known Issues / Remaining
-- [ ] **Push notifications**: Not functional in Expo Go — needs dev build
-- [ ] **Drawer disabled**: Temporarily replaced with Slot due to Worklets mismatch
-- [ ] **Doppelbuchung**: Two pending bookings for same dates are both accepted (owner must decline one)
-- [ ] **Profile reviews endpoint**: GET /reviews/user/{id} returns 404 (endpoint path mismatch)
+- [ ] **Push notifications**: Not functional in Expo Go — needs dev build (works with Apple Developer Account + production build)
+- [ ] **Drawer disabled**: Temporarily replaced with Slot due to Worklets mismatch (Expo Go limitation, needs dev build)
+- [x] **Doppelbuchung**: Fixed — pending bookings now included in conflict check + SELECT FOR UPDATE for race conditions
+- [x] **Profile reviews endpoint**: Fixed — frontend URL corrected to match backend path
 
 ## Next Session Tasks
 - [ ] Test full booking lifecycle after latest deploy (notifications, confirm, review)
-- [ ] Fix profile reviews endpoint (404)
-- [ ] Add race condition protection for booking creation (SELECT FOR UPDATE)
-- [ ] Map: show tool locations from user addresses
-- [ ] Consider dev build for push notifications
-- [ ] Edit tool: add photo management (add/remove photos for existing tools)
+- [ ] Consider dev build / Apple Developer Account for push notifications + drawer
 - [ ] Clean up old test bookings from DB
 - [ ] Consider Pushover integration for real-time alerts
 
@@ -102,6 +98,18 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - Notification system fully operational (German templates, mark-all-read, navigation)
 - Multiple NAS deploys to fix production issues
 - Merged all changes into master branch
+
+### 2026-03-22 — Bugfixes + New Features
+- Fixed reviews endpoint 404: frontend URL `/reviews/user/{id}` → `/reviews/users/{id}/reviews`
+- Fixed tool reviews URL: `/reviews/tool/{id}` → `/reviews/tools/{id}/reviews`
+- Fixed double-booking: added `pending` to conflict check status list
+- Added SELECT FOR UPDATE on availability check (race condition protection)
+- Calendar view now shows pending bookings too
+- Map: tool locations now fall back to owner address via COALESCE in browse query
+- Tool creation: auto-fills location from owner address when no pickup location set
+- Edit tool: full photo management (add from gallery/camera, delete with confirmation)
+- Added `useDeleteToolPhoto` hook
+- Photo section shows existing photos with primary badge and X-to-delete buttons
 
 ## Infrastructure
 - **Backend**: Synology NAS via Portainer (deploy from `master`)

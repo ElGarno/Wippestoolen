@@ -57,19 +57,33 @@ class ToolService:
             raise ToolCategoryNotFoundError("Tool category not found or inactive")
         
         # Resolve coordinates: prefer explicitly supplied values, fall back to
-        # geocoding from postal code when only the address text is known.
+        # geocoding from postal code, then to owner's address as last resort.
         pickup_latitude = tool_data.pickup_latitude
         pickup_longitude = tool_data.pickup_longitude
-        if (
-            pickup_latitude is None
-            and tool_data.pickup_postal_code
-        ):
+        pickup_city = tool_data.pickup_city
+        pickup_postal_code = tool_data.pickup_postal_code
+
+        if pickup_latitude is None and pickup_postal_code:
             coords = geocode_postal_code(
-                tool_data.pickup_postal_code,
-                tool_data.pickup_city or "",
+                pickup_postal_code,
+                pickup_city or "",
             )
             if coords:
                 pickup_latitude, pickup_longitude = coords
+
+        # Fall back to owner's address if no tool location provided
+        if pickup_latitude is None:
+            owner_result = await self.db.execute(
+                text("SELECT latitude, longitude, city, postal_code FROM users WHERE id = :uid"),
+                {"uid": user_id},
+            )
+            owner = owner_result.fetchone()
+            if owner and owner[0] is not None:
+                pickup_latitude, pickup_longitude = owner[0], owner[1]
+                if not pickup_city:
+                    pickup_city = owner[2]
+                if not pickup_postal_code:
+                    pickup_postal_code = owner[3]
 
         # Create tool instance
         tool = Tool(
@@ -85,8 +99,8 @@ class ToolService:
             deposit_amount=tool_data.deposit_amount,
             daily_rate=tool_data.daily_rate,
             pickup_address=tool_data.pickup_address,
-            pickup_city=tool_data.pickup_city,
-            pickup_postal_code=tool_data.pickup_postal_code,
+            pickup_city=pickup_city,
+            pickup_postal_code=pickup_postal_code,
             pickup_latitude=pickup_latitude,
             pickup_longitude=pickup_longitude,
             delivery_available=tool_data.delivery_available,
@@ -240,7 +254,10 @@ class ToolService:
         # Get tools with pagination
         main_query = f"""
             SELECT t.id, t.title, t.description, t.condition, t.is_available, t.daily_rate,
-                   t.pickup_city, t.pickup_postal_code, t.pickup_latitude, t.pickup_longitude,
+                   COALESCE(t.pickup_city, u.city) as pickup_city,
+                   COALESCE(t.pickup_postal_code, u.postal_code) as pickup_postal_code,
+                   COALESCE(t.pickup_latitude, u.latitude) as pickup_latitude,
+                   COALESCE(t.pickup_longitude, u.longitude) as pickup_longitude,
                    t.delivery_available, t.average_rating, t.total_ratings,
                    tc.id as cat_id, tc.name as cat_name, tc.slug as cat_slug,
                    tc.description as cat_desc, tc.icon_name as cat_icon,

@@ -117,6 +117,19 @@ export function useUploadToolPhoto(toolId: string) {
   });
 }
 
+export function useDeleteToolPhoto(toolId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (photoId: string) => {
+      await api.delete(`/tools/${toolId}/photos/${photoId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.detail(toolId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.all });
+    },
+  });
+}
+
 export function useDeleteTool() {
   const queryClient = useQueryClient();
   return useMutation({
