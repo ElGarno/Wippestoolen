@@ -16,6 +16,7 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   updateProfile: (data: UpdateProfileRequest) => Promise<void>;
   refreshUser: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -89,8 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, user: data }));
   }, []);
 
+  const deleteAccount = useCallback(async (password: string) => {
+    await api.delete("/auth/me", { data: { password } });
+    await clearTokens();
+    setState({ user: null, isLoading: false, isAuthenticated: false });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, updateProfile, refreshUser }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, updateProfile, refreshUser, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
