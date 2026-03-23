@@ -21,7 +21,8 @@ from wippestoolen.app.schemas.auth import (
     RefreshTokenRequest,
     Token,
     ChangePasswordRequest,
-    UpdateProfileRequest
+    UpdateProfileRequest,
+    DeleteAccountRequest
 )
 from wippestoolen.app.models.user import User
 
@@ -231,4 +232,30 @@ async def change_password(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Password change failed"
+        )
+
+
+@router.delete("/me", status_code=status.HTTP_200_OK)
+@limiter.limit("3/hour")
+async def delete_account(
+    request: Request,
+    delete_data: DeleteAccountRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Permanently delete user account.
+
+    Requires password confirmation. Cancels all pending/confirmed bookings,
+    removes photos from storage, and anonymizes all personal data.
+    Active bookings (tools currently borrowed) must be resolved first.
+    """
+    auth_service = AuthService(db)
+    try:
+        await auth_service.delete_account(current_user.id, delete_data.password)
+        return {"message": "Account successfully deleted"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
         )
