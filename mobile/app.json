@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Wippestoolen",
+    "slug": "wippestoolen",
     "scheme": "wippestoolen",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,9 +13,19 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "de.wippestoolen.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Wippestoolen benötigt Zugriff auf die Kamera um Fotos von Werkzeugen aufzunehmen.",
+        "NSPhotoLibraryUsageDescription": "Wippestoolen benötigt Zugriff auf deine Fotos um Werkzeugbilder hochzuladen.",
+        "NSLocationWhenInUseUsageDescription": "Wippestoolen nutzt deinen Standort um Werkzeuge in deiner Nähe anzuzeigen."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "de.wippestoolen.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -29,7 +39,21 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-camera",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#E8470A"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "<set-after-eas-init>"
+      }
+    }
   }
 }
