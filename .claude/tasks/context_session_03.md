@@ -5,7 +5,7 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 
 ## Current Status
 - **Phase**: Feature-rich MVP, testing & polish
-- **Last Updated**: 2026-03-23 00:30
+- **Last Updated**: 2026-03-23 15:00
 - **Branch**: `master` (feature/react-native-app merged)
 - **Backend**: Live on Railway at `https://api.wippestoolen.de` (auto-deploy from master)
 - **Mobile App**: Running in Expo Go on physical iPhone
@@ -77,6 +77,10 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] Railway deployment live: healthcheck passing, DB connected, categories seeded
 - [x] DNS cutover: api.wippestoolen.de → Railway Custom Domain
 - [x] Map: tool locations fall back to owner address (COALESCE + create_tool fallback)
+- [x] App Store prep: app.json (name, bundle ID, permissions), eas.json (build profiles)
+- [x] Account deletion: DELETE /auth/me with anonymization, R2 cleanup, booking cancellation
+- [x] Privacy policy + Impressum: /api/v1/privacy endpoint (DSGVO-konform)
+- [x] Settings UI: Account loeschen Button mit Passwort-Modal, Datenschutz-Link
 
 ## Known Issues / Remaining
 - [ ] **Push notifications**: Not functional in Expo Go — needs dev build (works with Apple Developer Account + production build)
@@ -85,12 +89,15 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] **Profile reviews endpoint**: Fixed — frontend URL corrected to match backend path
 
 ## Next Session Tasks
-m- [ ] Test full app on Railway (register, create tool with photo, booking lifecycle)
+- [ ] Test full app on Railway (register, create tool with photo, booking lifecycle)
 - [ ] Verify R2 photo upload works end-to-end (assets.wippestoolen.de)
-- [ ] Consider dev build / Apple Developer Account for push notifications + drawer
-- [ ] Stop old NAS containers (Portainer → wippestoolen stack stoppen)
+- [ ] Apple Developer Account erstellen ($99/Jahr) → dann eas init + eas build
+- [ ] Dev Build: Drawer re-aktivieren, Push Notifications testen
+- [ ] App Store Screenshots + Metadata erstellen
+- [ ] TestFlight Build + Testen auf physischem Geraet
 - [ ] Consider Pushover integration for real-time alerts
-- [ ] Remove Vercel integration from GitHub repo settings
+- [x] Stop old NAS containers
+- [x] Remove Vercel integration from GitHub
 
 ## Progress Log
 ### 2026-03-14
@@ -138,6 +145,16 @@ m- [ ] Test full app on Railway (register, create tool with photo, booking lifec
 - DNS cutover complete: api.wippestoolen.de → Railway Custom Domain
 - ALLOWED_IMAGE_TYPES env var issue fixed (removed, using code defaults)
 - Merged feature/react-native-app → master, pushed context updates
+
+### 2026-03-23 — App Store Preparation
+- app.json updated: name "Wippestoolen", bundleIdentifier, iOS permissions, plugins
+- eas.json created with development/preview/production build profiles
+- Account deletion endpoint (DELETE /auth/me) with full anonymization flow
+- DeleteAccountRequest schema, AuthService.delete_account() method
+- Privacy policy + Impressum as HTML endpoint at /api/v1/privacy
+- Settings UI: "Gefahrenzone" section with delete modal, Datenschutz opens browser
+- Spec: docs/superpowers/specs/2026-03-23-app-store-preparation-design.md
+- Plan: docs/superpowers/plans/2026-03-23-app-store-preparation.md
 
 ## Infrastructure
 - **Backend**: Railway (auto-deploy from `master`)
