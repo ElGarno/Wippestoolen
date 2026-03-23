@@ -5,9 +5,9 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 
 ## Current Status
 - **Phase**: Feature-rich MVP, testing & polish
-- **Last Updated**: 2026-03-22 16:00
-- **Branch**: `feature/react-native-app`
-- **Backend**: Migration to Railway in progress (code done, manual setup pending)
+- **Last Updated**: 2026-03-23 00:30
+- **Branch**: `master` (feature/react-native-app merged)
+- **Backend**: Live on Railway at `https://api.wippestoolen.de` (auto-deploy from master)
 - **Mobile App**: Running in Expo Go on physical iPhone
 - **Design**: Bold & Vibrant (orange-amber gradient, community-oriented)
 - **Blockers**: None critical
@@ -33,7 +33,7 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - Anthropic Claude API (Sonnet 4) for AI photo analysis
 - Jinja2 for notification templates
 - Pillow + pillow-heif for image processing
-- Deployed on Synology NAS via Portainer + Cloudflare Tunnel
+- Deployed on Railway (auto-deploy from GitHub master branch)
 
 ## Completed Tasks
 - [x] Full app implementation (auth, tools, bookings, reviews, notifications, profile)
@@ -73,6 +73,10 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] Edit tool: photo management UI (add/remove photos for existing tools)
 - [x] Reviews endpoint 404 fixed (frontend URL corrected)
 - [x] Double-booking prevented (pending in conflict check + SELECT FOR UPDATE)
+- [x] TrustedHostMiddleware removed (Railway handles host filtering)
+- [x] Railway deployment live: healthcheck passing, DB connected, categories seeded
+- [x] DNS cutover: api.wippestoolen.de → Railway Custom Domain
+- [x] Map: tool locations fall back to owner address (COALESCE + create_tool fallback)
 
 ## Known Issues / Remaining
 - [ ] **Push notifications**: Not functional in Expo Go — needs dev build (works with Apple Developer Account + production build)
@@ -81,14 +85,12 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - [x] **Profile reviews endpoint**: Fixed — frontend URL corrected to match backend path
 
 ## Next Session Tasks
-- [ ] Test full booking lifecycle after latest deploy (notifications, confirm, review)
+m- [ ] Test full app on Railway (register, create tool with photo, booking lifecycle)
+- [ ] Verify R2 photo upload works end-to-end (assets.wippestoolen.de)
 - [ ] Consider dev build / Apple Developer Account for push notifications + drawer
-- [ ] Clean up old test bookings from DB
+- [ ] Stop old NAS containers (Portainer → wippestoolen stack stoppen)
 - [ ] Consider Pushover integration for real-time alerts
-- [ ] Manual: Create R2 bucket + API token in Cloudflare dashboard
-- [ ] Manual: Create Railway project, add PostgreSQL, connect GitHub repo
-- [ ] Manual: Set Railway env vars, deploy, verify /health
-- [ ] Manual: DNS cutover (api.wippestoolen.de → Railway, assets.wippestoolen.de → R2)
+- [ ] Remove Vercel integration from GitHub repo settings
 
 ## Progress Log
 ### 2026-03-14
@@ -130,23 +132,30 @@ Build a complete React Native (Expo) mobile app for Wippestoolen with full featu
 - Spec: docs/superpowers/specs/2026-03-22-railway-r2-migration-design.md
 - Plan: docs/superpowers/plans/2026-03-22-railway-r2-migration.md
 
+### 2026-03-23 — Railway Live
+- Railway deployment successful: healthcheck passing, DB connected
+- TrustedHostMiddleware removed (caused 400 on Railway internal healthchecks)
+- DNS cutover complete: api.wippestoolen.de → Railway Custom Domain
+- ALLOWED_IMAGE_TYPES env var issue fixed (removed, using code defaults)
+- Merged feature/react-native-app → master, pushed context updates
+
 ## Infrastructure
-- **Backend**: Synology NAS via Portainer (deploy from `master`)
-  - wippestoolen_postgres (port 5435, user: wippestoolen)
-  - wippestoolen_api (port 8092)
-  - wippestoolen_cloudflared (Cloudflare Tunnel)
-- **Env vars**: POSTGRES_PASSWORD, SECRET_KEY, CLOUDFLARE_TUNNEL_TOKEN, ANTHROPIC_API_KEY
-- **Admin user**: faffi@gmx.de (is_admin = true)
-- **Test user**: viviwoe@gmx.de (ViviFee)
+- **Backend**: Railway (auto-deploy from `master`)
+  - Railway PostgreSQL plugin (DATABASE_URL auto-injected)
+  - Cloudflare R2 for photo storage (bucket: wippestoolen-photos)
+  - Custom Domain: api.wippestoolen.de
+  - Assets: assets.wippestoolen.de (R2 Custom Domain)
+- **Env vars**: DATABASE_URL, SECRET_KEY, ANTHROPIC_API_KEY, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL
+- **Old NAS stack**: Still running but no longer serving traffic (can be stopped)
+- **Users**: Fresh DB — need to re-register
 
 ## Architecture Decisions
-- Photos stored locally on NAS, relative URLs converted by getPhotoUrl()
 - react-native-maps instead of WebView/Leaflet (Expo Go compatible)
 - Claude Sonnet 4 for AI analysis (Haiku too inaccurate)
 - Jinja2 for notification templates
 - Booking auto-completes on return (no separate completed step)
 - Default location: Attendorn 57439
-- Both branches kept in sync (feature/react-native-app + master)
+- TrustedHostMiddleware removed (Railway handles host filtering externally)
 - Photos stored in Cloudflare R2 (S3-compatible via boto3), public URL via R2 Custom Domain
 - Backend deployed on Railway (auto-deploy from GitHub, Dockerfile builder)
 - Railway PostgreSQL plugin for managed database
