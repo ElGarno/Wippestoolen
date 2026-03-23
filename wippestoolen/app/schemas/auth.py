@@ -194,3 +194,9 @@ class UpdateProfileRequest(BaseModel):
             if any(char in v for char in ['<', '>', '"', "'"]):
                 raise ValueError("Display name contains invalid characters")
         return v
+
+
+class DeleteAccountRequest(BaseModel):
+    """Request to delete user account. Requires password confirmation."""
+
+    password: str = Field(..., min_length=1, description="Current password for confirmation")
