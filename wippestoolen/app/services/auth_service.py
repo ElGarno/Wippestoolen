@@ -1,5 +1,6 @@
 """Authentication service layer."""
 
+import logging
 import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -9,6 +10,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from wippestoolen.app.core.config import settings
 from wippestoolen.app.core.security import (
@@ -19,6 +21,8 @@ from wippestoolen.app.core.security import (
     verify_token
 )
 from wippestoolen.app.models.user import User
+from wippestoolen.app.models.tool import Tool, ToolPhoto
+from wippestoolen.app.models.booking import Booking
 from wippestoolen.app.schemas.auth import (
     UserCreate,
     UserLogin,
@@ -26,6 +30,9 @@ from wippestoolen.app.schemas.auth import (
     UserResponse,
     UpdateProfileRequest
 )
+from wippestoolen.app.services.storage import storage
+
+logger = logging.getLogger(__name__)
 
 
 class AuthenticationError(Exception):
@@ -284,5 +291,153 @@ class AuthService:
         
         # Hash new password
         user.password_hash = hash_password(new_password)
-        
+
         await self.db.commit()
+
+    async def delete_account(self, user_id: UUID, password: str) -> bool:
+        """Delete a user account: anonymize data, cancel bookings, remove photos."""
+
+        # Get user and verify password
+        result = await self.db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise ValueError("User not found")
+
+        if not verify_password(password, user.password_hash):
+            raise ValueError("Invalid password")
+
+        # Check for active bookings (tools currently borrowed)
+        active_bookings = await self.db.execute(
+            select(Booking).where(
+                Booking.borrower_id == user_id,
+                Booking.status == "active",
+            )
+        )
+        if active_bookings.scalars().first():
+            raise ValueError("Bitte gib zuerst alle ausgeliehenen Werkzeuge zurueck.")
+
+        # Also check tools the user owns that are actively borrowed
+        active_owner_bookings = await self.db.execute(
+            select(Booking).join(Tool).where(
+                Tool.owner_id == user_id,
+                Booking.status == "active",
+            )
+        )
+        if active_owner_bookings.scalars().first():
+            raise ValueError("Es gibt noch aktive Ausleihen deiner Werkzeuge.")
+
+        # Cancel pending/confirmed bookings
+        pending_bookings = await self.db.execute(
+            select(Booking).where(
+                Booking.borrower_id == user_id,
+                Booking.status.in_(["pending", "confirmed"]),
+            )
+        )
+        for booking in pending_bookings.scalars().all():
+            booking.status = "cancelled"
+
+        owner_pending = await self.db.execute(
+            select(Booking).join(Tool).where(
+                Tool.owner_id == user_id,
+                Booking.status.in_(["pending", "confirmed"]),
+            )
+        )
+        for booking in owner_pending.scalars().all():
+            booking.status = "cancelled"
+
+        # Notify counterparts about cancelled bookings (best-effort)
+        try:
+            from wippestoolen.app.services.notification_service import NotificationService
+            from wippestoolen.app.schemas.notification import (
+                BookingNotificationEvent,
+                NotificationType,
+                NotificationPriority,
+                NotificationChannel,
+            )
+            notification_service = NotificationService(self.db)
+
+            # Find all recently cancelled bookings involving this user
+            all_cancelled = await self.db.execute(
+                select(Booking).join(Tool).where(
+                    Booking.status == "cancelled",
+                    (Booking.borrower_id == user_id) | (Tool.owner_id == user_id),
+                )
+            )
+            for booking in all_cancelled.scalars().all():
+                # Notify the other party (not the user being deleted)
+                recipient_id = None
+                if booking.borrower_id == user_id:
+                    # User is borrower — notify tool owner
+                    tool_result = await self.db.execute(select(Tool).where(Tool.id == booking.tool_id))
+                    tool_obj = tool_result.scalar_one_or_none()
+                    if tool_obj:
+                        recipient_id = tool_obj.owner_id
+                else:
+                    # User is owner — notify borrower
+                    recipient_id = booking.borrower_id
+
+                if recipient_id and recipient_id != user_id:
+                    event = BookingNotificationEvent(
+                        type=NotificationType.BOOKING_CANCELLED,
+                        recipient_id=recipient_id,
+                        context={"tool_title": "Werkzeug (Account geloescht)"},
+                        priority=NotificationPriority.HIGH,
+                        channels=[NotificationChannel.IN_APP],
+                        booking_id=booking.id,
+                        booking_status="cancelled",
+                        tool_title="Werkzeug (Account geloescht)",
+                    )
+                    await notification_service.create_booking_notification(event)
+        except Exception:
+            logger.warning("Failed to send deletion notifications", exc_info=True)
+
+        # Soft-delete all user's tools and delete photos from R2
+        tools_result = await self.db.execute(
+            select(Tool).options(selectinload(Tool.photos)).where(
+                Tool.owner_id == user_id,
+                Tool.is_active == True,  # noqa: E712
+            )
+        )
+        for tool in tools_result.scalars().all():
+            for photo in tool.photos:
+                if photo.is_active:
+                    key = storage.key_from_url(photo.original_url)
+                    if key:
+                        try:
+                            storage.delete(key)
+                        except Exception:
+                            logger.warning("Failed to delete photo %s from R2", key)
+                    photo.is_active = False
+            tool.is_active = False
+            tool.deleted_at = datetime.utcnow()
+
+        # Delete avatar from R2
+        if user.avatar_url:
+            key = storage.key_from_url(user.avatar_url)
+            if key:
+                try:
+                    storage.delete(key)
+                except Exception:
+                    logger.warning("Failed to delete avatar %s from R2", key)
+
+        # Anonymize user data
+        user.email = f"deleted_{user.id}@deleted.local"
+        user.display_name = "Geloeschter Nutzer"
+        user.first_name = None
+        user.last_name = None
+        user.phone_number = None
+        user.bio = None
+        user.address = None
+        user.street_address = None
+        user.city = None
+        user.postal_code = None
+        user.avatar_url = None
+        user.latitude = None
+        user.longitude = None
+        user.password_hash = secrets.token_hex(32)
+        user.is_active = False
+        user.deleted_at = datetime.utcnow()
+        user.data_retention_until = datetime.utcnow() + timedelta(days=30)
+
+        await self.db.commit()
+        return True
