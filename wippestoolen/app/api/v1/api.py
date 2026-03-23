@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from wippestoolen.app.api.v1.endpoints import ai, auth, tools, bookings, reviews, notifications, admin, photos
+from wippestoolen.app.api.v1.endpoints import ai, auth, tools, bookings, reviews, notifications, admin, photos, privacy
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -29,3 +29,6 @@ api_router.include_router(admin.router)
 
 # Include AI analysis routes
 api_router.include_router(ai.router)
+
+# Include legal/privacy routes
+api_router.include_router(privacy.router)
